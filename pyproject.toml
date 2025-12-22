@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cmbenchmark"
+version = "0.1.0"
+description = "A Python-based benchmarking tool for assessing datasets of conceptual models"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "jinja2>=3.1.0",
+    "plotly>=5.17.0",
+]
+
+[project.scripts]
+cmbenchmark = "cmbenchmark.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cmbenchmark*"]
+
