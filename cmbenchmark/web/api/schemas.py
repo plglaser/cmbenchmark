@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class ScanRequest(BaseModel):
     """Request schema for scan endpoint."""
     dataset_path: str = Field(..., description="Path to dataset directory")
+    out: str = Field(..., description="Path to output directory for dataset_info.json")
     exclude: Optional[str] = Field(None, description="Comma-separated list of file patterns to exclude")
     size_limit_mb: Optional[int] = Field(None, description="Maximum file size in MB")
 

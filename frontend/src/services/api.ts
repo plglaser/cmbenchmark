@@ -20,6 +20,7 @@ const api = axios.create({
 // Zod schemas for validation
 export const ScanRequestSchema = z.object({
   dataset_path: z.string().min(1, 'Dataset path is required'),
+  out: z.string().min(1, 'Output directory is required'),
   exclude: z.string().nullable().optional(),
   size_limit_mb: z.number().positive().nullable().optional(),
 });

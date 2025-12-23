@@ -25,7 +25,7 @@ async def scan(request: ScanRequest):
     Scan a dataset directory for model files and generate statistics.
     
     This endpoint wraps the scan_dataset service function.
-    The dataset_info.json file is saved to the dataset root directory.
+    The dataset_info.json file is saved to the output directory specified in 'out'.
     """
     try:
         dataset_info = scan_dataset(
@@ -34,9 +34,10 @@ async def scan(request: ScanRequest):
             size_limit_mb=request.size_limit_mb,
         )
         
-        # Save dataset_info.json to the dataset root directory
-        dataset_root = Path(dataset_info.dataset_root)
-        dataset_info_path = dataset_root / "dataset_info.json"
+        # Save dataset_info.json to the output directory
+        output_dir = Path(request.out).resolve()
+        output_dir.mkdir(parents=True, exist_ok=True)
+        dataset_info_path = output_dir / "dataset_info.json"
         with open(dataset_info_path, "w", encoding="utf-8") as f:
             json.dump(dataset_info.to_dict(), f, indent=2)
         
@@ -53,8 +54,9 @@ async def scan(request: ScanRequest):
             candidates=dataset_info.candidates,
         )
         
-        # Add the saved path to parameters for convenience
+        # Add the saved path and output directory to parameters for convenience
         response.parameters["dataset_info_path"] = str(dataset_info_path)
+        response.parameters["out"] = str(output_dir)
         
         return response
     except ValueError as e:

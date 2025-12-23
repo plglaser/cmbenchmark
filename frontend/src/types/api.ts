@@ -2,6 +2,7 @@
 
 export interface ScanRequest {
   dataset_path: string;
+  out: string;
   exclude?: string | null;
   size_limit_mb?: number | null;
 }
@@ -14,6 +15,7 @@ export interface ScanResponse {
     exclude: string[];
     size_limit_mb?: number | null;
     dataset_info_path?: string;
+    out?: string;
   };
   totals: {
     total_seen: number;

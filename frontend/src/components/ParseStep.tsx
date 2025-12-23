@@ -32,15 +32,21 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
       .finally(() => setLoadingParsers(false));
   }, []);
 
-  // Auto-fill dataset_info_path if scan result is available
+  // Auto-fill dataset_info_path and output_dir if scan result is available
   useEffect(() => {
-    if (scanResult && !datasetInfoPath) {
+    if (scanResult) {
       // Use the dataset_info_path from scan result if available, otherwise construct it
-      const path = (scanResult.parameters as any).dataset_info_path || 
-                   `${scanResult.dataset_root}/dataset_info.json`;
-      setDatasetInfoPath(path);
+      if (!datasetInfoPath) {
+        const path = (scanResult.parameters as any).dataset_info_path || 
+                     `${scanResult.dataset_root}/dataset_info.json`;
+        setDatasetInfoPath(path);
+      }
+      // Use the same output directory from scan result
+      if (!outputDir && scanResult.parameters.out) {
+        setOutputDir(scanResult.parameters.out);
+      }
     }
-  }, [scanResult, datasetInfoPath]);
+  }, [scanResult, datasetInfoPath, outputDir]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

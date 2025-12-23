@@ -11,12 +11,15 @@ interface ScanStepProps {
 }
 
 export function ScanStep({ onScanComplete }: ScanStepProps) {
-  const [datasetPath, setDatasetPath] = useState('');
+  // const [datasetPath, setDatasetPath] = useState('');
+  const [out, setOut] = useState('');
   const [exclude, setExclude] = useState('');
   const [sizeLimitMb, setSizeLimitMb] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResponse | null>(null);
+
+  const [folderName, setFolderName] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +28,8 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
 
     try {
       const response = await apiService.scan({
-        dataset_path: datasetPath,
+        dataset_path: folderName,
+        out: out,
         exclude: exclude || null,
         size_limit_mb: sizeLimitMb || null,
       });
@@ -53,12 +57,46 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
             <Input
               id="dataset-path"
               type="text"
-              value={datasetPath}
-              onChange={(e) => setDatasetPath(e.target.value)}
+              
+              // webkitdirectory=""
+              // directory=""
+              // multiple
+              value={folderName}
+              onChange={(e) => setFolderName(e.target.value)}
               placeholder="/path/to/dataset"
               required
               disabled={loading}
+              /*
+              onChange={(e) => {
+                const files = Array.from(e.currentTarget.files ?? []);
+                if (files.length === 0) {
+                  setFolderName("");
+                  return;
+                }
+            
+                const rel = (files[0] as any).webkitRelativePath as string | undefined;
+                // TODO: properly split name to select correct dataset path
+                const name = rel?.split("/")[0] ?? "Selected folder";
+            
+                setFolderName(rel);
+              }}*/
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="out">Output Directory *</Label>
+            <Input
+              id="out"
+              type="text"
+              value={out}
+              onChange={(e) => setOut(e.target.value)}
+              placeholder="/path/to/output"
+              required
+              disabled={loading}
+            />
+            <p className="text-sm text-muted-foreground">
+              Directory where dataset_info.json will be saved
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -98,7 +136,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
             </div>
           )}
 
-          <Button type="submit" disabled={loading || !datasetPath}>
+          <Button type="submit" disabled={loading || !folderName || !out}>
             {loading ? 'Scanning...' : 'Scan Dataset'}
           </Button>
         </form>
