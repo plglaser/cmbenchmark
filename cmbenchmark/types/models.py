@@ -22,6 +22,7 @@ class DatasetInfo:
     too_large: List[str]
     unreadable: List[str]
     candidates: List[str]
+    filtered: List[str]
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""

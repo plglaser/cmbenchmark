@@ -1,7 +1,7 @@
 """CLI interface for cmbenchmark."""
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 import typer
 import subprocess
 import sys
@@ -12,6 +12,7 @@ import json
 
 from cmbenchmark.services import scan_dataset, compute_metrics, save_metrics, generate_report
 from cmbenchmark.services.parse import parse_from_scan
+from cmbenchmark.services.scan import DEFAULT_INCLUDE_PATTERNS
 from cmbenchmark.utils import info, section, success, warn, error, step
 
 # Import parsers to register them
@@ -34,7 +35,7 @@ def _run_full_pipeline(dataset_path: str, parser: str, out: Optional[str]):
 
     # Step 1: Scan
     info("Step 1: Scanning dataset...")
-    _run_scan(dataset_path, str(output_dir), exclude=None, size_limit=None)
+    _run_scan(dataset_path, str(output_dir), include=None, exclude=None, size_limit=None)
     console.print()
 
     # Step 2: Parse
@@ -78,13 +79,13 @@ def run(
     _run_full_pipeline(dataset_path, parser, out)
 
 
-def _run_scan(dataset_path: str, out: str, exclude: Optional[str] = None, size_limit: Optional[int] = None):
+def _run_scan(dataset_path: str, out: str, include: Optional[List[str]] = None, exclude: Optional[List[str]] = None, size_limit: Optional[int] = None):
     """Internal function to run scan."""
     output_dir = Path(out)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with step("Scanning dataset..."):
-        dataset_info = scan_dataset(dataset_path, exclude=exclude, size_limit_mb=size_limit)
+        dataset_info = scan_dataset(dataset_path, include=include, exclude=exclude, size_limit_mb=size_limit)
 
     # Save dataset info
     info_path = output_dir / "dataset_info.json"
@@ -104,12 +105,13 @@ def _run_scan(dataset_path: str, out: str, exclude: Optional[str] = None, size_l
 def scan(
     dataset_path: str = typer.Argument(..., help="Path to dataset directory"),
     out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
-    exclude: Optional[str] = typer.Option(None, "--exclude", help="Comma-separated list of file patterns to exclude (e.g., '*.xml,*.tmp'). Can exclude specific file types from the default include list."),
+    include: Optional[List[str]] = typer.Option(None, "--include", help=f"File pattern to include (repeatable). If not provided, uses default patterns: {', '.join(DEFAULT_INCLUDE_PATTERNS)}. Patterns match filenames (e.g., '*.xml') or relative paths from dataset root (e.g., 'subdir/*')."),
+    exclude: Optional[List[str]] = typer.Option(None, "--exclude", help="File pattern to exclude (repeatable). Applied after include filtering. Patterns match filenames (e.g., '*.tmp') or relative paths from dataset root (e.g., 'test/*', 'backup/**')."),
     size_limit: Optional[int] = typer.Option(None, "--size-limit", help="Size limit for individual files in MB"),
 ):
     """Scan dataset directory for model files and basic statistics."""
     output_dir = out if out else "out"
-    _run_scan(dataset_path, output_dir, exclude=exclude, size_limit=size_limit)
+    _run_scan(dataset_path, output_dir, include=include, exclude=exclude, size_limit=size_limit)
 
 
 def _run_parse_from_scan(dataset_info_path: str, out: str, parser_language: str):

@@ -2,6 +2,7 @@
 
 from typing import Dict, List, Any, Optional
 from pydantic import BaseModel, Field
+from cmbenchmark.services.scan import DEFAULT_INCLUDE_PATTERNS
 
 
 # Request schemas
@@ -9,7 +10,8 @@ class ScanRequest(BaseModel):
     """Request schema for scan endpoint."""
     dataset_path: str = Field(..., description="Path to dataset directory")
     out: str = Field(..., description="Path to output directory for dataset_info.json")
-    exclude: Optional[str] = Field(None, description="Comma-separated list of file patterns to exclude")
+    include: Optional[List[str]] = Field(None, description=f"List of file patterns to include. If not provided, uses default patterns: {', '.join(DEFAULT_INCLUDE_PATTERNS)}. Patterns match filenames (e.g., '*.xml') or relative paths from dataset root (e.g., 'subdir/*').")
+    exclude: Optional[List[str]] = Field(None, description="List of file patterns to exclude. Applied after include filtering. Patterns match filenames (e.g., '*.tmp') or relative paths from dataset root (e.g., 'test/*', 'backup/**').")
     size_limit_mb: Optional[int] = Field(None, description="Maximum file size in MB")
 
 
@@ -32,6 +34,7 @@ class ScanResponse(BaseModel):
     too_large: List[str]
     unreadable: List[str]
     candidates: List[str]
+    filtered: List[str]
 
 
 class ParseFailureResponse(BaseModel):

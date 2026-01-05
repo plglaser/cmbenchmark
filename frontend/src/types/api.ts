@@ -3,7 +3,8 @@
 export interface ScanRequest {
   dataset_path: string;
   out: string;
-  exclude?: string | null;
+  include?: string[] | null;
+  exclude?: string[] | null;
   size_limit_mb?: number | null;
 }
 
@@ -22,6 +23,7 @@ export interface ScanResponse {
     candidates: number;
     unreadable: number;
     too_large: number;
+    filtered: number;
   };
   extensions: Record<string, number>;
   duplicates_groups: Array<{
@@ -31,6 +33,7 @@ export interface ScanResponse {
   too_large: string[];
   unreadable: string[];
   candidates: string[];
+  filtered: string[];
 }
 
 export interface ParseRequest {

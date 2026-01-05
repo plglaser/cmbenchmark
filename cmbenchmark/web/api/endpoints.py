@@ -30,6 +30,7 @@ async def scan(request: ScanRequest):
     try:
         dataset_info = scan_dataset(
             dataset_path=request.dataset_path,
+            include=request.include,
             exclude=request.exclude,
             size_limit_mb=request.size_limit_mb,
         )
@@ -52,6 +53,7 @@ async def scan(request: ScanRequest):
             too_large=dataset_info.too_large,
             unreadable=dataset_info.unreadable,
             candidates=dataset_info.candidates,
+            filtered=dataset_info.filtered,
         )
         
         # Add the saved path and output directory to parameters for convenience
