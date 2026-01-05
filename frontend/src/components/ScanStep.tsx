@@ -300,6 +300,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
                 <p><strong>Unreadable:</strong> {result.totals.unreadable}</p>
                 <p><strong>Too Large:</strong> {result.totals.too_large}</p>
                 <p><strong>Filtered:</strong> {result.totals.filtered}</p>
+                <p><strong>Duplicates:</strong> {result.duplicates_groups.length} {result.duplicates_groups.length === 1 ? 'group' : 'groups'} ({result.duplicates_groups.reduce((sum, group) => sum + group.count, 0)} {result.duplicates_groups.reduce((sum, group) => sum + group.count, 0) === 1 ? 'file' : 'files'})</p>
               </div>
             </div>
 
