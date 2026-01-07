@@ -63,6 +63,16 @@ export const apiService = {
     const response = await api.post<ParseResponse>('/parse', request);
     return response.data;
   },
+
+  /**
+   * Get IR file by ID
+   */
+  async getIR(irId: string, outputDir: string): Promise<any> {
+    const response = await api.get(`/ir/${irId}`, {
+      params: { output_dir: outputDir },
+    });
+    return response.data;
+  },
 };
 
 export default apiService;

@@ -76,3 +76,31 @@ export interface ErrorResponse {
   detail?: string;
 }
 
+export interface IRData {
+  id: string;
+  language: string;
+  data: {
+    modelId?: string;
+    name?: string;
+    version?: string;
+    source_path?: string;
+    source_relpath?: string;
+    filesize?: number;
+    documentation?: string;
+    [key: string]: any;
+  };
+  nodes: Array<{
+    id: string;
+    type: string;
+    name: string;
+    data: Record<string, any>;
+  }>;
+  edges: Array<{
+    id: string;
+    sourceId: string;
+    targetId: string;
+    type: string;
+    data: Record<string, any>;
+  }>;
+}
+

@@ -3,10 +3,11 @@
 import json
 from pathlib import Path
 from typing import Dict, Any, List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from cmbenchmark.services.scan import scan_dataset
 from cmbenchmark.services.parse import parse_from_scan
 from cmbenchmark.parser import get_all_parsers
+from cmbenchmark.types.ir import IR
 from .schemas import ScanRequest, ScanResponse, ParseRequest, ParseResponse, ParseFailureResponse, ErrorResponse
 
 router = APIRouter()
@@ -106,6 +107,30 @@ async def parse(request: ParseRequest):
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/ir/{ir_id}")
+async def get_ir(ir_id: str, output_dir: str = Query(..., description="Output directory where IR files are stored")):
+    """
+    Get IR file by ID.
+    
+    Args:
+        ir_id: The IR file ID (filename without .json extension)
+        output_dir: The output directory where IR files are stored
+    """
+    try:
+        output_path = Path(output_dir).resolve()
+        ir_path = output_path / "ir" / f"{ir_id}.json"
+        
+        if not ir_path.exists():
+            raise HTTPException(status_code=404, detail=f"IR file not found: {ir_id}")
+        
+        ir = IR.load(str(ir_path))
+        return ir.to_dict()
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 

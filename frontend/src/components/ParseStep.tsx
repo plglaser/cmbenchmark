@@ -1,10 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Badge } from './ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { ChevronDown, ChevronRight, Eye, Info } from 'lucide-react';
 import { apiService } from '../services/api';
-import type { ParseResponse, ScanResponse } from '../types/api';
+import type { ParseResponse, ParseFailureResponse, ScanResponse } from '../types/api';
+import { IRVisualization } from './IRVisualization';
 
 interface ParseStepProps {
   scanResult: ScanResponse | null;
@@ -20,6 +27,9 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
   const [loadingParsers, setLoadingParsers] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ParseResponse | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedFailure, setSelectedFailure] = useState<ParseFailureResponse | null>(null);
+  const [selectedIrId, setSelectedIrId] = useState<string | null>(null);
 
   useEffect(() => {
     // Load available parsers
@@ -66,6 +76,48 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Combine successful parses and failures into a single list for the table
+  const parsedFiles = useMemo(() => {
+    if (!result) return [];
+    
+    const files: Array<{
+      relpath: string;
+      status: 'ok' | 'failed';
+      irId: string | null;
+      failure?: ParseFailureResponse;
+      warningsLoss: number;
+    }> = [];
+
+    // Add successful parses (from index: ir_id -> relpath)
+    Object.entries(result.index).forEach(([irId, relpath]) => {
+      files.push({
+        relpath,
+        status: 'ok',
+        irId,
+        warningsLoss: 0, // TODO: Get per-file loss data from API if available
+      });
+    });
+
+    // Add failures
+    result.failures.forEach((failure) => {
+      files.push({
+        relpath: failure.relpath,
+        status: 'failed',
+        irId: failure.ir_id,
+        failure,
+        warningsLoss: 0,
+      });
+    });
+
+    // Sort by relpath for consistent display
+    return files.sort((a, b) => a.relpath.localeCompare(b.relpath));
+  }, [result]);
+
+  const truncatePath = (path: string, maxLength: number = 50) => {
+    if (path.length <= maxLength) return path;
+    return path.substring(0, maxLength - 3) + '...';
   };
 
   return (
@@ -198,10 +250,140 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
                 </div>
               </div>
             )}
+
+            <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  <span>Details</span>
+                  {detailsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-4">
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40%]">File</TableHead>
+                        <TableHead className="w-[15%]">Status</TableHead>
+                        <TableHead className="w-[15%]">Warnings/Loss</TableHead>
+                        <TableHead className="w-[30%] text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {parsedFiles.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-muted-foreground">
+                            No files parsed
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        parsedFiles.map((file, idx) => (
+                          <TableRow key={`${file.relpath}-${idx}`}>
+                            <TableCell>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <code className="text-xs font-mono truncate block max-w-[300px]">
+                                      {truncatePath(file.relpath)}
+                                    </code>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="font-mono text-xs">{file.relpath}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={file.status === 'ok' ? 'success' : 'destructive'}
+                              >
+                                {file.status === 'ok' ? 'OK' : 'Failed'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm">{file.warningsLoss}</span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                {file.status === 'ok' && file.irId && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSelectedIrId(file.irId!)}
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    View
+                                  </Button>
+                                )}
+                                {file.status === 'failed' && file.failure && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSelectedFailure(file.failure!)}
+                                  >
+                                    <Info className="h-4 w-4 mr-1" />
+                                    Details
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
+        )}
+
+        {selectedFailure && (
+          <Dialog open={!!selectedFailure} onOpenChange={(open) => !open && setSelectedFailure(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Parse Error Details</DialogTitle>
+                <DialogDescription>
+                  Error information for: <code className="text-xs">{selectedFailure.relpath}</code>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div>
+                  <p className="text-sm font-medium mb-1">Error Class</p>
+                  <p className="text-sm text-muted-foreground font-mono">{selectedFailure.error_class}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-1">Message</p>
+                  <p className="text-sm text-muted-foreground">{selectedFailure.message}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-1">Stage</p>
+                  <p className="text-sm text-muted-foreground">{selectedFailure.stage}</p>
+                </div>
+                {selectedFailure.ir_id && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">IR ID</p>
+                    <p className="text-sm text-muted-foreground font-mono">{selectedFailure.ir_id}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium mb-1">Parser</p>
+                  <p className="text-sm text-muted-foreground">{selectedFailure.parser}</p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {selectedIrId && (
+          <IRVisualization
+            irId={selectedIrId}
+            outputDir={outputDir}
+            open={!!selectedIrId}
+            onOpenChange={(open) => !open && setSelectedIrId(null)}
+          />
         )}
       </CardContent>
     </Card>
   );
 }
-
