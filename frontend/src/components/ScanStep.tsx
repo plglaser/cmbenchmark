@@ -189,7 +189,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
               onChange={(e) => setFolderName(e.target.value)}
               placeholder="/path/to/dataset"
               required
-              disabled={loading}
+              disabled={loading || result !== null}
               /*
               onChange={(e) => {
                 const files = Array.from(e.currentTarget.files ?? []);
@@ -217,7 +217,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
               placeholder="/path/to/output"
               required
               className="font-mono"
-              disabled={loading}
+              disabled={loading || result !== null}
             />
             <p className="text-sm text-muted-foreground">
               Directory where <code className="font-mono">dataset_info.json</code> will be saved
@@ -242,7 +242,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
                 <code className="font-mono">*.archimate</code>
               </>
             }
-            disabled={loading}
+            disabled={loading || result !== null}
           />
 
           <PatternInput
@@ -258,7 +258,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
                 <code className="font-mono">test/*</code>).
               </>
             }
-            disabled={loading}
+            disabled={loading || result !== null}
           />
 
           <div className="space-y-2">
@@ -270,7 +270,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
               onChange={(e) => setSizeLimitMb(e.target.value ? parseInt(e.target.value) : null)}
               placeholder="100"
               min="1"
-              disabled={loading}
+              disabled={loading || result !== null}
             />
             <p className="text-sm text-muted-foreground">
               Maximum file size in MB (files exceeding this will be marked as too_large)
@@ -283,7 +283,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
             </div>
           )}
 
-          <Button type="submit" disabled={loading || !folderName || !out}>
+          <Button type="submit" disabled={loading || !folderName || !out || result !== null}>
             {loading ? 'Scanning...' : 'Scan Dataset'}
           </Button>
         </form>

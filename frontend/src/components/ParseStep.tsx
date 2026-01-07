@@ -89,7 +89,7 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
                 onChange={(e) => setSelectedParser(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 required
-                disabled={loading}
+                disabled={loading || result !== null}
               >
                 <option value="">Select a parser...</option>
                 {parsers.map((parser) => (
@@ -110,7 +110,7 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
               onChange={(e) => setDatasetInfoPath(e.target.value)}
               placeholder="/path/to/dataset_info.json"
               required
-              disabled={loading}
+              disabled={loading || result !== null}
             />
             <p className="text-sm text-muted-foreground">
               Path to dataset_info.json from scan stage
@@ -126,7 +126,7 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
               onChange={(e) => setOutputDir(e.target.value)}
               placeholder="/path/to/output"
               required
-              disabled={loading}
+              disabled={loading || result !== null}
             />
             <p className="text-sm text-muted-foreground">
               Directory where IR files and reports will be saved
@@ -141,7 +141,7 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
 
           <Button
             type="submit"
-            disabled={loading || !selectedParser || !datasetInfoPath || !outputDir}
+            disabled={loading || !selectedParser || !datasetInfoPath || !outputDir || result !== null}
           >
             {loading ? 'Parsing...' : 'Parse Models'}
           </Button>
