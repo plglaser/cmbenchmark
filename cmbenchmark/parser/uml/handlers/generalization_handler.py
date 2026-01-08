@@ -6,9 +6,7 @@ import xml.etree.ElementTree as ET
 from cmbenchmark.types.ir import Edge
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
 from cmbenchmark.parser.uml.xmi_utils import (
-    xmi_id,
-    is_tool_extension,
-    localname,
+    xmi_id
 )
 
 

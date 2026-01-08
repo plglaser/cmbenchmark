@@ -9,7 +9,6 @@ from cmbenchmark.parser.uml.xmi_utils import (
     xsi_type,
     localname,
     is_tool_extension,
-    read_multiplicity,
     href_to_type_ref,
     parse_boolean,
 )

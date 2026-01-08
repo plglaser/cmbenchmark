@@ -7,10 +7,8 @@ from cmbenchmark.types.ir import Edge
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
 from cmbenchmark.parser.uml.xmi_utils import (
     xmi_id,
-    xsi_type,
     is_tool_extension,
     read_multiplicity,
-    localname,
 )
 
 
