@@ -5,12 +5,7 @@ import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.ir import Node, Edge
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
-from cmbenchmark.parser.uml.xmi_utils import (
-    xmi_id,
-    xsi_type,
-    is_tool_extension,
-    localname,
-)
+from cmbenchmark.parser.uml.xmi_utils import xmi_id
 
 
 class PackageHandler(ElementHandler):
@@ -40,12 +35,9 @@ class PackageHandler(ElementHandler):
         # Create package node if not already exists
         if pkg_id not in ctx.nodes_by_id:
             data = {}
-            qn = ctx.qname(pkg_id)
-            if qn:
-                data["qualifiedName"] = qn
 
             # Extract documentation
-            doc = self._extract_documentation(elem)
+            doc = self.extract_documentation(elem)
             if doc:
                 data["documentation"] = doc
 
@@ -56,15 +48,4 @@ class PackageHandler(ElementHandler):
         # Log unhandled attributes and children
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
-
-    def _extract_documentation(self, elem: ET.Element) -> str:
-        """Extract documentation from ownedComment elements."""
-        bodies = []
-        for comment in elem.findall("./ownedComment"):
-            if is_tool_extension(comment):
-                continue
-            body = comment.attrib.get("body")
-            if body:
-                bodies.append(body)
-        return "\n".join(bodies) if bodies else ""
 

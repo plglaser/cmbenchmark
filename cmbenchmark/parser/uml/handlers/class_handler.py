@@ -10,7 +10,6 @@ from cmbenchmark.parser.uml.xmi_utils import (
     xsi_type,
     is_tool_extension,
     read_multiplicity,
-    href_to_type_ref,
     parse_boolean,
     localname,
 )
@@ -41,11 +40,6 @@ class ClassHandler(ElementHandler):
         name = elem.attrib.get("name", "")
         data: Dict[str, Any] = {}
 
-        # Qualified name
-        qn = ctx.qname(class_id)
-        if qn:
-            data["qualifiedName"] = qn
-
         # isAbstract attribute
         is_abstract = parse_boolean(elem.attrib.get("isAbstract"))
         if is_abstract is not None:
@@ -56,7 +50,7 @@ class ClassHandler(ElementHandler):
             data["visibility"] = elem.attrib["visibility"]
 
         # Documentation
-        doc = self._extract_documentation(elem)
+        doc = self.extract_documentation(elem)
         if doc:
             data["documentation"] = doc
 
@@ -66,7 +60,7 @@ class ClassHandler(ElementHandler):
             data["attributes"] = attrs
 
         # Operations
-        ops = self._parse_owned_operations(ctx, elem)
+        ops = self.parse_owned_operations(ctx, elem)
         if ops:
             data["operations"] = ops
 
@@ -83,17 +77,6 @@ class ClassHandler(ElementHandler):
         # Log unhandled attributes and children
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
-
-    def _extract_documentation(self, elem: ET.Element) -> str:
-        """Extract documentation from ownedComment elements."""
-        bodies = []
-        for comment in elem.findall("./ownedComment"):
-            if is_tool_extension(comment):
-                continue
-            body = comment.attrib.get("body")
-            if body:
-                bodies.append(body)
-        return "\n".join(bodies) if bodies else ""
 
     def _parse_owned_attributes(
         self, ctx, class_elem: ET.Element
@@ -120,7 +103,7 @@ class ClassHandler(ElementHandler):
                 item["name"] = attr_name
 
             # Type resolution
-            type_ref = self._resolve_property_type(ctx, attr)
+            type_ref = self.resolve_property_type(ctx, attr)
             if type_ref:
                 item["type"] = type_ref
             type_id = attr.attrib.get("type")
@@ -149,85 +132,4 @@ class ClassHandler(ElementHandler):
             out.append(item)
 
         return out
-
-    def _parse_owned_operations(
-        self, ctx, class_elem: ET.Element
-    ) -> List[Dict[str, Any]]:
-        """Parse ownedOperation elements."""
-        out: List[Dict[str, Any]] = []
-        for op in class_elem.findall("./ownedOperation"):
-            if is_tool_extension(op):
-                continue
-
-            op_id = xmi_id(op)
-            if not op_id:
-                continue
-
-            item: Dict[str, Any] = {"id": op_id}
-
-            op_name = op.attrib.get("name")
-            if op_name:
-                item["name"] = op_name
-
-            # Visibility
-            if "visibility" in op.attrib:
-                item["visibility"] = op.attrib["visibility"]
-
-            # Parameters
-            params = []
-            for param in op.findall("./ownedParameter"):
-                if is_tool_extension(param):
-                    continue
-                param_id = xmi_id(param)
-                if param_id:
-                    param_data: Dict[str, Any] = {"id": param_id}
-                    param_name = param.attrib.get("name")
-                    if param_name:
-                        param_data["name"] = param_name
-                    
-                    # Direction
-                    if param.attrib.get("direction") == "return":
-                        param_data["direction"] = "return"
-                    
-                    # isUnique attribute
-                    is_unique = parse_boolean(param.attrib.get("isUnique"))
-                    if is_unique is not None:
-                        param_data["isUnique"] = is_unique
-                    
-                    # Type resolution (check nested type first, then referenced type)
-                    type_elem = param.find("./type")
-                    if type_elem is not None and "href" in type_elem.attrib:
-                        # Nested type with href (e.g., PrimitiveType)
-                        param_data["type"] = href_to_type_ref(type_elem.attrib["href"])
-                    else:
-                        # Referenced type (via type attribute)
-                        type_id = param.attrib.get("type")
-                        if type_id:
-                            # Try to resolve qualified name, fallback to ID
-                            type_qname = ctx.qname(type_id)
-                            if type_qname:
-                                param_data["type"] = type_qname
-                            param_data["typeRef"] = type_id
-                    
-                    params.append(param_data)
-            if params:
-                item["parameters"] = params
-
-            out.append(item)
-
-        return out
-
-    def _resolve_property_type(self, ctx, prop: ET.Element) -> Optional[str]:
-        """Resolve the type reference for a property."""
-        # Check for referenced type
-        type_id = prop.attrib.get("type")
-        if type_id:
-            return ctx.qname(type_id) or type_id
-
-        # Check for nested type with href
-        type_elem = prop.find("./type")
-        if type_elem is not None and "href" in type_elem.attrib:
-            return href_to_type_ref(type_elem.attrib["href"])
-
-        return None
 

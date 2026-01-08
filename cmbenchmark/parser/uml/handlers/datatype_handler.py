@@ -5,12 +5,7 @@ import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.ir import Node
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
-from cmbenchmark.parser.uml.xmi_utils import (
-    xmi_id,
-    xsi_type,
-    is_tool_extension,
-    localname,
-)
+from cmbenchmark.parser.uml.xmi_utils import xmi_id
 
 
 class DataTypeHandler(ElementHandler):
@@ -38,13 +33,8 @@ class DataTypeHandler(ElementHandler):
         name = elem.attrib.get("name", "")
         data: Dict[str, Any] = {}
 
-        # Qualified name
-        qn = ctx.qname(data_type_id)
-        if qn:
-            data["qualifiedName"] = qn
-
         # Documentation
-        doc = self._extract_documentation(elem)
+        doc = self.extract_documentation(elem)
         if doc:
             data["documentation"] = doc
 
@@ -53,15 +43,4 @@ class DataTypeHandler(ElementHandler):
         # Log unhandled attributes and children
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
-
-    def _extract_documentation(self, elem: ET.Element) -> str:
-        """Extract documentation from ownedComment elements."""
-        bodies = []
-        for comment in elem.findall("./ownedComment"):
-            if is_tool_extension(comment):
-                continue
-            body = comment.attrib.get("body")
-            if body:
-                bodies.append(body)
-        return "\n".join(bodies) if bodies else ""
 

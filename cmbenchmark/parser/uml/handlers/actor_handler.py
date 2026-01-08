@@ -1,6 +1,6 @@
-"""Handler for uml:Interface elements."""
+"""Handler for uml:Actor elements."""
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.ir import Node
@@ -8,46 +8,37 @@ from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
 from cmbenchmark.parser.uml.xmi_utils import (
     xmi_id,
     xsi_type,
+    is_tool_extension,
     localname,
 )
 
 
-class InterfaceHandler(ElementHandler):
-    """Handler for uml:Interface elements."""
+class ActorHandler(ElementHandler):
+    """Handler for uml:Actor elements."""
 
     @property
     def element_type(self) -> str:
-        return "uml:Interface"
+        return "uml:Actor"
 
     def get_handled_attributes(self) -> Set[str]:
         return {"name"}
 
     def get_handled_children(self) -> Set[str]:
-        return {"ownedOperation", "generalization", "ownedComment"}
+        return set()
 
     def handle(self, ctx, elem: ET.Element) -> None:
-        """Create Interface node with operations."""
+        """Create Actor node."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
 
-        interface_id = xmi_id(elem)
-        if not interface_id:
+        actor_id = xmi_id(elem)
+        if not actor_id:
             return
 
         name = elem.attrib.get("name", "")
         data: Dict[str, Any] = {}
 
-        # Documentation
-        doc = self.extract_documentation(elem)
-        if doc:
-            data["documentation"] = doc
-
-        # Operations
-        ops = self.parse_owned_operations(ctx, elem)
-        if ops:
-            data["operations"] = ops
-
-        ctx.add_node(Node(id=interface_id, type="Interface", name=name, data=data))
+        ctx.add_node(Node(id=actor_id, type="Actor", name=name, data=data))
 
         # Log unhandled attributes and children
         self.log_unhandled_attributes(ctx, elem, handled_attrs)

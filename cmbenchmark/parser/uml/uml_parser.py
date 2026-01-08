@@ -27,8 +27,20 @@ from cmbenchmark.parser.uml.handlers import (
     GeneralizationHandler,
     EnumerationHandler,
     DataTypeHandler,
+    UseCaseHandler,
+    ActorHandler,
 )
 
+IGNORED_UNHANDLED_ELEMENTS: set[str] = {
+    "uml:Activity",
+    "uml:StateMachine",
+    "uml:Interaction",
+    "uml:Dependency",
+    "uml:InstanceSpecification",
+}
+
+# Element types that contain nested packagedElement children that should be recursed into
+RECURSE_PACKAGED_TYPES: set[str] = {"uml:Package", "uml:UseCase"}
 
 @dataclass(frozen=True)
 class ParseOptions:
@@ -49,19 +61,18 @@ class ParseContext:
     id_index: Dict[str, ET.Element] = field(default_factory=dict)
     parent_map: Dict[ET.Element, ET.Element] = field(default_factory=dict)
 
-    # derived qualified names for elements we care about (classifiers, packages, etc.)
-    qualified_name: Dict[str, str] = field(default_factory=dict)
-
-    # optional: store created nodes for quick lookup
+    # store created nodes for quick lookup
     nodes_by_id: Dict[str, Node] = field(default_factory=dict)
+    
+    # handler map for element type -> handler lookup
+    handler_map: Dict[str, ElementHandler] = field(default_factory=dict)
+    
+    # track edge IDs to avoid duplicate edges
+    edge_ids: set[str] = field(default_factory=set)
 
     def elem(self, _id: str) -> Optional[ET.Element]:
         """Get element by xmi:id."""
         return self.id_index.get(_id)
-
-    def qname(self, _id: str) -> Optional[str]:
-        """Get qualified name by xmi:id."""
-        return self.qualified_name.get(_id)
 
     def add_node(self, node: Node) -> None:
         """Add node to IR and index."""
@@ -69,11 +80,12 @@ class ParseContext:
         self.nodes_by_id[node.id] = node
 
     def add_edge(self, edge: Edge) -> None:
-        """Add edge to IR."""
+        """Add edge to IR, avoiding duplicates."""
+        if edge.id in self.edge_ids:
+            return
+        self.edge_ids.add(edge.id)
         self.ir.edges.append(edge)
 
-
-IGNORED_UNHANDLED_ELEMENTS = ["uml:Activity", "uml:StateMachine", "uml:Interaction", "uml:Dependency"]
 
 @register_parser
 class UMLXMIParser(BaseParser):
@@ -81,7 +93,6 @@ class UMLXMIParser(BaseParser):
     Orchestrates:
       - indexing
       - model meta extraction
-      - qualifiedName computation (package nesting)
       - element-handler-based semantic parsing
     """
 
@@ -113,6 +124,8 @@ class UMLXMIParser(BaseParser):
             GeneralizationHandler(),
             EnumerationHandler(),
             DataTypeHandler(),
+            UseCaseHandler(),
+            ActorHandler(),
         ]
 
     def parse(self, filepath: str) -> Tuple[IR, LossReport]:
@@ -138,7 +151,6 @@ class UMLXMIParser(BaseParser):
         )
 
         self._build_indices(ctx)
-        self._compute_qualified_names(ctx, model)
         self._parse_elements(ctx)
         self._create_containment_edges(ctx, model)
 
@@ -163,84 +175,81 @@ class UMLXMIParser(BaseParser):
             for child in list(parent):
                 ctx.parent_map[child] = parent
 
-    def _compute_qualified_names(self, ctx: ParseContext, model: ET.Element) -> None:
+    def _parse_packaged_element_metadata(
+        self, pe: ET.Element
+    ) -> Optional[Tuple[str, str]]:
+        """Parse packagedElement metadata, skipping tool extensions.
+        
+        Returns:
+            Tuple of (pe_type, pe_id) if valid, None if should be skipped
         """
-        Derive package-qualified names. Always computed, regardless of include_packages.
-        """
-        def walk(container: ET.Element, pkg_path: List[str]) -> None:
-            for pe in container.findall("./packagedElement"):
-                if is_tool_extension(pe):
-                    continue
-
-                pe_id = xmi_id(pe)
-                pe_name = pe.attrib.get("name", "")
-                pe_type = xsi_type(pe)
-
-                if pe_type == "uml:Package":
-                    # Only add non-empty package names to path to avoid "::" in qualified names
-                    new_path = pkg_path + ([pe_name] if pe_name else [])
-                    if pe_id and pe_name:
-                        ctx.qualified_name[pe_id] = "::".join(new_path)
-                    walk(pe, new_path)
-                else:
-                    if pe_id and pe_name:
-                        ctx.qualified_name[pe_id] = "::".join(pkg_path + [pe_name])
-                    walk(pe, pkg_path)
-
-        walk(model, pkg_path=[])
+        if is_tool_extension(pe):
+            return None
+        
+        pe_type = xsi_type(pe)
+        if not pe_type:
+            return None
+        
+        pe_id = xmi_id(pe)
+        if not pe_id:
+            return None
+        
+        return (pe_type, pe_id)
 
     def _parse_elements(self, ctx: ParseContext) -> None:
-        """Parse all elements using registered handlers."""
+        """Parse all elements using registered handlers.
+        
+        Parsing happens in stages:
+        1. Build handler map
+        2. Handle top-level Model element
+        3. Process top-level packagedElement elements (recursively)
+        4. Process nested elements (e.g., generalizations inside classes)
+        """
         # Build handler map by element type
-        handler_map: Dict[str, ElementHandler] = {}
-        for handler in self.handlers:
-            handler_map[handler.element_type] = handler
+        ctx.handler_map = {h.element_type: h for h in self.handlers}
 
-        # Store handler map in context for use in logging
-        ctx._handler_map = handler_map
-
-        # First, handle the Model element explicitly
+        # Stage 1: Handle the Model element explicitly
         model = find_model(ctx.root)
-        model_handler = handler_map.get("uml:Model")
+        model_handler = ctx.handler_map.get("uml:Model")
         if model_handler:
             model_handler.handle(ctx, model)
 
-        # Process only top-level packagedElement elements (not nested elements)
-        # Nested elements like type, lowerValue, upperValue are handled by their parent handlers
-        def process_packaged_elements(container: ET.Element) -> None:
-            """Recursively process packagedElement children."""
-            for pe in container.findall("./packagedElement"):
-                if is_tool_extension(pe):
-                    continue
+        # Stage 2: Process top-level packagedElement elements
+        # Attributes and nested elements like type, lowerValue, upperValue are handled by their parent handlers
+        self._process_packaged_elements(ctx, model)
 
-                pe_type = xsi_type(pe)
-                if not pe_type:
-                    continue
-
-                # Check if we have a handler for this element type
-                handler = handler_map.get(pe_type)
-                if handler:
-                    handler.handle(ctx, pe)
-                    # Recursively process nested packages
-                    if pe_type == "uml:Package":
-                        process_packaged_elements(pe)
-                else:
-                    # Print unhandled element type
-                    pe_id = xmi_id(pe)
-
-                    # TODO: Remoe this
-                    if (pe_type in IGNORED_UNHANDLED_ELEMENTS):
-                        continue
-                    print(f"[UNHANDLED ELEMENT] Type: {pe_type}, ID: {pe_id}, Tag: {localname(pe.tag)}")
-                    # Still recurse into packages even if unhandled
-                    if pe_type == "uml:Package":
-                        process_packaged_elements(pe)
-
-        # Process packaged elements starting from model
-        process_packaged_elements(model)
-
-        # Also handle nested elements (e.g., generalizations inside classes)
+        # Stage 3: Process nested elements (e.g., generalizations inside classes)
         # We need to process generalizations separately since they're nested
+        self._process_nested_generalizations(ctx)
+
+    def _process_packaged_elements(self, ctx: ParseContext, container: ET.Element) -> None:
+        """Recursively process packagedElement children."""
+        for pe in container.findall("./packagedElement"):
+            metadata = self._parse_packaged_element_metadata(pe)
+            if not metadata:
+                continue
+            
+            pe_type, pe_id = metadata
+
+            # Check if we have a handler for this element type
+            handler = ctx.handler_map.get(pe_type)
+            if handler:
+                handler.handle(ctx, pe)
+                # Recursively process nested packages and use cases
+                if pe_type in RECURSE_PACKAGED_TYPES:
+                    self._process_packaged_elements(ctx, pe)
+            else:
+                # Print unhandled element type
+                if pe_type in IGNORED_UNHANDLED_ELEMENTS:
+                    continue
+                print(f"[UNHANDLED ELEMENT] Type: {pe_type}, ID: {pe_id}, Tag: {localname(pe.tag)}")
+                
+                # Still recurse into packages and use cases even if unhandled
+                if pe_type in RECURSE_PACKAGED_TYPES:
+                    self._process_packaged_elements(ctx, pe)
+
+    def _process_nested_generalizations(self, ctx: ParseContext) -> None:
+        """Process generalizations nested in classes/interfaces."""
         for elem in ctx.root.iter():
             if is_tool_extension(elem):
                 continue
@@ -248,7 +257,7 @@ class UMLXMIParser(BaseParser):
             # Handle generalizations nested in classes/interfaces
             if xsi_type(elem) in ("uml:Class", "uml:Interface"):
                 for gen in elem.findall("./generalization"):
-                    gen_handler = handler_map.get("uml:Generalization")
+                    gen_handler = ctx.handler_map.get("uml:Generalization")
                     if gen_handler:
                         gen_handler.handle(ctx, gen)
 
@@ -257,49 +266,47 @@ class UMLXMIParser(BaseParser):
         if not ctx.options.include_packages:
             return
 
-        def walk(container: ET.Element, current_pkg_id: Optional[str]) -> None:
-            for pe in container.findall("./packagedElement"):
-                if is_tool_extension(pe):
-                    continue
-
-                pe_id = xmi_id(pe)
-                if not pe_id:
-                    continue
-
-                pe_type = xsi_type(pe)
-
-                # If this is a package, recurse with new package context
-                if pe_type == "uml:Package":
-                    # Create containment edge from current package
-                    if current_pkg_id:
-                        edge_id = f"{current_pkg_id}__contains__{pe_id}"
-                        if not any(e.id == edge_id for e in ctx.ir.edges):
-                            ctx.add_edge(
-                                Edge(
-                                    id=edge_id,
-                                    sourceId=current_pkg_id,
-                                    targetId=pe_id,
-                                    type="contains",
-                                    data={},
-                                )
-                            )
-                    walk(pe, pe_id)
-                else:
-                    # Non-package element: create containment edge if inside a package
-                    if current_pkg_id:
-                        edge_id = f"{current_pkg_id}__contains__{pe_id}"
-                        if not any(e.id == edge_id for e in ctx.ir.edges):
-                            ctx.add_edge(
-                                Edge(
-                                    id=edge_id,
-                                    sourceId=current_pkg_id,
-                                    targetId=pe_id,
-                                    type="contains",
-                                    data={"elementType": pe_type} if pe_type else {},
-                                )
-                            )
-                    # Still recurse to catch nested packagedElement
-                    walk(pe, current_pkg_id)
-
         # Start walking from model (top-level packages have no parent)
-        walk(model, current_pkg_id=None)
+        self._walk_containment(ctx, model, current_pkg_id=None)
+
+    def _walk_containment(
+        self, ctx: ParseContext, container: ET.Element, current_pkg_id: Optional[str]
+    ) -> None:
+        """Recursively walk packagedElement children to create containment edges."""
+        for pe in container.findall("./packagedElement"):
+            metadata = self._parse_packaged_element_metadata(pe)
+            if not metadata:
+                continue
+            
+            pe_type, pe_id = metadata
+
+            # If this is a package, recurse with new package context
+            if pe_type == "uml:Package":
+                # Create containment edge from current package
+                if current_pkg_id:
+                    edge_id = f"{current_pkg_id}__contains__{pe_id}"
+                    ctx.add_edge(
+                        Edge(
+                            id=edge_id,
+                            sourceId=current_pkg_id,
+                            targetId=pe_id,
+                            type="contains",
+                            data={},
+                        )
+                    )
+                self._walk_containment(ctx, pe, pe_id)
+            else:
+                # Non-package element: create containment edge if inside a package
+                if current_pkg_id:
+                    edge_id = f"{current_pkg_id}__contains__{pe_id}"
+                    ctx.add_edge(
+                        Edge(
+                            id=edge_id,
+                            sourceId=current_pkg_id,
+                            targetId=pe_id,
+                            type="contains",
+                            data={"elementType": pe_type} if pe_type else {},
+                        )
+                    )
+                # Still recurse to catch nested packagedElement
+                self._walk_containment(ctx, pe, current_pkg_id)
