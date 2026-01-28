@@ -119,7 +119,6 @@ def parse_from_scan(
             failures.append(ParseFailure(
                 relpath=relpath,
                 ir_id=None,
-                stage="parse",
                 error_class=type(e).__name__,
                 message=str(e),
                 parser=parser.parser_id,

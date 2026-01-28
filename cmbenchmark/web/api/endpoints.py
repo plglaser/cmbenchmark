@@ -87,7 +87,6 @@ async def parse(request: ParseRequest):
             ParseFailureResponse(
                 relpath=f.relpath,
                 ir_id=f.ir_id,
-                stage=f.stage,
                 error_class=f.error_class,
                 message=f.message,
                 parser=f.parser,

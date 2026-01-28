@@ -45,7 +45,6 @@ export interface ParseRequest {
 export interface ParseFailureResponse {
   relpath: string;
   ir_id: string | null;
-  stage: string;
   error_class: string;
   message: string;
   parser: string;

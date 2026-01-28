@@ -42,7 +42,6 @@ class ParseFailure:
 
     relpath: str
     ir_id: Optional[str]
-    stage: str
     error_class: str
     message: str
     parser: str

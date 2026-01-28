@@ -356,10 +356,6 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
                   <p className="text-sm font-medium mb-1">Message</p>
                   <p className="text-sm text-muted-foreground">{selectedFailure.message}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium mb-1">Stage</p>
-                  <p className="text-sm text-muted-foreground">{selectedFailure.stage}</p>
-                </div>
                 {selectedFailure.ir_id && (
                   <div>
                     <p className="text-sm font-medium mb-1">IR ID</p>
