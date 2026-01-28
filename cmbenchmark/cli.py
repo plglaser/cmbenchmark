@@ -119,13 +119,12 @@ def _run_parse_from_scan(dataset_info_path: str, out: str, parser_language: str)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with step("Parsing models..."):
-        ir_info, loss_report = parse_from_scan(dataset_info_path, str(output_dir), parser_language)
+        ir_info = parse_from_scan(dataset_info_path, str(output_dir), parser_language)
 
     # Display results
     totals = ir_info.totals
     ir_dir = output_dir / "ir"
     ir_info_path = output_dir / "ir_info.json"
-    loss_report_path = output_dir / "loss_report.json"
 
     success("Parsing complete")
     console.print(f"  Candidates: {totals['candidates_in']}")
@@ -133,7 +132,6 @@ def _run_parse_from_scan(dataset_info_path: str, out: str, parser_language: str)
     console.print(f"  Failed (parse): {totals['failed_parse']}")
     console.print(f"  IR directory: {ir_dir}")
     console.print(f"  IR info: {ir_info_path}")
-    console.print(f"  Loss report: {loss_report_path}")
 
     if ir_info.failures:
         warn(f"\nFailures ({len(ir_info.failures)} total):")

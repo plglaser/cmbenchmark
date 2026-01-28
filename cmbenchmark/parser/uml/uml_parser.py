@@ -4,12 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.base import BaseParser, register_parser
 from cmbenchmark.types.ir import IR, Node, Edge
-from cmbenchmark.types.models import LossReport
 from cmbenchmark.parser.uml.xmi_utils import (
     xmi_id,
     xsi_type,
@@ -115,7 +114,7 @@ class UMLXMIParser(BaseParser):
             ActorHandler(),
         ]
 
-    def parse(self, filepath: str) -> Tuple[IR, LossReport]:
+    def parse(self, filepath: str) -> IR:
         """
         Parse a UML XMI file into IR.
 
@@ -123,7 +122,7 @@ class UMLXMIParser(BaseParser):
             filepath: Path to the XMI file
 
         Returns:
-            Tuple of (IR object, LossReport)
+            IR object
         """
         tree = ET.parse(filepath)
         root = tree.getroot()
@@ -141,15 +140,7 @@ class UMLXMIParser(BaseParser):
         self._parse_elements(ctx)
         self._create_containment_edges(ctx, model)
 
-        # Return empty loss report
-        path = Path(filepath)
-        loss_report = LossReport(
-            parser=self.parser_id,
-            loss={},
-            source_relpath=str(path.name),
-        )
-
-        return ctx.ir, loss_report
+        return ctx.ir
 
     def _build_indices(self, ctx: ParseContext) -> None:
         """Build xmi:id index and parent map."""

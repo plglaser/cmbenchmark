@@ -1,9 +1,7 @@
 """ArchiMate model parser."""
 
 from pathlib import Path
-from typing import Tuple
 from cmbenchmark.parser.base import BaseParser, register_parser
-from cmbenchmark.types.models import LossReport
 from cmbenchmark.types.ir import IR, Node, Edge
 
 
@@ -13,7 +11,7 @@ class ArchiMateXMLParser(BaseParser):
 
     language = "ArchiMate-XML"
 
-    def parse(self, filepath: str) -> Tuple[IR, LossReport]:
+    def parse(self, filepath: str) -> IR:
         """
         Parse a ArchiMate model file into IR.
 
@@ -39,10 +37,4 @@ class ArchiMateXMLParser(BaseParser):
         # 2. Extracting classes, attributes, relationships, etc.
         # 3. Converting them to Node and Edge objects
 
-        loss_report = LossReport(
-            parser=self.parser_id,
-            loss={},
-            source_relpath=str(path.name),
-        )
-
-        return ir, loss_report
+        return ir

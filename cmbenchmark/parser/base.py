@@ -1,10 +1,10 @@
 """Base parser interface and registry."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Any
 from pathlib import Path
 from cmbenchmark.types.ir import IR
-from cmbenchmark.types.models import LossReport, CannotParseError
+from cmbenchmark.types.models import CannotParseError
 
 # Global registry for parsers
 _PARSER_REGISTRY: Dict[str, type] = {}
@@ -38,15 +38,15 @@ class BaseParser(ABC):
         return f"{self.language.lower()}@{self.version}"
 
     @abstractmethod
-    def parse(self, filepath: str) -> Tuple[IR, LossReport]:
+    def parse(self, filepath: str) -> IR:
         """
-        Parse a model file into IR and return loss report.
+        Parse a model file into IR.
 
         Args:
             filepath: Path to the model file
 
         Returns:
-            Tuple of (IR object, LossReport object)
+            IR object
 
         Raises:
             CannotParseError: If the file is not in this parser's format

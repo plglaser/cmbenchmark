@@ -76,7 +76,7 @@ async def parse(request: ParseRequest):
     This endpoint wraps the parse_from_scan service function.
     """
     try:
-        ir_info, loss_report = parse_from_scan(
+        ir_info = parse_from_scan(
             dataset_info_path=request.dataset_info_path,
             output_dir=request.output_dir,
             parser_language=request.parser_language,
@@ -101,7 +101,6 @@ async def parse(request: ParseRequest):
             parsed_at=ir_info.parsed_at,
             parameters=ir_info.parameters,
             totals=ir_info.totals,
-            loss_summary=ir_info.loss_summary,
             failures=failures,
             index=ir_info.index,
         )

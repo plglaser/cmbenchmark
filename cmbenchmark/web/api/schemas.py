@@ -53,7 +53,6 @@ class ParseResponse(BaseModel):
     parsed_at: str
     parameters: Dict[str, Any]
     totals: Dict[str, int]
-    loss_summary: Dict[str, Any]
     failures: List[ParseFailureResponse]
     index: Dict[str, str]
 

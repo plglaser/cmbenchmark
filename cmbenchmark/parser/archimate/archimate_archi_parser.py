@@ -2,13 +2,12 @@
 
 from pathlib import Path
 import xml.etree.ElementTree as ET
-from typing import Tuple, Dict, List
+from typing import Dict, List
 import warnings
 
 from cmbenchmark.parser.base import BaseParser, register_parser
-from cmbenchmark.types.models import LossReport, CannotParseError
+from cmbenchmark.types.models import CannotParseError
 from cmbenchmark.types.ir import IR, Node, Edge
-from cmbenchmark.types.loss_tracking import LossTracker
 from cmbenchmark.parser.archimate.archimate_utils import (
     normalize_element_type,
     normalize_relationship_type,
@@ -253,7 +252,7 @@ class ArchiMateArchiParser(BaseParser):
         
         return edges
 
-    def parse(self, filepath: str) -> Tuple[IR, LossReport]:
+    def parse(self, filepath: str) -> IR:
         """
         Parse a ArchiMate model file into IR.
         
@@ -276,8 +275,6 @@ class ArchiMateArchiParser(BaseParser):
         # Step 3: Parse relationships
         edges = self._parse_relationships(root, id_lookup)
         
-        loss_tracker = LossTracker()
-        
         ir = IR(
             id=model_data["modelId"],
             language=self.language,
@@ -286,11 +283,4 @@ class ArchiMateArchiParser(BaseParser):
             edges=edges,
         )
         
-        loss_report = LossReport(
-            parser=self.parser_id,
-            loss=loss_tracker,
-            source_relpath=str(Path(filepath).name),
-            schema_version=None
-        )
-        
-        return ir, loss_report
+        return ir
