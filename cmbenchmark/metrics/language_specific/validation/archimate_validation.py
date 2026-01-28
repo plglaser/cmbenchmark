@@ -2,7 +2,7 @@
 
 from typing import List
 from cmbenchmark.types.ir import IR
-from cmbenchmark.parser.archimate_types import (
+from cmbenchmark.parser.archimate.archimate_types import (
     ALL_ELEMENT_TYPES,
     ALL_RELATIONSHIP_TYPES,
 )

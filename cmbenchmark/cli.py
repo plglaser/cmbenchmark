@@ -17,9 +17,8 @@ from cmbenchmark.utils import info, section, success, warn, error, step
 
 # Import parsers to register them
 from cmbenchmark.parser.uml import parser as uml_parser  # noqa: F401
-from cmbenchmark.parser import bpmn_parser  # noqa: F401
-from cmbenchmark.parser import archimate_archi_parser  # noqa: F401
-from cmbenchmark.parser import archimate_xml_parser  # noqa: F401
+from cmbenchmark.parser.archimate import ArchiMateArchiParser  # noqa: F401
+from cmbenchmark.parser.archimate import ArchiMateXMLParser  # noqa: F401
 from cmbenchmark.parser.ecore import EcoreParser  # noqa: F401
 
 app = typer.Typer(help="CMBenchmark - A benchmarking tool for conceptual models")

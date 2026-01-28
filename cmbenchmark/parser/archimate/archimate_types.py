@@ -69,7 +69,7 @@ MOTIVATION_TYPES = {
 }
 
 STRATEGY_TYPES = {
-    'Resource',  # structure element, but neither active nor passive
+    'Resource',
     'Capability',
     'ValueStream',
     'CourseOfAction'
@@ -133,7 +133,7 @@ TYPE_RENAMES = {
     'InfrastructureService': 'TechnologyService',
     'CommunicationPath': 'Path',
     'Network': 'CommunicationNetwork',
-    'Realisation': 'Realization',  # Will be normalized to 'Realization'
-    'Specialisation': 'Specialization',  # Will be normalized to 'Specialization'
-    'UsedBy': 'Serving',  # Will be normalized to 'Serving'
+    'Realisation': 'Realization',
+    'Specialisation': 'Specialization',
+    'UsedBy': 'Serving',
 }
