@@ -82,6 +82,7 @@ class ParseContext:
     def add_edge(self, edge: Edge) -> None:
         """Add edge to IR, avoiding duplicates."""
         if edge.id in self.edge_ids:
+            print(f"[DUPLICATE EDGE] {edge.id}")
             return
         self.edge_ids.add(edge.id)
         self.ir.edges.append(edge)
@@ -89,13 +90,6 @@ class ParseContext:
 
 @register_parser
 class UMLXMIParser(BaseParser):
-    """
-    Orchestrates:
-      - indexing
-      - model meta extraction
-      - element-handler-based semantic parsing
-    """
-
     language = "UML"
 
     def __init__(
@@ -103,13 +97,6 @@ class UMLXMIParser(BaseParser):
         options: Optional[ParseOptions] = None,
         handlers: Optional[List[ElementHandler]] = None,
     ):
-        """
-        Initialize parser with options and handlers.
-
-        Args:
-            options: Parsing options (defaults to include_packages=True)
-            handlers: List of element handler instances (defaults to standard handlers)
-        """
         self.options = options or ParseOptions()
         self.handlers = handlers or self._get_default_handlers()
 
@@ -136,7 +123,7 @@ class UMLXMIParser(BaseParser):
             filepath: Path to the XMI file
 
         Returns:
-            Tuple of (IR object, empty LossReport)
+            Tuple of (IR object, LossReport)
         """
         tree = ET.parse(filepath)
         root = tree.getroot()
@@ -213,6 +200,9 @@ class UMLXMIParser(BaseParser):
         model_handler = ctx.handler_map.get("uml:Model")
         if model_handler:
             model_handler.handle(ctx, model)
+        else:
+            print(f"[UNHANDLED MODEL] {localname(model.tag)}")
+            return
 
         # Stage 2: Process top-level packagedElement elements
         # Attributes and nested elements like type, lowerValue, upperValue are handled by their parent handlers
@@ -254,12 +244,13 @@ class UMLXMIParser(BaseParser):
             if is_tool_extension(elem):
                 continue
 
-            # Handle generalizations nested in classes/interfaces
-            if xsi_type(elem) in ("uml:Class", "uml:Interface"):
-                for gen in elem.findall("./generalization"):
+            # Handle generalizations
+            for gen in elem.findall("./generalization"):
                     gen_handler = ctx.handler_map.get("uml:Generalization")
                     if gen_handler:
                         gen_handler.handle(ctx, gen)
+                        
+                
 
     def _create_containment_edges(self, ctx: ParseContext, model: ET.Element) -> None:
         """Create containment edges for packages and their contents."""
