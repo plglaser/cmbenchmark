@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Tuple
 from cmbenchmark.parser.base import BaseParser, register_parser
 from cmbenchmark.types.ir import IR, Node, Edge
-from cmbenchmark.types.models import ParserRunStats
+from cmbenchmark.types.parsing import ParserRunStats
 
 
 @register_parser

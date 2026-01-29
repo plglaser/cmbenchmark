@@ -5,7 +5,9 @@ import xml.etree.ElementTree as ET
 from typing import Dict, List, Tuple
 
 from cmbenchmark.parser.base import BaseParser, register_parser
-from cmbenchmark.types.models import CannotParseError, WarningType, ParserRunStats
+from cmbenchmark.types.exceptions import CannotParseError
+from cmbenchmark.types.enums import WarningType
+from cmbenchmark.types.parsing import ParserRunStats
 from cmbenchmark.types.ir import IR, Node, Edge
 from cmbenchmark.parser.archimate.archimate_utils import (
     normalize_element_type,

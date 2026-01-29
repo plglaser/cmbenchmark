@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Any
-from cmbenchmark.types.models import DatasetInfo
+from cmbenchmark.types.dataset import DatasetInfo
 
 # Default file extensions to include (supported model file types)
 DEFAULT_INCLUDE_PATTERNS = ["*.xmi", "*.uml", "*.xml", "*.bpmn", "*.bpmn2", "*.ecore", "*.archimate"]

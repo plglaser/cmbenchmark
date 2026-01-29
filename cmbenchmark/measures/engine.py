@@ -4,8 +4,8 @@ from typing import Dict, Any, List
 from pathlib import Path
 import json
 from cmbenchmark.types.ir import IR
-from cmbenchmark.metrics.cross_language import compute_cross_language_metrics
-from cmbenchmark.metrics.language_specific import compute_language_specific_metrics
+from cmbenchmark.measures.cross_language import compute_cross_language_metrics
+from cmbenchmark.measures.language_specific import compute_language_specific_metrics
 
 
 def compute_metrics(ir_path: str) -> Dict[str, Any]:

@@ -6,10 +6,9 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Any
-from cmbenchmark.types.models import (
-    DatasetInfo, IRInfo, ModelParseDiagnostics, 
-    WarningType, ParseStatus
-)
+from cmbenchmark.types.dataset import DatasetInfo, IRInfo
+from cmbenchmark.types.parsing import ModelParseDiagnostics
+from cmbenchmark.types.enums import WarningType, ParseStatus
 from cmbenchmark.parser import get_parser, get_all_parsers
 from cmbenchmark.types.ir import IR
 

@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.base import BaseParser, register_parser
 from cmbenchmark.types.ir import IR, Node, Edge
-from cmbenchmark.types.models import ParserRunStats
+from cmbenchmark.types.parsing import ParserRunStats
 from cmbenchmark.parser.uml.xmi_utils import (
     xmi_id,
     xsi_type,

@@ -5,7 +5,9 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any, Tuple
 from pathlib import Path
 from cmbenchmark.types.ir import IR
-from cmbenchmark.types.models import CannotParseError, WarningType, ParserRunStats
+from cmbenchmark.types.exceptions import CannotParseError
+from cmbenchmark.types.enums import WarningType
+from cmbenchmark.types.parsing import ParserRunStats
 
 # Global registry for parsers
 _PARSER_REGISTRY: Dict[str, type] = {}

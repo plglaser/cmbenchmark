@@ -10,7 +10,8 @@ from rich.console import Console
 from rich.table import Table
 import json
 
-from cmbenchmark.services import scan_dataset, compute_measure, save_measure, generate_report
+from cmbenchmark.services import scan_dataset, generate_report
+from cmbenchmark.services.measure import compute_measure, save_measure_dataset, save_measure_per_model
 from cmbenchmark.services.parse import parse_from_scan
 from cmbenchmark.services.scan import DEFAULT_INCLUDE_PATTERNS
 from cmbenchmark.utils import info, section, success, warn, error, step
@@ -56,7 +57,7 @@ def _run_full_pipeline(dataset_path: str, parser: str, out: Optional[str]):
         console.print()
 
     # Step 4: Report
-    measure_file = output_dir / "measure.json"
+    measure_file = output_dir / "measures.json"
     if not measure_file.exists():
         warn("Warning: No measure file found, skipping report")
     else:
@@ -174,25 +175,30 @@ def _run_measure(ir_path: str, out: str):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with step("Computing measures..."):
-        measure_result = compute_measure(str(ir_dir))
+        measure_dataset, measure_per_model = compute_measure(str(ir_dir))
 
-    # Save measure
-    measure_path = output_dir / "measure.json"
-    save_measure(measure_result, str(measure_path))
+    # Save dataset-level measures
+    measure_dataset_path = output_dir / "measures.json"
+    save_measure_dataset(measure_dataset, str(measure_dataset_path))
+
+    # Save per-model measures
+    measure_per_model_path = output_dir / "measures_per_model.json"
+    save_measure_per_model(measure_per_model, str(measure_per_model_path))
 
     success("Measure computation complete")
-    console.print(f"  Output: {measure_path}")
+    console.print(f"  Dataset measures: {measure_dataset_path}")
+    console.print(f"  Per-model measures: {measure_per_model_path}")
 
     # Display summary
     table = Table(title="Measure Summary")
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="green")
 
-    table.add_row("Number of Models", str(measure_result.num_models))
-    if measure_result.avg_elements_per_model:
+    table.add_row("Number of Models", str(measure_dataset.num_models))
+    if measure_dataset.avg_elements_per_model:
         table.add_row(
             "Avg Elements/Model",
-            str(measure_result.avg_elements_per_model),
+            str(measure_dataset.avg_elements_per_model),
         )
 
     console.print("\n")
@@ -236,7 +242,7 @@ def _run_report(ir_path: str, measure_path: str, out: str):
 @app.command()
 def report(
     ir_path: str = typer.Argument(..., help="Path to IR directory"),
-    measure_path: str = typer.Argument(..., help="Path to measure.json file"),
+    measure_path: str = typer.Argument(..., help="Path to measures.json file"),
     out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
 ):
     """Generate JSON + HTML report."""

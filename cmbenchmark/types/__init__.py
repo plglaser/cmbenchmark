@@ -1,13 +1,10 @@
 """Type definitions for cmbenchmark."""
 
 from cmbenchmark.types.ir import IR, Node, Edge
-from cmbenchmark.types.models import (
-    DatasetInfo,
-    IRInfo,
-    MeasureResult,
-    ReportData,
-    CannotParseError,
-)
+from cmbenchmark.types.dataset import DatasetInfo, IRInfo
+from cmbenchmark.types.measures import MeasureResultDataset, MeasureResultPerModel
+from cmbenchmark.types.report import ReportData
+from cmbenchmark.types.exceptions import CannotParseError
 
 __all__ = [
     "IR",
@@ -15,7 +12,8 @@ __all__ = [
     "Edge",
     "DatasetInfo",
     "IRInfo",
-    "MeasureResult",
+    "MeasureResultDataset",
+    "MeasureResultPerModel",
     "ReportData",
     "CannotParseError",
 ]

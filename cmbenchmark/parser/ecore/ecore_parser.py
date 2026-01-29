@@ -24,7 +24,8 @@ except ImportError:
 
 from cmbenchmark.parser.base import BaseParser, register_parser
 from cmbenchmark.types.ir import IR, Node, Edge
-from cmbenchmark.types.models import CannotParseError, ParserRunStats
+from cmbenchmark.types.exceptions import CannotParseError
+from cmbenchmark.types.parsing import ParserRunStats
 
 
 def _generate_id(prefix: str = "") -> str:
