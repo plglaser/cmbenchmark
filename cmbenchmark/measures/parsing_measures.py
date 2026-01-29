@@ -132,18 +132,32 @@ def compute_d1_m2_elements_loaded_skipped(ir_info: IRInfo) -> Tuple[D1M2Elements
     """
     diagnostics = ir_info.modelParseDiagnostics
     
-    total_elements_loaded = sum(d.elements_loaded for d in diagnostics.values())
-    total_elements_skipped = sum(d.elements_skipped for d in diagnostics.values())
+    # Filter out failed models
+    successful_diagnostics = {k: v for k, v in diagnostics.items() if v.parse_status != "failure"}
+    
+    if not successful_diagnostics:
+        dataset_result = D1M2ElementsLoadedSkippedResult(
+            total_elements_loaded=0,
+            total_elements_skipped=0,
+            dataset_skip_ratio=0.0,
+            skip_ratio_stats=_compute_distribution_summary([]),
+            n_models_with_skips=0,
+            share_models_with_skips=0.0,
+        )
+        return dataset_result, {}
+    
+    total_elements_loaded = sum(d.elements_loaded for d in successful_diagnostics.values())
+    total_elements_skipped = sum(d.elements_skipped for d in successful_diagnostics.values())
     
     total_elements = total_elements_loaded + total_elements_skipped
     dataset_skip_ratio = total_elements_skipped / total_elements if total_elements > 0 else 0.0
     
     # Compute skip ratios per model
-    skip_ratios = [d.skip_ratio for d in diagnostics.values()]
+    skip_ratios = [d.skip_ratio for d in successful_diagnostics.values()]
     skip_ratio_stats = _compute_distribution_summary(skip_ratios)
     
-    n_models_with_skips = sum(1 for d in diagnostics.values() if d.elements_skipped > 0)
-    share_models_with_skips = n_models_with_skips / len(diagnostics) if diagnostics else 0.0
+    n_models_with_skips = sum(1 for d in successful_diagnostics.values() if d.elements_skipped > 0)
+    share_models_with_skips = n_models_with_skips / len(successful_diagnostics) if successful_diagnostics else 0.0
     
     dataset_result = D1M2ElementsLoadedSkippedResult(
         total_elements_loaded=total_elements_loaded,
@@ -154,9 +168,9 @@ def compute_d1_m2_elements_loaded_skipped(ir_info: IRInfo) -> Tuple[D1M2Elements
         share_models_with_skips=share_models_with_skips,
     )
     
-    # Per-model values
+    # Per-model values (only for successful models)
     per_model: Dict[str, D1M2ElementsLoadedSkippedPerModel] = {}
-    for model_id, d in diagnostics.items():
+    for model_id, d in successful_diagnostics.items():
         per_model[model_id] = D1M2ElementsLoadedSkippedPerModel(
             elements_loaded=d.elements_loaded,
             elements_skipped=d.elements_skipped,
@@ -178,19 +192,29 @@ def compute_d1_m3_parsing_time(ir_info: IRInfo) -> Tuple[D1M3ParsingTimeResult, 
     """
     diagnostics = ir_info.modelParseDiagnostics
     
-    parse_times = [float(d.parse_time_ms) for d in diagnostics.values()]
+    # Filter out failed models
+    successful_diagnostics = {k: v for k, v in diagnostics.items() if v.parse_status != "failure"}
+    
+    if not successful_diagnostics:
+        dataset_result = D1M3ParsingTimeResult(
+            parse_time_stats=_compute_distribution_summary([]),
+            parse_time_total_ms=0,
+        )
+        return dataset_result, {}
+    
+    parse_times = [float(d.parse_time_ms) for d in successful_diagnostics.values()]
     parse_time_stats = _compute_distribution_summary(parse_times)
     
-    parse_time_total_ms = sum(d.parse_time_ms for d in diagnostics.values())
+    parse_time_total_ms = sum(d.parse_time_ms for d in successful_diagnostics.values())
     
     dataset_result = D1M3ParsingTimeResult(
         parse_time_stats=parse_time_stats,
         parse_time_total_ms=parse_time_total_ms,
     )
     
-    # Per-model values
+    # Per-model values (only for successful models)
     per_model: Dict[str, D1M3ParsingTimePerModel] = {}
-    for model_id, d in diagnostics.items():
+    for model_id, d in successful_diagnostics.items():
         per_model[model_id] = D1M3ParsingTimePerModel(
             parse_time_ms=d.parse_time_ms,
         )
@@ -210,8 +234,18 @@ def compute_d1_m4_file_size(ir_info: IRInfo) -> Tuple[D1M4FileSizeResult, Dict[s
     """
     diagnostics = ir_info.modelParseDiagnostics
     
-    source_sizes = [float(d.file_size_bytes_source) for d in diagnostics.values()]
-    ir_sizes = [float(d.file_size_bytes_ir) for d in diagnostics.values()]
+    # Filter out failed models
+    successful_diagnostics = {k: v for k, v in diagnostics.items() if v.parse_status != "failure"}
+    
+    if not successful_diagnostics:
+        dataset_result = D1M4FileSizeResult(
+            file_size_source_stats=_compute_distribution_summary([]),
+            file_size_ir_stats=_compute_distribution_summary([]),
+        )
+        return dataset_result, {}
+    
+    source_sizes = [float(d.file_size_bytes_source) for d in successful_diagnostics.values()]
+    ir_sizes = [float(d.file_size_bytes_ir) for d in successful_diagnostics.values()]
     
     file_size_source_stats = _compute_distribution_summary(source_sizes)
     file_size_ir_stats = _compute_distribution_summary(ir_sizes)
@@ -221,9 +255,9 @@ def compute_d1_m4_file_size(ir_info: IRInfo) -> Tuple[D1M4FileSizeResult, Dict[s
         file_size_ir_stats=file_size_ir_stats,
     )
     
-    # Per-model values
+    # Per-model values (only for successful models)
     per_model: Dict[str, D1M4FileSizePerModel] = {}
-    for model_id, d in diagnostics.items():
+    for model_id, d in successful_diagnostics.items():
         per_model[model_id] = D1M4FileSizePerModel(
             file_size_bytes_source=d.file_size_bytes_source,
             file_size_bytes_ir=d.file_size_bytes_ir,
@@ -244,27 +278,42 @@ def compute_d1_m5_warnings(ir_info: IRInfo) -> Tuple[D1M5WarningsResult, Dict[st
     """
     diagnostics = ir_info.modelParseDiagnostics
     
-    n_models_with_warnings = sum(1 for d in diagnostics.values() if d.warning_count > 0)
-    share_models_with_warnings = n_models_with_warnings / len(diagnostics) if diagnostics else 0.0
+    # Filter out failed models
+    successful_diagnostics = {k: v for k, v in diagnostics.items() if v.parse_status != "failure"}
     
-    warning_counts = [float(d.warning_count) for d in diagnostics.values()]
+    if not successful_diagnostics:
+        dataset_result = D1M5WarningsResult(
+            n_models_with_warnings=0,
+            share_models_with_warnings=0.0,
+            warning_count_stats=_compute_distribution_summary([]),
+            warnings_per_element_stats=_compute_distribution_summary([]),
+            total_warnings_by_type={},
+            n_models_with_warning_type={},
+            share_models_with_warning_type={},
+        )
+        return dataset_result, {}
+    
+    n_models_with_warnings = sum(1 for d in successful_diagnostics.values() if d.warning_count > 0)
+    share_models_with_warnings = n_models_with_warnings / len(successful_diagnostics) if successful_diagnostics else 0.0
+    
+    warning_counts = [float(d.warning_count) for d in successful_diagnostics.values()]
     warning_count_stats = _compute_distribution_summary(warning_counts)
     
-    warnings_per_element = [d.warnings_per_element for d in diagnostics.values()]
+    warnings_per_element = [d.warnings_per_element for d in successful_diagnostics.values()]
     warnings_per_element_stats = _compute_distribution_summary(warnings_per_element)
     
     # Aggregate warnings by type
     total_warnings_by_type: Dict[str, int] = {}
     n_models_with_warning_type: Dict[str, int] = {}
     
-    for d in diagnostics.values():
+    for d in successful_diagnostics.values():
         for warning_type, count in d.warnings_by_type.items():
             total_warnings_by_type[warning_type] = total_warnings_by_type.get(warning_type, 0) + count
             if count > 0:
                 n_models_with_warning_type[warning_type] = n_models_with_warning_type.get(warning_type, 0) + 1
     
     share_models_with_warning_type = {
-        warning_type: count / len(diagnostics) if diagnostics else 0.0
+        warning_type: count / len(successful_diagnostics) if successful_diagnostics else 0.0
         for warning_type, count in n_models_with_warning_type.items()
     }
     
@@ -278,9 +327,9 @@ def compute_d1_m5_warnings(ir_info: IRInfo) -> Tuple[D1M5WarningsResult, Dict[st
         share_models_with_warning_type=share_models_with_warning_type,
     )
     
-    # Per-model values
+    # Per-model values (only for successful models)
     per_model: Dict[str, D1M5WarningsPerModel] = {}
-    for model_id, d in diagnostics.items():
+    for model_id, d in successful_diagnostics.items():
         per_model[model_id] = D1M5WarningsPerModel(
             warning_count=d.warning_count,
             warnings_by_type=d.warnings_by_type.copy(),
