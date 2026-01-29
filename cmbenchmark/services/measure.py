@@ -1,23 +1,23 @@
-"""Metrics service for computing metrics on IR models."""
+"""Measure service for computing measures on IR models."""
 
 from pathlib import Path
 from typing import Dict, Any, List
 import json
-from cmbenchmark.types.models import MetricsResult
+from cmbenchmark.types.models import MeasureResult
 from cmbenchmark.types.ir import IR
 from cmbenchmark.metrics.cross_language import compute_cross_language_metrics
 from cmbenchmark.metrics.language_specific import compute_language_specific_metrics
 
 
-def compute_metrics(ir_path: str) -> MetricsResult:
+def compute_measure(ir_path: str) -> MeasureResult:
     """
-    Compute metrics for all IR models in the given directory.
+    Compute measures for all IR models in the given directory.
 
     Args:
         ir_path: Path to directory containing IR JSON files
 
     Returns:
-        MetricsResult object containing computed metrics
+        MeasureResult object containing computed measures
     """
     ir_dir = Path(ir_path)
     ir_files = list(ir_dir.glob("*.json"))
@@ -44,8 +44,8 @@ def compute_metrics(ir_path: str) -> MetricsResult:
     # Compute language-specific metrics
     lang_metrics = compute_language_specific_metrics(ir_models)
 
-    # Combine metrics into MetricsResult
-    return MetricsResult(
+    # Combine metrics into MeasureResult
+    return MeasureResult(
         num_models=len(ir_models),
         avg_elements_per_model=cross_metrics.get("avg_elements_per_model", 0.0),
         avg_nodes_per_model=cross_metrics.get("avg_nodes_per_model", 0.0),
@@ -58,14 +58,13 @@ def compute_metrics(ir_path: str) -> MetricsResult:
     )
 
 
-def save_metrics(metrics: MetricsResult, output_path: str) -> None:
+def save_measure(measure: MeasureResult, output_path: str) -> None:
     """
-    Save metrics to JSON file.
+    Save measure to JSON file.
 
     Args:
-        metrics: MetricsResult object to save
+        measure: MeasureResult object to save
         output_path: Path to output JSON file
     """
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(metrics.to_dict(), f, indent=2)
-
+        json.dump(measure.to_dict(), f, indent=2)

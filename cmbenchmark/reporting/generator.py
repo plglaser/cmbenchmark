@@ -6,13 +6,13 @@ import json
 from jinja2 import Template
 
 
-def generate_report(ir_path: str, metrics_path: str, output_dir: str) -> Dict[str, str]:
+def generate_report(ir_path: str, measure_path: str, output_dir: str) -> Dict[str, str]:
     """
     Generate JSON and HTML reports.
 
     Args:
         ir_path: Path to IR directory
-        metrics_path: Path to metrics.json file
+        measure_path: Path to measure.json file
         output_dir: Output directory for reports
 
     Returns:
@@ -21,8 +21,8 @@ def generate_report(ir_path: str, metrics_path: str, output_dir: str) -> Dict[st
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
-    # Load metrics
-    with open(metrics_path, "r", encoding="utf-8") as f:
+    # Load measure
+    with open(measure_path, "r", encoding="utf-8") as f:
         metrics = json.load(f)
 
     # Load IR info if available

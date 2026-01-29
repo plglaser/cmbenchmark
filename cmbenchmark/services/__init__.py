@@ -1,8 +1,8 @@
 """Services module for cmbenchmark."""
 
 from .scan import scan_dataset
-from .metrics import compute_metrics, save_metrics
+from .measure import compute_measure, save_measure
 from cmbenchmark.reporting.generator import generate_report
 
-__all__ = ["scan_dataset", "compute_metrics", "save_metrics", "generate_report"]
+__all__ = ["scan_dataset", "compute_measure", "save_measure", "generate_report"]
 

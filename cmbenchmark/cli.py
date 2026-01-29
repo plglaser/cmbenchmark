@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.table import Table
 import json
 
-from cmbenchmark.services import scan_dataset, compute_metrics, save_metrics, generate_report
+from cmbenchmark.services import scan_dataset, compute_measure, save_measure, generate_report
 from cmbenchmark.services.parse import parse_from_scan
 from cmbenchmark.services.scan import DEFAULT_INCLUDE_PATTERNS
 from cmbenchmark.utils import info, section, success, warn, error, step
@@ -46,22 +46,22 @@ def _run_full_pipeline(dataset_path: str, parser: str, out: Optional[str]):
         warn("Warning: No dataset_info.json found, skipping parse step")
     console.print()
 
-    # Step 3: Metrics
+    # Step 3: Measure
     ir_dir = output_dir / "ir"
     if not ir_dir.exists() or not list(ir_dir.glob("*.json")):
-        warn("Warning: No IR files found, skipping metrics")
+        warn("Warning: No IR files found, skipping measure")
     else:
-        info("Step 3: Computing metrics...")
-        _run_metrics(str(ir_dir), str(output_dir))
+        info("Step 3: Computing measures...")
+        _run_measure(str(ir_dir), str(output_dir))
         console.print()
 
     # Step 4: Report
-    metrics_file = output_dir / "metrics.json"
-    if not metrics_file.exists():
-        warn("Warning: No metrics file found, skipping report")
+    measure_file = output_dir / "measure.json"
+    if not measure_file.exists():
+        warn("Warning: No measure file found, skipping report")
     else:
         info("Step 4: Generating report...")
-        _run_report(str(ir_dir), str(metrics_file), str(output_dir))
+        _run_report(str(ir_dir), str(measure_file), str(output_dir))
         console.print()
 
     success("Pipeline complete!")
@@ -74,7 +74,7 @@ def run(
     parser: str = typer.Argument(..., help="Parser language to use (e.g., UML, BPMN, ArchiMate)"),
     out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
 ):
-    """Run full pipeline sequentially (scan → parse → metrics → report)."""
+    """Run full pipeline sequentially (scan → parse → measure → report)."""
     _run_full_pipeline(dataset_path, parser, out)
 
 
@@ -163,8 +163,8 @@ def parse(
     _run_parse_from_scan(dataset_info_path, str(output_dir), parser)
 
 
-def _run_metrics(ir_path: str, out: str):
-    """Internal function to run metrics."""
+def _run_measure(ir_path: str, out: str):
+    """Internal function to run measure."""
     ir_dir = Path(ir_path)
     if not ir_dir.exists():
         error(f"IR path does not exist: {ir_path}")
@@ -173,26 +173,26 @@ def _run_metrics(ir_path: str, out: str):
     output_dir = Path(out)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    with step("Computing metrics..."):
-        metrics_result = compute_metrics(str(ir_dir))
+    with step("Computing measures..."):
+        measure_result = compute_measure(str(ir_dir))
 
-    # Save metrics
-    metrics_path = output_dir / "metrics.json"
-    save_metrics(metrics_result, str(metrics_path))
+    # Save measure
+    measure_path = output_dir / "measure.json"
+    save_measure(measure_result, str(measure_path))
 
-    success("Metrics computation complete")
-    console.print(f"  Output: {metrics_path}")
+    success("Measure computation complete")
+    console.print(f"  Output: {measure_path}")
 
     # Display summary
-    table = Table(title="Metrics Summary")
+    table = Table(title="Measure Summary")
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="green")
 
-    table.add_row("Number of Models", str(metrics_result.num_models))
-    if metrics_result.avg_elements_per_model:
+    table.add_row("Number of Models", str(measure_result.num_models))
+    if measure_result.avg_elements_per_model:
         table.add_row(
             "Avg Elements/Model",
-            str(metrics_result.avg_elements_per_model),
+            str(measure_result.avg_elements_per_model),
         )
 
     console.print("\n")
@@ -200,33 +200,33 @@ def _run_metrics(ir_path: str, out: str):
 
 
 @app.command()
-def metrics(
+def measure(
     ir_path: str = typer.Argument(..., help="Path to IR directory"),
     out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
 ):
-    """Compute metrics on IR models."""
+    """Compute measures on IR models."""
     output_dir = out if out else "out"
-    _run_metrics(ir_path, output_dir)
+    _run_measure(ir_path, output_dir)
 
 
-def _run_report(ir_path: str, metrics_path: str, out: str):
+def _run_report(ir_path: str, measure_path: str, out: str):
     """Internal function to run report."""
     ir_dir = Path(ir_path)
-    metrics_file = Path(metrics_path)
+    measure_file = Path(measure_path)
 
     if not ir_dir.exists():
         error(f"IR path does not exist: {ir_path}")
         raise typer.Exit(1)
 
-    if not metrics_file.exists():
-        error(f"Metrics file does not exist: {metrics_path}")
+    if not measure_file.exists():
+        error(f"Measure file does not exist: {measure_path}")
         raise typer.Exit(1)
 
     output_dir = Path(out)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with step("Generating report..."):
-        report_paths = generate_report(str(ir_dir), str(metrics_file), str(output_dir))
+        report_paths = generate_report(str(ir_dir), str(measure_file), str(output_dir))
 
     success("Report generation complete")
     console.print(f"  JSON report: {report_paths['json']}")
@@ -236,12 +236,12 @@ def _run_report(ir_path: str, metrics_path: str, out: str):
 @app.command()
 def report(
     ir_path: str = typer.Argument(..., help="Path to IR directory"),
-    metrics_path: str = typer.Argument(..., help="Path to metrics.json file"),
+    measure_path: str = typer.Argument(..., help="Path to measure.json file"),
     out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
 ):
     """Generate JSON + HTML report."""
     output_dir = out if out else "out"
-    _run_report(ir_path, metrics_path, output_dir)
+    _run_report(ir_path, measure_path, output_dir)
 
 
 @app.command()

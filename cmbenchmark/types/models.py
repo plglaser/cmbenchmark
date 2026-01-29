@@ -192,8 +192,8 @@ class IRInfo:
 
 
 @dataclass
-class MetricsResult:
-    """Computed metrics for IR models."""
+class MeasureResult:
+    """Computed measures for IR models."""
 
     num_models: int
     avg_elements_per_model: float
@@ -210,7 +210,7 @@ class MetricsResult:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "MetricsResult":
+    def from_dict(cls, data: Dict[str, Any]) -> "MeasureResult":
         """Create from dictionary."""
         return cls(**data)
 
@@ -219,7 +219,7 @@ class MetricsResult:
 class ReportData:
     """Data structure for generated reports."""
 
-    metrics: MetricsResult
+    metrics: MeasureResult
     ir_info: IRInfo
     summary: Dict[str, Any]
 
@@ -235,7 +235,7 @@ class ReportData:
     def from_dict(cls, data: Dict[str, Any]) -> "ReportData":
         """Create from dictionary."""
         return cls(
-            metrics=MetricsResult.from_dict(data["metrics"]),
+            metrics=MeasureResult.from_dict(data["metrics"]),
             ir_info=IRInfo.from_dict(data["ir_info"]),
             summary=data["summary"],
         )

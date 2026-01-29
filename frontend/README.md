@@ -28,7 +28,7 @@ npm run build
 - Step-by-step workflow for dataset processing
 - Scan dataset directory for model files
 - Parse models using various parsers
-- Extensible architecture for future steps (metrics, report)
+- Extensible architecture for future steps (measure, report)
 
 ## Tech Stack
 

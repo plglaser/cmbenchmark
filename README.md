@@ -19,17 +19,17 @@ cmbenchmark scan <dataset-path>
 # Parse and normalize models into IR
 cmbenchmark parse <dataset-path> [--out <outdir>]
 
-# Compute metrics on IR models
-cmbenchmark metrics <ir-path> [--out <outdir>]
+# Compute measures on IR models
+cmbenchmark measure <ir-path> [--out <outdir>]
 
 # Generate report
-cmbenchmark report <ir-path> <metrics-path> [--out <outdir>]
+cmbenchmark report <ir-path> <measure-path> [--out <outdir>]
 ```
 
 ### Full Pipeline
 
 ```bash
-# Run full pipeline (scan → parse → metrics → report)
+# Run full pipeline (scan → parse → measure → report)
 cmbenchmark run <dataset-path> [--out <outdir>]
 ```
 
@@ -44,7 +44,7 @@ Default output layout in `/out/`:
 ├── ir/
 │   ├── model1.json
 │   └── ...
-├── metrics.json
+├── measure.json
 ├── report.json
 └── report.html
 ```

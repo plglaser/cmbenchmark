@@ -52,7 +52,7 @@ function App() {
           {/* Placeholder for future steps */}
           {parseResult && (
             <div className="p-6 border-2 border-dashed rounded-lg text-center text-muted-foreground">
-              <p className="font-semibold mb-2">Step 3: Metrics (Coming Soon)</p>
+              <p className="font-semibold mb-2">Step 3: Measure (Coming Soon)</p>
               <p className="text-sm">This step will be implemented in the future</p>
             </div>
           )}
