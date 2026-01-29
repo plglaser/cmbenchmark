@@ -37,13 +37,22 @@ class ScanResponse(BaseModel):
     filtered: List[str]
 
 
-class ParseFailureResponse(BaseModel):
-    """Response schema for parse failure."""
+class ModelParseDiagnosticsResponse(BaseModel):
+    """Response schema for model parse diagnostics."""
+    file_id: str
     relpath: str
-    ir_id: Optional[str]
-    error_class: str
-    message: str
-    parser: str
+    parse_status: str  # "success", "warning", or "failure"
+    parse_error_msg: Optional[str] = None
+    elements_loaded: int = 0
+    elements_skipped: int = 0
+    parse_time_ms: int = 0
+    file_size_bytes_source: int = 0
+    file_size_bytes_ir: int = 0
+    warning_count: int = 0
+    warnings_by_type: Dict[str, int] = {}
+    warning_msgs: Dict[str, List[str]] = {}
+    skip_ratio: float = 0.0
+    warnings_per_element: float = 0.0
 
 
 class ParseResponse(BaseModel):
@@ -52,8 +61,8 @@ class ParseResponse(BaseModel):
     parsed_at: str
     parameters: Dict[str, Any]
     totals: Dict[str, int]
-    failures: List[ParseFailureResponse]
     index: Dict[str, str]
+    modelParseDiagnostics: Dict[str, ModelParseDiagnosticsResponse] = {}
 
 
 class ErrorResponse(BaseModel):

@@ -42,12 +42,21 @@ export interface ParseRequest {
   parser_language: string;
 }
 
-export interface ParseFailureResponse {
+export interface ModelParseDiagnostics {
+  file_id: string;
   relpath: string;
-  ir_id: string | null;
-  error_class: string;
-  message: string;
-  parser: string;
+  parse_status: 'success' | 'warning' | 'failure';
+  parse_error_msg: string | null;
+  elements_loaded: number;
+  elements_skipped: number;
+  parse_time_ms: number;
+  file_size_bytes_source: number;
+  file_size_bytes_ir: number;
+  warning_count: number;
+  warnings_by_type: Record<string, number>;
+  warning_msgs: Record<string, string[]>;
+  skip_ratio: number;
+  warnings_per_element: number;
 }
 
 export interface ParseResponse {
@@ -59,15 +68,12 @@ export interface ParseResponse {
   };
   totals: {
     candidates_in: number;
-    parsed_ok: number;
-    failed_parse: number;
+    parsed_success: number;
+    parsed_warning: number;
+    parsed_failure: number;
   };
-  loss_summary: {
-    total_models: number;
-    category_totals: Record<string, number>;
-  };
-  failures: ParseFailureResponse[];
   index: Record<string, string>;
+  modelParseDiagnostics: Record<string, ModelParseDiagnostics>;
 }
 
 export interface ErrorResponse {

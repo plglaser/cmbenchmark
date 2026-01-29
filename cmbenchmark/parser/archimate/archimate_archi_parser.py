@@ -2,11 +2,10 @@
 
 from pathlib import Path
 import xml.etree.ElementTree as ET
-from typing import Dict, List
-import warnings
+from typing import Dict, List, Tuple
 
 from cmbenchmark.parser.base import BaseParser, register_parser
-from cmbenchmark.types.models import CannotParseError
+from cmbenchmark.types.models import CannotParseError, WarningType, ParserRunStats
 from cmbenchmark.types.ir import IR, Node, Edge
 from cmbenchmark.parser.archimate.archimate_utils import (
     normalize_element_type,
@@ -47,6 +46,7 @@ class ArchiMateArchiParser(BaseParser):
     
     def __init__(self):
         """Initialize parser with default parameters."""
+        super().__init__()
         self.normalize_deprecated_types = PARSER_PARAMETERS["normalize_deprecated_types"]
 
     def _validate_archimate_file(self, filepath: str) -> None:
@@ -138,12 +138,18 @@ class ArchiMateArchiParser(BaseParser):
                 # Extract required attributes
                 elem_id = element.attrib.get("id")
                 if not elem_id:
-                    warnings.warn(f"Element missing 'id' attribute in folder '{folder_type}'.")
+                    self.skip_with_warning(
+                        WarningType.MISSING_ATTRIBUTE,
+                        f"Element missing 'id' attribute in folder '{folder_type}'."
+                    )
                     continue
                 
                 xsi_type = element.attrib.get(XSI_TYPE_ATTR, "")
                 if not xsi_type:
-                    warnings.warn(f"Element '{elem_id}' missing 'xsi:type' attribute in folder '{folder_type}'.")
+                    self.skip_with_warning(
+                        WarningType.MISSING_ATTRIBUTE,
+                        f"Element '{elem_id}' missing 'xsi:type' attribute in folder '{folder_type}'."
+                    )
                     continue
                 normalized_type = normalize_element_type(
                     xsi_type, 
@@ -194,7 +200,7 @@ class ArchiMateArchiParser(BaseParser):
                 break
         
         if relations_folder is None:
-            warnings.warn(f"No relations folder found.")
+            self.warn(WarningType.OTHER, "No relations folder found.")
             return edges
         
         # Parse relationships
@@ -202,29 +208,47 @@ class ArchiMateArchiParser(BaseParser):
             # Extract required attributes
             elem_id = element.attrib.get("id")
             if not elem_id:
-                warnings.warn(f"Relationship missing 'id' attribute.")
+                self.skip_with_warning(
+                    WarningType.MISSING_ATTRIBUTE,
+                    "Relationship missing 'id' attribute."
+                )
                 continue
             
             xsi_type = element.attrib.get(XSI_TYPE_ATTR, "")
             if not xsi_type:
-                warnings.warn(f"Relationship '{elem_id}' missing 'xsi:type' attribute.")
+                self.skip_with_warning(
+                    WarningType.MISSING_ATTRIBUTE,
+                    f"Relationship '{elem_id}' missing 'xsi:type' attribute."
+                )
                 continue
             
             source = element.attrib.get("source")
             if not source:
-                warnings.warn(f"Relationship '{elem_id}' missing 'source' attribute.")
+                self.skip_with_warning(
+                    WarningType.MISSING_ATTRIBUTE,
+                    f"Relationship '{elem_id}' missing 'source' attribute."
+                )
                 continue
             
             target = element.attrib.get("target")
             if not target:
-                warnings.warn(f"Relationship '{elem_id}' missing 'target' attribute, skipping")
+                self.skip_with_warning(
+                    WarningType.MISSING_ATTRIBUTE,
+                    f"Relationship '{elem_id}' missing 'target' attribute, skipping"
+                )
                 continue
             
             # Check source and target exist
             if source not in id_lookup:
-                warnings.warn(f"Relationship '{elem_id}' references non-existent source node '{source}'")
+                self.warn(
+                    WarningType.UNRESOLVED_REFERENCE,
+                    f"Relationship '{elem_id}' references non-existent source node '{source}'"
+                )
             if target not in id_lookup:
-                warnings.warn(f"Relationship '{elem_id}' references non-existent target node '{target}'")
+                self.warn(
+                    WarningType.UNRESOLVED_REFERENCE,
+                    f"Relationship '{elem_id}' references non-existent target node '{target}'"
+                )
             
             # Normalize type (remove Relationship suffix)
             normalized_type = normalize_relationship_type(
@@ -252,13 +276,14 @@ class ArchiMateArchiParser(BaseParser):
         
         return edges
 
-    def parse(self, filepath: str) -> IR:
+    def parse(self, filepath: str) -> Tuple[IR, ParserRunStats]:
         """
         Parse a ArchiMate model file into IR.
         
         Raises:
             CannotParseError: If the file is not a valid Archi .archimate model file.
         """
+        self._start_run()
         self._validate_archimate_file(filepath)
         
         # Parse the full file
@@ -283,4 +308,4 @@ class ArchiMateArchiParser(BaseParser):
             edges=edges,
         )
         
-        return ir
+        return ir, self._stats()

@@ -128,15 +128,11 @@ def _run_parse_from_scan(dataset_info_path: str, out: str, parser_language: str)
 
     success("Parsing complete")
     console.print(f"  Candidates: {totals['candidates_in']}")
-    console.print(f"  Parsed OK: {totals['parsed_ok']}")
-    console.print(f"  Failed (parse): {totals['failed_parse']}")
+    console.print(f"  Parsed Success: {totals['parsed_success']}")
+    console.print(f"  Parsed Warning: {totals['parsed_warning']}")
+    console.print(f"  Parsed Failure: {totals['parsed_failure']}")
     console.print(f"  IR directory: {ir_dir}")
     console.print(f"  IR info: {ir_info_path}")
-
-    if ir_info.failures:
-        warn(f"\nFailures ({len(ir_info.failures)} total):")
-        for failure in ir_info.failures[:5]:  # Show first 5
-            console.print(f"  - {failure.relpath}: {failure.message}")
 
 
 @app.command()

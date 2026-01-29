@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.base import BaseParser, register_parser
 from cmbenchmark.types.ir import IR, Node, Edge
+from cmbenchmark.types.models import ParserRunStats
 from cmbenchmark.parser.uml.xmi_utils import (
     xmi_id,
     xsi_type,
@@ -96,6 +97,7 @@ class UMLXMIParser(BaseParser):
         options: Optional[ParseOptions] = None,
         handlers: Optional[List[ElementHandler]] = None,
     ):
+        super().__init__()
         self.options = options or ParseOptions()
         self.handlers = handlers or self._get_default_handlers()
 
@@ -114,7 +116,7 @@ class UMLXMIParser(BaseParser):
             ActorHandler(),
         ]
 
-    def parse(self, filepath: str) -> IR:
+    def parse(self, filepath: str) -> Tuple[IR, ParserRunStats]:
         """
         Parse a UML XMI file into IR.
 
@@ -122,8 +124,10 @@ class UMLXMIParser(BaseParser):
             filepath: Path to the XMI file
 
         Returns:
-            IR object
+            Tuple of (IR object, ParserRunStats)
         """
+        self._start_run()
+        
         tree = ET.parse(filepath)
         root = tree.getroot()
 
@@ -140,7 +144,7 @@ class UMLXMIParser(BaseParser):
         self._parse_elements(ctx)
         self._create_containment_edges(ctx, model)
 
-        return ctx.ir
+        return ctx.ir, self._stats()
 
     def _build_indices(self, ctx: ParseContext) -> None:
         """Build xmi:id index and parent map."""

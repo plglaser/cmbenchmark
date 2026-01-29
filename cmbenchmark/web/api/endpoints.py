@@ -8,7 +8,7 @@ from cmbenchmark.services.scan import scan_dataset
 from cmbenchmark.services.parse import parse_from_scan
 from cmbenchmark.parser import get_all_parsers
 from cmbenchmark.types.ir import IR
-from .schemas import ScanRequest, ScanResponse, ParseRequest, ParseResponse, ParseFailureResponse, ErrorResponse
+from .schemas import ScanRequest, ScanResponse, ParseRequest, ParseResponse, ErrorResponse
 
 router = APIRouter()
 
@@ -82,17 +82,11 @@ async def parse(request: ParseRequest):
             parser_language=request.parser_language,
         )
         
-        # Convert ParseFailure objects to response schema
-        failures = [
-            ParseFailureResponse(
-                relpath=f.relpath,
-                ir_id=f.ir_id,
-                error_class=f.error_class,
-                message=f.message,
-                parser=f.parser,
-            )
-            for f in ir_info.failures
-        ]
+        # Convert ModelParseDiagnostics to response schema
+        diagnostics = {
+            k: v.to_dict() if hasattr(v, 'to_dict') else v
+            for k, v in ir_info.modelParseDiagnostics.items()
+        }
         
         # Convert IRInfo to response schema
         return ParseResponse(
@@ -100,8 +94,8 @@ async def parse(request: ParseRequest):
             parsed_at=ir_info.parsed_at,
             parameters=ir_info.parameters,
             totals=ir_info.totals,
-            failures=failures,
             index=ir_info.index,
+            modelParseDiagnostics=diagnostics,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

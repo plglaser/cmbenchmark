@@ -2,10 +2,14 @@
 
 import hashlib
 import json
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Any
-from cmbenchmark.types.models import DatasetInfo, IRInfo, ParseFailure
+from cmbenchmark.types.models import (
+    DatasetInfo, IRInfo, ModelParseDiagnostics, 
+    WarningType, ParseStatus
+)
 from cmbenchmark.parser import get_parser, get_all_parsers
 from cmbenchmark.types.ir import IR
 
@@ -57,7 +61,7 @@ def parse_from_scan(
 
     The parsing process follows these stages:
     1. Initialize: Load dataset info, setup parser, prepare output directories
-    2. Parse: For each candidate file, attempt to parse it (any exceptions are tracked as failed_parse)
+    2. Parse: For each candidate file, attempt to parse it (status tracked as success/warning/failure)
     3. Save: Save IR files
 
     Args:
@@ -95,12 +99,13 @@ def parse_from_scan(
     # Initialize tracking structures
     totals = {
         "candidates_in": len(dataset_info.candidates),
-        "parsed_ok": 0,
-        "failed_parse": 0,
+        "parsed_success": 0,
+        "parsed_warning": 0,
+        "parsed_failure": 0,
     }
 
-    failures: List[ParseFailure] = []
     index: Dict[str, str] = {}  # ir_id -> relpath
+    model_diagnostics: Dict[str, ModelParseDiagnostics] = {}  # ir_id -> diagnostics
 
     # Stage 2: Process each candidate file
     for relpath in dataset_info.candidates:
@@ -109,38 +114,96 @@ def parse_from_scan(
             continue
 
         file_id = _compute_file_id(file_path)
-
-        # Stage 2a: Parse
+        
+        # Initialize diagnostics
+        diagnostics = ModelParseDiagnostics(
+            file_id=file_id,
+            relpath=relpath,
+            parse_status="failure",  # Will be updated on success
+        )
+        
+        # Get source file size
         try:
-            ir = parser.parse(str(file_path))
-            ir.id = file_id
-        except Exception as e:
-            totals["failed_parse"] += 1
-            failures.append(ParseFailure(
-                relpath=relpath,
-                ir_id=None,
-                error_class=type(e).__name__,
-                message=str(e),
-                parser=parser.parser_id,
-            ))
-            continue
-
-        # Stage 2b: Add metadata to IR
-        ir.data["source_path"] = str(file_path)
-        ir.data["source_relpath"] = relpath
-        try:
-            ir.data["filesize"] = file_path.stat().st_size
+            diagnostics.file_size_bytes_source = file_path.stat().st_size
         except Exception:
             pass
 
-        # Stage 2c: Save IR file
-        ir_filename = f"{ir.id}.json"
-        ir_path = ir_dir / ir_filename
-        ir.save(str(ir_path))
+        # Stage 2a: Parse with timing
+        parser._start_run()
+        parse_start_time = time.perf_counter()
+        ir = None
+        
+        try:
+            ir, run_stats = parser.parse(str(file_path))
+            parse_end_time = time.perf_counter()
+            parse_time_ms = int((parse_end_time - parse_start_time) * 1000)
+            
+            ir.id = file_id
+            
+            # Update diagnostics from successful parse
+            diagnostics.parse_time_ms = parse_time_ms
+            diagnostics.elements_loaded = len(ir.nodes) + len(ir.edges)
+            diagnostics.elements_skipped = run_stats.elements_skipped
+            diagnostics.warning_count = run_stats.warning_count
+            diagnostics.warnings_by_type = {
+                wt.value: count for wt, count in run_stats.warnings_by_type.items()
+            }
+            diagnostics.warning_msgs = {
+                wt.value: msgs for wt, msgs in run_stats.warning_msgs.items()
+            }
+            
+            # Determine parse status
+            if diagnostics.warning_count == 0 and diagnostics.elements_skipped == 0:
+                diagnostics.parse_status = "success"
+            elif diagnostics.elements_loaded > 0:
+                diagnostics.parse_status = "warning"
+            else:
+                diagnostics.parse_status = "failure"
+                diagnostics.parse_error_msg = "No elements loaded"
+            
+        except Exception as e:
+            parse_end_time = time.perf_counter()
+            parse_time_ms = int((parse_end_time - parse_start_time) * 1000)
+            
+            diagnostics.parse_time_ms = parse_time_ms
+            diagnostics.parse_status = "failure"
+            diagnostics.parse_error_msg = f"{type(e).__name__}: {str(e)}"
 
-        # Update index and statistics
-        index[ir.id] = relpath
-        totals["parsed_ok"] += 1
+        # Stage 2b: Save IR file if parsing succeeded
+        if ir is not None:
+            # Add metadata to IR
+            ir.data["source_path"] = str(file_path)
+            ir.data["source_relpath"] = relpath
+            try:
+                ir.data["filesize"] = file_path.stat().st_size
+            except Exception:
+                pass
+
+            # Save IR file
+            ir_filename = f"{ir.id}.json"
+            ir_path = ir_dir / ir_filename
+            ir.save(str(ir_path))
+            
+            # Get IR file size
+            try:
+                diagnostics.file_size_bytes_ir = ir_path.stat().st_size
+            except Exception:
+                pass
+
+            # Update index
+            index[ir.id] = relpath
+            model_diagnostics[ir.id] = diagnostics
+        else:
+            # Store diagnostics for failures (using file_id since no IR was created)
+            model_diagnostics[file_id] = diagnostics
+
+        # Stage 2c: Update totals based on parse status
+        if diagnostics.parse_status == "success":
+            totals["parsed_success"] += 1
+        elif diagnostics.parse_status == "warning":
+            totals["parsed_warning"] += 1
+        else:  # failure
+            totals["parsed_failure"] += 1
 
     # Stage 3: Build IRInfo object
     ir_info = IRInfo(
@@ -151,8 +214,8 @@ def parse_from_scan(
             "parser_language": parser_language,
         },
         totals=totals,
-        failures=failures,
         index=index,
+        modelParseDiagnostics=model_diagnostics,
     )
 
     # Stage 4: Save output files

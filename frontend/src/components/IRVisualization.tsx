@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Label } from './ui/label';
-import { ScrollArea } from './ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { apiService } from '../services/api';
 import type { IRData } from '../types/api';
@@ -16,6 +15,7 @@ import ReactFlow, {
   ConnectionMode,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import JsonView from '@uiw/react-json-view';
 
 interface IRVisualizationProps {
   irId: string;
@@ -71,13 +71,13 @@ export function IRVisualization({ irId, outputDir, open, onOpenChange }: IRVisua
     // Build adjacency lists
     const incomingEdges = new Map<string, string[]>();
     const outgoingEdges = new Map<string, string[]>();
-    
+
     edges.forEach(edge => {
       if (!incomingEdges.has(edge.targetId)) {
         incomingEdges.set(edge.targetId, []);
       }
       incomingEdges.get(edge.targetId)!.push(edge.sourceId);
-      
+
       if (!outgoingEdges.has(edge.sourceId)) {
         outgoingEdges.set(edge.sourceId, []);
       }
@@ -86,7 +86,7 @@ export function IRVisualization({ irId, outputDir, open, onOpenChange }: IRVisua
 
     // Find root nodes (nodes with no incoming edges)
     const rootNodes = nodes.filter(node => !incomingEdges.has(node.id));
-    
+
     // If no root nodes found, use nodes with fewest incoming edges
     if (rootNodes.length === 0) {
       const incomingCounts = nodes.map(node => ({
@@ -111,7 +111,7 @@ export function IRVisualization({ irId, outputDir, open, onOpenChange }: IRVisua
     while (queue.length > 0) {
       const { id, level } = queue.shift()!;
       const children = outgoingEdges.get(id) || [];
-      
+
       children.forEach(childId => {
         if (!visited.has(childId)) {
           levelMap.set(childId, level + 1);
@@ -147,7 +147,7 @@ export function IRVisualization({ irId, outputDir, open, onOpenChange }: IRVisua
       // Hierarchical layout
       const levelMap = calculateHierarchicalLayout(irData.nodes, irData.edges);
       const nodesByLevel = new Map<number, IRData['nodes']>();
-      
+
       irData.nodes.forEach(node => {
         const level = levelMap.get(node.id) || 0;
         if (!nodesByLevel.has(level)) {
@@ -166,7 +166,7 @@ export function IRVisualization({ irId, outputDir, open, onOpenChange }: IRVisua
         const indexInLevel = nodesInLevel.findIndex(n => n.id === node.id);
         const totalWidth = nodesInLevel.length * (nodeWidth + horizontalSpacing) - horizontalSpacing;
         const startX = -totalWidth / 2;
-        
+
         return {
           id: node.id,
           type: 'default',
@@ -246,7 +246,7 @@ export function IRVisualization({ irId, outputDir, open, onOpenChange }: IRVisua
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -285,13 +285,13 @@ export function IRVisualization({ irId, outputDir, open, onOpenChange }: IRVisua
         )}
 
         {irData && !loading && (
-          <Tabs defaultValue="graph" className="flex-1 flex flex-col min-h-0">
+          <Tabs defaultValue="graph" className="flex flex-col min-h-0">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="graph">Graph</TabsTrigger>
               <TabsTrigger value="json">Raw IR JSON</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="graph" className="flex-1 flex gap-4 min-h-0 mt-4">
+            <TabsContent value="graph" className="flex gap-4 min-h-0">
               <div className="flex-1 border rounded-lg overflow-hidden relative" style={{ minHeight: '500px' }}>
                 <ReactFlow
                   nodes={nodes}
@@ -357,52 +357,42 @@ export function IRVisualization({ irId, outputDir, open, onOpenChange }: IRVisua
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="showMinimap"
-                        checked={graphConfig.showMinimap}
-                        onChange={(e) =>
-                          setGraphConfig({ ...graphConfig, showMinimap: e.target.checked })
-                        }
-                        className="rounded border-gray-300"
-                      />
-                      <Label htmlFor="showMinimap" className="text-sm font-normal">
-                        Show Minimap
-                      </Label>
-                    </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="showMinimap"
+                      checked={graphConfig.showMinimap}
+                      onChange={(e) =>
+                        setGraphConfig({ ...graphConfig, showMinimap: e.target.checked })
+                      }
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="showMinimap" className="text-sm font-normal">
+                      Show Minimap
+                    </Label>
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="showControls"
-                        checked={graphConfig.showControls}
-                        onChange={(e) =>
-                          setGraphConfig({ ...graphConfig, showControls: e.target.checked })
-                        }
-                        className="rounded border-gray-300"
-                      />
-                      <Label htmlFor="showControls" className="text-sm font-normal">
-                        Show Controls
-                      </Label>
-                    </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="showControls"
+                      checked={graphConfig.showControls}
+                      onChange={(e) =>
+                        setGraphConfig({ ...graphConfig, showControls: e.target.checked })
+                      }
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="showControls" className="text-sm font-normal">
+                      Show Controls
+                    </Label>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="json" className="flex-1 min-h-0 mt-4">
-              <div className="h-full border rounded-lg overflow-hidden">
-                <ScrollArea className="h-full">
-                  <div className="p-4">
-                    <pre className="text-xs font-mono whitespace-pre-wrap break-words">
-                      {JSON.stringify(irData, null, 2)}
-                    </pre>
-                  </div>
-                </ScrollArea>
+            <TabsContent value="json" className="flex flex-col min-h-0">
+              <div className="h-full overflow-y-auto border rounded-lg p-4">
+                <JsonView value={irData} />
               </div>
             </TabsContent>
           </Tabs>

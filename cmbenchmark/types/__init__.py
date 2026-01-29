@@ -3,7 +3,6 @@
 from cmbenchmark.types.ir import IR, Node, Edge
 from cmbenchmark.types.models import (
     DatasetInfo,
-    ParseFailure,
     IRInfo,
     MetricsResult,
     ReportData,
@@ -15,7 +14,6 @@ __all__ = [
     "Node",
     "Edge",
     "DatasetInfo",
-    "ParseFailure",
     "IRInfo",
     "MetricsResult",
     "ReportData",

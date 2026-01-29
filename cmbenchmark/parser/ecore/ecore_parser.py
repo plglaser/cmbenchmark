@@ -1,7 +1,7 @@
 """Ecore parser for converting Ecore models to graph-based IR."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import uuid
 
 try:
@@ -24,7 +24,7 @@ except ImportError:
 
 from cmbenchmark.parser.base import BaseParser, register_parser
 from cmbenchmark.types.ir import IR, Node, Edge
-from cmbenchmark.types.models import CannotParseError
+from cmbenchmark.types.models import CannotParseError, ParserRunStats
 
 
 def _generate_id(prefix: str = "") -> str:
@@ -45,7 +45,7 @@ class EcoreParser(BaseParser):
 
     language = "Ecore"
 
-    def parse(self, filepath: str) -> IR:
+    def parse(self, filepath: str) -> Tuple[IR, ParserRunStats]:
         """
         Parse an Ecore model file into IR.
 
@@ -53,11 +53,13 @@ class EcoreParser(BaseParser):
             filepath: Path to the .ecore file
 
         Returns:
-            IR object
+            Tuple of (IR object, ParserRunStats)
 
         Raises:
             CannotParseError: If the file is not a valid Ecore model
         """
+        self._start_run()
+        
         path = Path(filepath)
         if not path.exists():
             raise CannotParseError(f"File does not exist: {filepath}")
@@ -185,7 +187,7 @@ class EcoreParser(BaseParser):
                                 created_edges.add(edge_key)
                                 edge_counter += 1
 
-        return ir
+        return ir, self._stats()
 
     def _create_package_node(self, package: EPackage, root: EPackage) -> Node:
         """Create a node for an EPackage."""
