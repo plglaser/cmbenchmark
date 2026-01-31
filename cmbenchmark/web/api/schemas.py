@@ -65,6 +65,33 @@ class ParseResponse(BaseModel):
     modelParseDiagnostics: Dict[str, ModelParseDiagnosticsResponse] = {}
 
 
+class MeasureRequest(BaseModel):
+    """Request schema for measure endpoint."""
+    ir_dir: str = Field(..., description="Path to IR directory containing IR JSON files")
+    output_dir: str = Field(..., description="Path to output directory for measures JSON files")
+
+
+class MeasureResponse(BaseModel):
+    """Response schema for measure endpoint."""
+    measures_path: str = Field(..., description="Path to measures.json file")
+    measures_per_model_path: str = Field(..., description="Path to measures_per_model.json file")
+    output_dir: str = Field(..., description="Output directory where measures were saved")
+
+
+class ReportRequest(BaseModel):
+    """Request schema for report endpoint."""
+    measures_path: str = Field(..., description="Path to measures.json file")
+    measures_per_model_path: str = Field(..., description="Path to measures_per_model.json file")
+    ir_info_path: Optional[str] = Field(None, description="Path to ir_info.json file (optional, for linking to models)")
+
+
+class ReportResponse(BaseModel):
+    """Response schema for report endpoint."""
+    measures: Dict[str, Any] = Field(..., description="Dataset-level measures")
+    measures_per_model: Dict[str, Any] = Field(..., description="Per-model measures")
+    ir_info: Optional[Dict[str, Any]] = Field(None, description="IR info for linking models")
+
+
 class ErrorResponse(BaseModel):
     """Error response schema."""
     error: str

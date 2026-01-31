@@ -1,6 +1,5 @@
 """Base parser interface and registry."""
 
-import warnings
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any, Tuple
 from pathlib import Path
@@ -8,6 +7,7 @@ from cmbenchmark.types.ir import IR
 from cmbenchmark.types.exceptions import CannotParseError
 from cmbenchmark.types.enums import WarningType
 from cmbenchmark.types.parsing import ParserRunStats
+from cmbenchmark.utils import warn
 
 # Global registry for parsers
 _PARSER_REGISTRY: Dict[str, type] = {}
@@ -61,7 +61,7 @@ class BaseParser(ABC):
             warning_type: Type of warning
             message: Warning message
         """
-        warnings.warn(message)
+        warn(message)
         self._stats().add_warning(warning_type, message)
     
     def skip_with_warning(self, warning_type: WarningType, message: str):
@@ -72,7 +72,7 @@ class BaseParser(ABC):
             warning_type: Type of warning
             message: Warning message explaining why element was skipped
         """
-        warnings.warn(message)
+        warn(message)
         self._stats().add_skip(warning_type, message)
 
     @abstractmethod

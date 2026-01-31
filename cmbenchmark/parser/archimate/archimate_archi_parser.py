@@ -146,6 +146,14 @@ class ArchiMateArchiParser(BaseParser):
                     )
                     continue
                 
+                # Check for duplicate ID
+                if elem_id in id_lookup:
+                    self.skip_with_warning(
+                        WarningType.DUPLICATE_ID,
+                        f"Element '{elem_id}' in folder '{folder_type}' has duplicate ID (already exists)."
+                    )
+                    continue
+                
                 xsi_type = element.attrib.get(XSI_TYPE_ATTR, "")
                 if not xsi_type:
                     self.skip_with_warning(
@@ -246,6 +254,7 @@ class ArchiMateArchiParser(BaseParser):
                     WarningType.UNRESOLVED_REFERENCE,
                     f"Relationship '{elem_id}' references non-existent source node '{source}'"
                 )
+            
             if target not in id_lookup:
                 self.warn(
                     WarningType.UNRESOLVED_REFERENCE,

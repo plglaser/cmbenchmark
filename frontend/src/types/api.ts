@@ -65,6 +65,7 @@ export interface ParseResponse {
   parameters: {
     from_scan: string;
     parser_language: string;
+    output_dir?: string;
   };
   totals: {
     candidates_in: number;
@@ -109,3 +110,25 @@ export interface IRData {
   }>;
 }
 
+export interface MeasureRequest {
+  ir_dir: string;
+  output_dir: string;
+}
+
+export interface MeasureResponse {
+  measures_path: string;
+  measures_per_model_path: string;
+  output_dir: string;
+}
+
+export interface ReportRequest {
+  measures_path: string;
+  measures_per_model_path: string;
+  ir_info_path?: string | null;
+}
+
+export interface ReportResponse {
+  measures: any; // Dataset-level measures
+  measures_per_model: any; // Per-model measures
+  ir_info?: any | null; // IR info for linking models
+}

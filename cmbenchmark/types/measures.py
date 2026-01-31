@@ -129,6 +129,147 @@ class ParsingMeasuresPerModel:
     d1_m5_warnings: Dict[str, D1M5WarningsPerModel] = field(default_factory=dict)
 
 
+# ========== D2 Lexical Quality Measures ==========
+
+# ---------- D2.M1 — Label Presence (dataset-level) ----------
+@dataclass
+class D2M1LabelPresenceDataset:
+    """Dataset-level D2.M1 label presence measure."""
+    dataset_label_eligible_count: int
+    dataset_label_present_count: int
+    dataset_label_present_share: float  # micro-average
+    dataset_label_missing_share: float
+
+    # distribution across models
+    label_present_share_stats: DistributionSummary
+    label_missing_share_stats: DistributionSummary
+
+    # indicator
+    label_completeness_index: float  # == dataset_label_present_share
+    completeness_category: str  # "high" | "moderate" | "low"
+
+    # per-node-type missing shares (dataset level, micro-averaged)
+    label_missing_share_by_type: Dict[str, float] = field(default_factory=dict)
+
+
+# ---------- D2.M2 — Label Length (dataset-level) ----------
+@dataclass
+class D2M2LabelLengthDataset:
+    """Dataset-level D2.M2 label length measure."""
+    # distributions over models
+    label_length_chars_median_stats: DistributionSummary
+    label_length_tokens_median_stats: DistributionSummary
+    short_label_share_stats: DistributionSummary  # over models
+    long_label_share_stats: DistributionSummary
+
+
+# ---------- D2.M3 — Naming Convention Consistency (dataset-level) ----------
+@dataclass
+class D2M3NamingConventionDataset:
+    """Dataset-level D2.M3 naming convention measure."""
+    naming_style_entropy_stats: DistributionSummary  # entropy per model
+    dataset_case_style_counts: Dict[str, int] = field(default_factory=dict)
+    dataset_case_style_share: Dict[str, float] = field(default_factory=dict)
+
+
+# ---------- D2.M4 — Single vs Multi Word (dataset-level) ----------
+@dataclass
+class D2M4SingleMultiWordDataset:
+    """Dataset-level D2.M4 single vs multi-word measure."""
+    total_single_word_labels: int
+    total_multi_word_labels: int
+    dataset_share_single_word_labels: float
+
+    share_single_word_labels_stats: DistributionSummary
+
+
+# ---------- D2.M5 — Lexical Diversity (dataset-level) ----------
+@dataclass
+class D2M5LexicalDiversityDataset:
+    """Dataset-level D2.M5 lexical diversity measure."""
+    total_tokens: int
+    vocab_size: int
+    type_token_ratio: float
+    stopword_tokens: int = 0
+    stopword_share: float = 0.0
+
+
+# ---------- D2.M1 per-model ----------
+@dataclass
+class D2M1LabelPresencePerModel:
+    """Per-model D2.M1 label presence measure."""
+    label_eligible_count: int
+    label_present_count: int
+    label_present_share: float
+    label_missing_share: float
+    label_missing_share_by_type: Dict[str, float] = field(default_factory=dict)
+
+
+# ---------- D2.M2 per-model ----------
+@dataclass
+class D2M2LabelLengthPerModel:
+    """Per-model D2.M2 label length measure."""
+    label_count: int
+    label_length_chars_mean: float
+    label_length_chars_median: float
+    label_length_chars_p95: float
+    label_length_tokens_mean: float
+    label_length_tokens_median: float
+    label_length_tokens_p95: float
+    short_label_share: float
+    long_label_share: float
+
+
+# ---------- D2.M3 per-model ----------
+@dataclass
+class D2M3NamingConventionPerModel:
+    """Per-model D2.M3 naming convention measure."""
+    case_style_counts: Dict[str, int] = field(default_factory=dict)
+    case_style_share: Dict[str, float] = field(default_factory=dict)
+    naming_style_entropy: float = 0.0
+
+
+# ---------- D2.M4 per-model ----------
+@dataclass
+class D2M4SingleMultiWordPerModel:
+    """Per-model D2.M4 single vs multi-word measure."""
+    single_word_label_count: int
+    multi_word_label_count: int
+    single_word_label_share: float
+    multi_word_label_share: float
+
+
+# ---------- D2.M5 per-model ----------
+@dataclass
+class D2M5LexicalDiversityPerModel:
+    """Per-model D2.M5 lexical diversity measure."""
+    total_tokens: int
+    vocab_size: int
+    type_token_ratio: float
+    stopword_tokens: int = 0
+    stopword_share: float = 0.0
+
+
+@dataclass
+class LexicalMeasuresDataset:
+    """Dataset-level lexical measures."""
+    d2_m1_label_presence: D2M1LabelPresenceDataset
+    d2_m2_label_length: D2M2LabelLengthDataset
+    d2_m3_naming_convention: D2M3NamingConventionDataset
+    d2_m4_single_multi_word: D2M4SingleMultiWordDataset
+    d2_m5_lexical_diversity: D2M5LexicalDiversityDataset
+
+
+@dataclass
+class LexicalMeasuresPerModel:
+    """Per-model lexical measures."""
+    d2_m1_label_presence: Dict[str, D2M1LabelPresencePerModel] = field(default_factory=dict)
+    d2_m2_label_length: Dict[str, D2M2LabelLengthPerModel] = field(default_factory=dict)
+    d2_m3_naming_convention: Dict[str, D2M3NamingConventionPerModel] = field(default_factory=dict)
+    d2_m4_single_multi_word: Dict[str, D2M4SingleMultiWordPerModel] = field(default_factory=dict)
+    d2_m5_lexical_diversity: Dict[str, D2M5LexicalDiversityPerModel] = field(default_factory=dict)
+
+
 @dataclass
 class MeasureResultDataset:
     """Dataset-level computed measures for IR models."""
@@ -142,6 +283,7 @@ class MeasureResultDataset:
     edge_to_node_ratio: float
     language_specific: Dict[str, Any]
     parsing: ParsingMeasuresDataset
+    lexical: Optional["LexicalMeasuresDataset"] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -187,6 +329,42 @@ class MeasureResultDataset:
             d1_m5_warnings=D1M5WarningsResult(**d1_m5_data),
         )
         
+        # Convert lexical measures if present
+        lexical = None
+        lexical_data = data.get("lexical")
+        if lexical_data:
+            d2_m1_data = lexical_data.get("d2_m1_label_presence", {})
+            d2_m2_data = lexical_data.get("d2_m2_label_length", {})
+            d2_m3_data = lexical_data.get("d2_m3_naming_convention", {})
+            d2_m4_data = lexical_data.get("d2_m4_single_multi_word", {})
+            d2_m5_data = lexical_data.get("d2_m5_lexical_diversity", {})
+            
+            # Convert DistributionSummary dicts to objects
+            if isinstance(d2_m1_data.get("label_present_share_stats"), dict):
+                d2_m1_data["label_present_share_stats"] = _to_distribution_summary(d2_m1_data["label_present_share_stats"])
+            if isinstance(d2_m1_data.get("label_missing_share_stats"), dict):
+                d2_m1_data["label_missing_share_stats"] = _to_distribution_summary(d2_m1_data["label_missing_share_stats"])
+            if isinstance(d2_m2_data.get("label_length_chars_median_stats"), dict):
+                d2_m2_data["label_length_chars_median_stats"] = _to_distribution_summary(d2_m2_data["label_length_chars_median_stats"])
+            if isinstance(d2_m2_data.get("label_length_tokens_median_stats"), dict):
+                d2_m2_data["label_length_tokens_median_stats"] = _to_distribution_summary(d2_m2_data["label_length_tokens_median_stats"])
+            if isinstance(d2_m2_data.get("short_label_share_stats"), dict):
+                d2_m2_data["short_label_share_stats"] = _to_distribution_summary(d2_m2_data["short_label_share_stats"])
+            if isinstance(d2_m2_data.get("long_label_share_stats"), dict):
+                d2_m2_data["long_label_share_stats"] = _to_distribution_summary(d2_m2_data["long_label_share_stats"])
+            if isinstance(d2_m3_data.get("naming_style_entropy_stats"), dict):
+                d2_m3_data["naming_style_entropy_stats"] = _to_distribution_summary(d2_m3_data["naming_style_entropy_stats"])
+            if isinstance(d2_m4_data.get("share_single_word_labels_stats"), dict):
+                d2_m4_data["share_single_word_labels_stats"] = _to_distribution_summary(d2_m4_data["share_single_word_labels_stats"])
+            
+            lexical = LexicalMeasuresDataset(
+                d2_m1_label_presence=D2M1LabelPresenceDataset(**d2_m1_data),
+                d2_m2_label_length=D2M2LabelLengthDataset(**d2_m2_data),
+                d2_m3_naming_convention=D2M3NamingConventionDataset(**d2_m3_data),
+                d2_m4_single_multi_word=D2M4SingleMultiWordDataset(**d2_m4_data),
+                d2_m5_lexical_diversity=D2M5LexicalDiversityDataset(**d2_m5_data),
+            )
+        
         return cls(
             num_models=data["num_models"],
             avg_elements_per_model=data["avg_elements_per_model"],
@@ -198,6 +376,7 @@ class MeasureResultDataset:
             edge_to_node_ratio=data["edge_to_node_ratio"],
             language_specific=data["language_specific"],
             parsing=parsing,
+            lexical=lexical,
         )
 
 
@@ -205,6 +384,7 @@ class MeasureResultDataset:
 class MeasureResultPerModel:
     """Per-model computed measures for IR models."""
     parsing: ParsingMeasuresPerModel
+    lexical: Optional["LexicalMeasuresPerModel"] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -233,4 +413,26 @@ class MeasureResultPerModel:
             d1_m5_warnings=_to_per_model_dict("d1_m5_warnings", D1M5WarningsPerModel),
         )
         
-        return cls(parsing=parsing)
+        # Convert lexical measures if present
+        lexical = None
+        lexical_data = data.get("lexical")
+        if lexical_data:
+            def _to_lexical_per_model_dict(measure_name: str, per_model_class: type) -> Dict[str, Any]:
+                """Convert dict of per-model lexical data to typed objects."""
+                result = {}
+                for model_id, model_data in lexical_data.get(measure_name, {}).items():
+                    if isinstance(model_data, dict):
+                        result[model_id] = per_model_class(**model_data)
+                    else:
+                        result[model_id] = model_data
+                return result
+            
+            lexical = LexicalMeasuresPerModel(
+                d2_m1_label_presence=_to_lexical_per_model_dict("d2_m1_label_presence", D2M1LabelPresencePerModel),
+                d2_m2_label_length=_to_lexical_per_model_dict("d2_m2_label_length", D2M2LabelLengthPerModel),
+                d2_m3_naming_convention=_to_lexical_per_model_dict("d2_m3_naming_convention", D2M3NamingConventionPerModel),
+                d2_m4_single_multi_word=_to_lexical_per_model_dict("d2_m4_single_multi_word", D2M4SingleMultiWordPerModel),
+                d2_m5_lexical_diversity=_to_lexical_per_model_dict("d2_m5_lexical_diversity", D2M5LexicalDiversityPerModel),
+            )
+        
+        return cls(parsing=parsing, lexical=lexical)

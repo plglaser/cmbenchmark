@@ -6,9 +6,11 @@ import json
 from cmbenchmark.types.measures import MeasureResultDataset, MeasureResultPerModel
 from cmbenchmark.types.dataset import IRInfo
 from cmbenchmark.types.ir import IR
+from cmbenchmark.types.profile import BenchmarkProfile
 from cmbenchmark.measures.cross_language import compute_cross_language_metrics
 from cmbenchmark.measures.language_specific import compute_language_specific_metrics
 from cmbenchmark.measures.parsing_measures import compute_parsing_measures
+from cmbenchmark.measures.lexical_measures import compute_lexical_measures
 
 
 def _load_ir_info(ir_path: Path) -> Optional[IRInfo]:
@@ -38,16 +40,22 @@ def _load_ir_info(ir_path: Path) -> Optional[IRInfo]:
     return None
 
 
-def compute_measure(ir_path: str) -> Tuple[MeasureResultDataset, MeasureResultPerModel]:
+def compute_measure(
+    ir_path: str,
+    profile: Optional[BenchmarkProfile] = None,
+) -> Tuple[MeasureResultDataset, MeasureResultPerModel]:
     """
     Compute measures for all IR models in the given directory.
 
     Args:
         ir_path: Path to directory containing IR JSON files
+        profile: Optional BenchmarkProfile configuration. If None, uses default profile.
 
     Returns:
         Tuple of (MeasureResultDataset, MeasureResultPerModel) containing computed measures
     """
+    if profile is None:
+        profile = BenchmarkProfile()  # default parser_language & lexical
     ir_dir = Path(ir_path)
     ir_files = list(ir_dir.glob("*.json"))
 
@@ -84,6 +92,15 @@ def compute_measure(ir_path: str) -> Tuple[MeasureResultDataset, MeasureResultPe
     # Compute parsing measures (returns both dataset and per-model)
     parsing_dataset, parsing_per_model = compute_parsing_measures(ir_info)
 
+    # Compute lexical measures if enabled
+    lexical_dataset = None
+    lexical_per_model = None
+    if profile.lexical.enabled:
+        lexical_dataset, lexical_per_model = compute_lexical_measures(
+            ir_models,
+            lexical_profile=profile.lexical,
+        )
+
     # Combine metrics into MeasureResultDataset
     dataset_result = MeasureResultDataset(
         num_models=len(ir_models),
@@ -96,11 +113,13 @@ def compute_measure(ir_path: str) -> Tuple[MeasureResultDataset, MeasureResultPe
         edge_to_node_ratio=cross_metrics.get("edge_to_node_ratio", 0.0),
         language_specific=lang_metrics.get("metrics", {}),
         parsing=parsing_dataset,
+        lexical=lexical_dataset,
     )
 
     # Create per-model result
     per_model_result = MeasureResultPerModel(
         parsing=parsing_per_model,
+        lexical=lexical_per_model,
     )
 
     return dataset_result, per_model_result

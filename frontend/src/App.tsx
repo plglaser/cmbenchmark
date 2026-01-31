@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { ScanStep } from './components/ScanStep';
 import { ParseStep } from './components/ParseStep';
+import { MeasureStep } from './components/MeasureStep';
+import { ReportStep } from './components/ReportStep';
 import { Button } from './components/ui/button';
-import type { ScanResponse, ParseResponse } from './types/api';
+import type { ScanResponse, ParseResponse, MeasureResponse } from './types/api';
 
 function App() {
   const [scanResult, setScanResult] = useState<ScanResponse | null>(null);
   const [parseResult, setParseResult] = useState<ParseResponse | null>(null);
+  const [measureResult, setMeasureResult] = useState<MeasureResponse | null>(null);
   const [resetKey, setResetKey] = useState(0);
 
   const handleReset = () => {
     setScanResult(null);
     setParseResult(null);
+    setMeasureResult(null);
     setResetKey((prev) => prev + 1);
   };
 
@@ -23,10 +27,10 @@ function App() {
             <div>
               <h1 className="text-4xl font-bold mb-2">CM Benchmark</h1>
               <p className="text-muted-foreground">
-                Step-by-step dataset scanning and parsing workflow
+                Step-by-step dataset benchmarking
               </p>
             </div>
-            {(scanResult || parseResult) && (
+            {(scanResult || parseResult || measureResult) && (
               <Button
                 variant="outline"
                 onClick={handleReset}
@@ -49,19 +53,19 @@ function App() {
             />
           )}
 
-          {/* Placeholder for future steps */}
           {parseResult && (
-            <div className="p-6 border-2 border-dashed rounded-lg text-center text-muted-foreground">
-              <p className="font-semibold mb-2">Step 3: Measure (Coming Soon)</p>
-              <p className="text-sm">This step will be implemented in the future</p>
-            </div>
+            <MeasureStep
+              key={`measure-${resetKey}`}
+              parseResult={parseResult}
+              onMeasureComplete={setMeasureResult}
+            />
           )}
 
-          {parseResult && (
-            <div className="p-6 border-2 border-dashed rounded-lg text-center text-muted-foreground">
-              <p className="font-semibold mb-2">Step 4: Report (Coming Soon)</p>
-              <p className="text-sm">This step will be implemented in the future</p>
-            </div>
+          {measureResult && (
+            <ReportStep
+              key={`report-${resetKey}`}
+              measureResult={measureResult}
+            />
           )}
         </div>
       </div>

@@ -15,6 +15,7 @@ from cmbenchmark.services.measure import compute_measure, save_measure_dataset, 
 from cmbenchmark.services.parse import parse_from_scan
 from cmbenchmark.services.scan import DEFAULT_INCLUDE_PATTERNS
 from cmbenchmark.utils import info, section, success, warn, error, step
+from cmbenchmark.types.profile import BenchmarkProfile
 
 # Import parsers to register them
 from cmbenchmark.parser.uml import parser as uml_parser  # noqa: F401
@@ -53,7 +54,7 @@ def _run_full_pipeline(dataset_path: str, parser: str, out: Optional[str]):
         warn("Warning: No IR files found, skipping measure")
     else:
         info("Step 3: Computing measures...")
-        _run_measure(str(ir_dir), str(output_dir))
+        _run_measure(str(ir_dir), str(output_dir), profile=None)
         console.print()
 
     # Step 4: Report
@@ -164,7 +165,26 @@ def parse(
     _run_parse_from_scan(dataset_info_path, str(output_dir), parser)
 
 
-def _run_measure(ir_path: str, out: str):
+def _load_profile(profile_path: Optional[str]) -> Optional[BenchmarkProfile]:
+    """Load BenchmarkProfile from JSON file."""
+    if not profile_path:
+        return None
+    
+    profile_file = Path(profile_path)
+    if not profile_file.exists():
+        error(f"Profile file does not exist: {profile_path}")
+        raise typer.Exit(1)
+    
+    try:
+        with open(profile_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return BenchmarkProfile(**data)
+    except Exception as e:
+        error(f"Failed to load profile: {e}")
+        raise typer.Exit(1)
+
+
+def _run_measure(ir_path: str, out: str, profile: Optional[BenchmarkProfile] = None):
     """Internal function to run measure."""
     ir_dir = Path(ir_path)
     if not ir_dir.exists():
@@ -175,7 +195,7 @@ def _run_measure(ir_path: str, out: str):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with step("Computing measures..."):
-        measure_dataset, measure_per_model = compute_measure(str(ir_dir))
+        measure_dataset, measure_per_model = compute_measure(str(ir_dir), profile=profile)
 
     # Save dataset-level measures
     measure_dataset_path = output_dir / "measures.json"
@@ -209,10 +229,12 @@ def _run_measure(ir_path: str, out: str):
 def measure(
     ir_path: str = typer.Argument(..., help="Path to IR directory"),
     out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
+    profile: Optional[str] = typer.Option(None, "--profile", help="Path to benchmark profile JSON file"),
 ):
     """Compute measures on IR models."""
     output_dir = out if out else "out"
-    _run_measure(ir_path, output_dir)
+    benchmark_profile = _load_profile(profile)
+    _run_measure(ir_path, output_dir, profile=benchmark_profile)
 
 
 def _run_report(ir_path: str, measure_path: str, out: str):

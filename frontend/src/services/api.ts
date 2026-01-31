@@ -7,6 +7,10 @@ import type {
   ScanResponse,
   ParseRequest,
   ParseResponse,
+  MeasureRequest,
+  MeasureResponse,
+  ReportRequest,
+  ReportResponse,
 } from '../types/api';
 
 // Use relative URL so it works in both dev (with proxy) and production (same origin)
@@ -30,6 +34,17 @@ export const ParseRequestSchema = z.object({
   dataset_info_path: z.string().min(1, 'Dataset info path is required'),
   output_dir: z.string().min(1, 'Output directory is required'),
   parser_language: z.string().min(1, 'Parser language is required'),
+});
+
+export const MeasureRequestSchema = z.object({
+  ir_dir: z.string().min(1, 'IR directory is required'),
+  output_dir: z.string().min(1, 'Output directory is required'),
+});
+
+export const ReportRequestSchema = z.object({
+  measures_path: z.string().min(1, 'Measures path is required'),
+  measures_per_model_path: z.string().min(1, 'Measures per model path is required'),
+  ir_info_path: z.string().nullable().optional(),
 });
 
 // API functions
@@ -71,6 +86,28 @@ export const apiService = {
     const response = await api.get(`/ir/${irId}`, {
       params: { output_dir: outputDir },
     });
+    return response.data;
+  },
+
+  /**
+   * Compute measures from IR models
+   */
+  async measure(request: MeasureRequest): Promise<MeasureResponse> {
+    // Validate request
+    MeasureRequestSchema.parse(request);
+    
+    const response = await api.post<MeasureResponse>('/measure', request);
+    return response.data;
+  },
+
+  /**
+   * Load measures and IR info for reporting
+   */
+  async report(request: ReportRequest): Promise<ReportResponse> {
+    // Validate request
+    ReportRequestSchema.parse(request);
+    
+    const response = await api.post<ReportResponse>('/report', request);
     return response.data;
   },
 };
