@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -9,9 +9,11 @@ import { ScrollArea } from './ui/scroll-area';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { apiService } from '../services/api';
 import type { ScanResponse } from '../types/api';
+import type { BenchmarkProfile } from '../types/profile';
 
 interface ScanStepProps {
   onScanComplete: (result: ScanResponse) => void;
+  profile: BenchmarkProfile | null;
 }
 
 interface PatternInputProps {
@@ -86,7 +88,7 @@ function PatternInput({ label, patterns, onAdd, onRemove, placeholder, helpText,
   );
 }
 
-export function ScanStep({ onScanComplete }: ScanStepProps) {
+export function ScanStep({ onScanComplete, profile }: ScanStepProps) {
   const [folderName, setFolderName] = useState('');
   const [out, setOut] = useState('');
   const [includePatterns, setIncludePatterns] = useState<string[]>([]);
@@ -101,6 +103,23 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
   const [filterTooLarge, setFilterTooLarge] = useState('');
   const [filterExcluded, setFilterExcluded] = useState('');
   const [filterDuplicates, setFilterDuplicates] = useState('');
+
+  // Pre-fill from profile
+  useEffect(() => {
+    if (profile) {
+      setFolderName(profile.scan.dataset_path);
+      setOut(profile.output_path);
+      if (profile.scan.include) {
+        setIncludePatterns(profile.scan.include);
+      }
+      if (profile.scan.exclude) {
+        setExcludePatterns(profile.scan.exclude);
+      }
+      if (profile.scan.size_limit_mb !== null && profile.scan.size_limit_mb !== undefined) {
+        setSizeLimitMb(profile.scan.size_limit_mb);
+      }
+    }
+  }, [profile]);
 
   // Memoized filtered lists
   const filteredCandidates = useMemo(() => {
@@ -189,7 +208,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
               onChange={(e) => setFolderName(e.target.value)}
               placeholder="/path/to/dataset"
               required
-              disabled={loading || result !== null}
+              disabled={loading || result !== null || !!profile}
               /*
               onChange={(e) => {
                 const files = Array.from(e.currentTarget.files ?? []);
@@ -217,7 +236,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
               placeholder="/path/to/output"
               required
               className="font-mono"
-              disabled={loading || result !== null}
+              disabled={loading || result !== null || !!profile}
             />
             <p className="text-sm text-muted-foreground">
               Directory where <code className="font-mono">dataset_info.json</code> will be saved
@@ -242,7 +261,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
                 <code className="font-mono">*.archimate</code>
               </>
             }
-            disabled={loading || result !== null}
+            disabled={loading || result !== null || !!profile}
           />
 
           <PatternInput
@@ -258,7 +277,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
                 <code className="font-mono">test/*</code>).
               </>
             }
-            disabled={loading || result !== null}
+            disabled={loading || result !== null || !!profile}
           />
 
           <div className="space-y-2">
@@ -270,7 +289,7 @@ export function ScanStep({ onScanComplete }: ScanStepProps) {
               onChange={(e) => setSizeLimitMb(e.target.value ? parseInt(e.target.value) : null)}
               placeholder="100"
               min="1"
-              disabled={loading || result !== null}
+              disabled={loading || result !== null || !!profile}
             />
             <p className="text-sm text-muted-foreground">
               Maximum file size in MB (files exceeding this will be marked as too_large)

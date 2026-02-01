@@ -1,19 +1,17 @@
 """CLI interface for cmbenchmark."""
 
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 import typer
+import json
 import subprocess
-import sys
 import shutil
 from rich.console import Console
 from rich.table import Table
-import json
 
 from cmbenchmark.services import scan_dataset, generate_report
 from cmbenchmark.services.measure import compute_measure, save_measure_dataset, save_measure_per_model
 from cmbenchmark.services.parse import parse_from_scan
-from cmbenchmark.services.scan import DEFAULT_INCLUDE_PATTERNS
 from cmbenchmark.utils import info, section, success, warn, error, step
 from cmbenchmark.types.profile import BenchmarkProfile
 
@@ -23,27 +21,30 @@ from cmbenchmark.parser.archimate import ArchiMateArchiParser  # noqa: F401
 from cmbenchmark.parser.archimate import ArchiMateXMLParser  # noqa: F401
 from cmbenchmark.parser.ecore import EcoreParser  # noqa: F401
 
+import uvicorn
+from cmbenchmark.web.main import app as fastapi_app
+
 app = typer.Typer(help="CMBenchmark - A benchmarking tool for conceptual models")
 console = Console()
 
 
-def _run_full_pipeline(dataset_path: str, parser: str, out: Optional[str]):
+def _run_full_pipeline(profile: BenchmarkProfile):
     """Internal function to run the full pipeline."""
-    output_dir = Path(out) if out else Path("out")
+    output_dir = Path(profile.output_path)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    section("Running full CMBenchmark pipeline")
+    section(f"Running full CMBenchmark pipeline: {profile.name}")
 
     # Step 1: Scan
     info("Step 1: Scanning dataset...")
-    _run_scan(dataset_path, str(output_dir), include=None, exclude=None, size_limit=None)
+    _run_scan(profile, str(output_dir))
     console.print()
 
     # Step 2: Parse
     info("Step 2: Parsing models...")
     dataset_info_path = output_dir / "dataset_info.json"
     if dataset_info_path.exists():
-        _run_parse_from_scan(str(dataset_info_path), str(output_dir), parser)
+        _run_parse_from_scan(profile, str(dataset_info_path), str(output_dir))
     else:
         warn("Warning: No dataset_info.json found, skipping parse step")
     console.print()
@@ -54,7 +55,7 @@ def _run_full_pipeline(dataset_path: str, parser: str, out: Optional[str]):
         warn("Warning: No IR files found, skipping measure")
     else:
         info("Step 3: Computing measures...")
-        _run_measure(str(ir_dir), str(output_dir), profile=None)
+        _run_measure(profile, str(ir_dir), str(output_dir))
         console.print()
 
     # Step 4: Report
@@ -63,7 +64,7 @@ def _run_full_pipeline(dataset_path: str, parser: str, out: Optional[str]):
         warn("Warning: No measure file found, skipping report")
     else:
         info("Step 4: Generating report...")
-        _run_report(str(ir_dir), str(measure_file), str(output_dir))
+        _run_report(profile, str(ir_dir), str(measure_file), str(output_dir))
         console.print()
 
     success("Pipeline complete!")
@@ -72,21 +73,26 @@ def _run_full_pipeline(dataset_path: str, parser: str, out: Optional[str]):
 
 @app.command()
 def run(
-    dataset_path: str = typer.Argument(..., help="Path to dataset directory"),
-    parser: str = typer.Argument(..., help="Parser language to use (e.g., UML, BPMN, ArchiMate)"),
-    out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
+    profile: str = typer.Option(..., "--profile", help="Path to benchmark profile JSON file"),
 ):
     """Run full pipeline sequentially (scan → parse → measure → report)."""
-    _run_full_pipeline(dataset_path, parser, out)
+    benchmark_profile = BenchmarkProfile.load_from_file(profile)
+    _run_full_pipeline(benchmark_profile)
 
 
-def _run_scan(dataset_path: str, out: str, include: Optional[List[str]] = None, exclude: Optional[List[str]] = None, size_limit: Optional[int] = None):
+def _run_scan(profile: BenchmarkProfile, out: str):
     """Internal function to run scan."""
     output_dir = Path(out)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    scan_config = profile.scan
     with step("Scanning dataset..."):
-        dataset_info = scan_dataset(dataset_path, include=include, exclude=exclude, size_limit_mb=size_limit)
+        dataset_info = scan_dataset(
+            scan_config.dataset_path,
+            include=scan_config.include,
+            exclude=scan_config.exclude,
+            size_limit_mb=scan_config.size_limit_mb,
+        )
 
     # Save dataset info
     info_path = output_dir / "dataset_info.json"
@@ -104,24 +110,22 @@ def _run_scan(dataset_path: str, out: str, include: Optional[List[str]] = None, 
 
 @app.command()
 def scan(
-    dataset_path: str = typer.Argument(..., help="Path to dataset directory"),
-    out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
-    include: Optional[List[str]] = typer.Option(None, "--include", help=f"File pattern to include (repeatable). If not provided, uses default patterns: {', '.join(DEFAULT_INCLUDE_PATTERNS)}. Patterns match filenames (e.g., '*.xml') or relative paths from dataset root (e.g., 'subdir/*')."),
-    exclude: Optional[List[str]] = typer.Option(None, "--exclude", help="File pattern to exclude (repeatable). Applied after include filtering. Patterns match filenames (e.g., '*.tmp') or relative paths from dataset root (e.g., 'test/*', 'backup/**')."),
-    size_limit: Optional[int] = typer.Option(None, "--size-limit", help="Size limit for individual files in MB"),
+    profile: str = typer.Option(..., "--profile", help="Path to benchmark profile JSON file"),
 ):
     """Scan dataset directory for model files and basic statistics."""
-    output_dir = out if out else "out"
-    _run_scan(dataset_path, output_dir, include=include, exclude=exclude, size_limit=size_limit)
+    benchmark_profile = BenchmarkProfile.load_from_file(profile)
+    output_dir = benchmark_profile.output_path
+    _run_scan(benchmark_profile, output_dir)
 
 
-def _run_parse_from_scan(dataset_info_path: str, out: str, parser_language: str):
+def _run_parse_from_scan(profile: BenchmarkProfile, dataset_info_path: str, out: str):
     """Internal function to run parse from scan results."""
     output_dir = Path(out)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    parse_config = profile.parse
     with step("Parsing models..."):
-        ir_info = parse_from_scan(dataset_info_path, str(output_dir), parser_language)
+        ir_info = parse_from_scan(dataset_info_path, str(output_dir), parse_config.parser_language)
 
     # Display results
     totals = ir_info.totals
@@ -139,52 +143,23 @@ def _run_parse_from_scan(dataset_info_path: str, out: str, parser_language: str)
 
 @app.command()
 def parse(
-    parser: str = typer.Argument(..., help="Parser language to use (e.g., UML, BPMN, ArchiMate)"),
-    from_scan: Optional[str] = typer.Option(
-        None,
-        "--from-scan",
-        help="Path to dataset_info.json from scan stage. If not provided, will try to find it in output directory.",
-    ),
-    out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
+    profile: str = typer.Option(..., "--profile", help="Path to benchmark profile JSON file"),
 ):
     """Parse and normalize models into IR."""
-    output_dir = Path(out) if out else Path("out")
+    benchmark_profile = BenchmarkProfile.load_from_file(profile)
+    output_dir = Path(benchmark_profile.output_path)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Resolve dataset_info.json path
-    if from_scan:
-        dataset_info_path = from_scan
-    else:
-        # Try to find dataset_info.json in output directory
-        dataset_info_path = output_dir / "dataset_info.json"
-        if not dataset_info_path.exists():
-            error("No dataset_info.json found. Please run 'scan' first or provide --from-scan.")
-            raise typer.Exit(1)
-        dataset_info_path = str(dataset_info_path)
-
-    _run_parse_from_scan(dataset_info_path, str(output_dir), parser)
-
-
-def _load_profile(profile_path: Optional[str]) -> Optional[BenchmarkProfile]:
-    """Load BenchmarkProfile from JSON file."""
-    if not profile_path:
-        return None
-    
-    profile_file = Path(profile_path)
-    if not profile_file.exists():
-        error(f"Profile file does not exist: {profile_path}")
-        raise typer.Exit(1)
-    
-    try:
-        with open(profile_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return BenchmarkProfile(**data)
-    except Exception as e:
-        error(f"Failed to load profile: {e}")
+    dataset_info_path = output_dir / "dataset_info.json"
+    if not dataset_info_path.exists():
+        error("No dataset_info.json found. Please run 'scan' first.")
         raise typer.Exit(1)
 
+    _run_parse_from_scan(benchmark_profile, str(dataset_info_path), str(output_dir))
 
-def _run_measure(ir_path: str, out: str, profile: Optional[BenchmarkProfile] = None):
+
+def _run_measure(profile: BenchmarkProfile, ir_path: str, out: str):
     """Internal function to run measure."""
     ir_dir = Path(ir_path)
     if not ir_dir.exists():
@@ -227,17 +202,21 @@ def _run_measure(ir_path: str, out: str, profile: Optional[BenchmarkProfile] = N
 
 @app.command()
 def measure(
-    ir_path: str = typer.Argument(..., help="Path to IR directory"),
-    out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
-    profile: Optional[str] = typer.Option(None, "--profile", help="Path to benchmark profile JSON file"),
+    profile: str = typer.Option(..., "--profile", help="Path to benchmark profile JSON file"),
 ):
     """Compute measures on IR models."""
-    output_dir = out if out else "out"
-    benchmark_profile = _load_profile(profile)
-    _run_measure(ir_path, output_dir, profile=benchmark_profile)
+    benchmark_profile = BenchmarkProfile.load_from_file(profile)
+    output_dir = Path(benchmark_profile.output_path)
+    ir_dir = output_dir / "ir"
+    
+    if not ir_dir.exists():
+        error(f"IR directory does not exist: {ir_dir}")
+        raise typer.Exit(1)
+    
+    _run_measure(benchmark_profile, str(ir_dir), str(output_dir))
 
 
-def _run_report(ir_path: str, measure_path: str, out: str):
+def _run_report(profile: BenchmarkProfile, ir_path: str, measure_path: str, out: str):
     """Internal function to run report."""
     ir_dir = Path(ir_path)
     measure_file = Path(measure_path)
@@ -263,13 +242,19 @@ def _run_report(ir_path: str, measure_path: str, out: str):
 
 @app.command()
 def report(
-    ir_path: str = typer.Argument(..., help="Path to IR directory"),
-    measure_path: str = typer.Argument(..., help="Path to measures.json file"),
-    out: Optional[str] = typer.Option(None, "--out", help="Output directory"),
+    profile: str = typer.Option(..., "--profile", help="Path to benchmark profile JSON file"),
 ):
     """Generate JSON + HTML report."""
-    output_dir = out if out else "out"
-    _run_report(ir_path, measure_path, output_dir)
+    benchmark_profile = BenchmarkProfile.load_from_file(profile)
+    output_dir = Path(benchmark_profile.output_path)
+    ir_dir = output_dir / "ir"
+    measure_file = output_dir / "measures.json"
+    
+    if not measure_file.exists():
+        error(f"Measures file does not exist: {measure_file}")
+        raise typer.Exit(1)
+    
+    _run_report(benchmark_profile, str(ir_dir), str(measure_file), str(output_dir))
 
 
 @app.command()
@@ -355,9 +340,6 @@ def web(
     console.print()
     
     try:
-        import uvicorn
-        from cmbenchmark.web.main import app as fastapi_app
-        
         uvicorn.run(
             fastapi_app,
             host=host,
@@ -381,4 +363,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -69,7 +69,6 @@ class EcoreParser(BaseParser):
             # Load the Ecore model
             rset = ResourceSet()
             resource = rset.get_resource(URI(str(path.absolute())))
-            
             if not resource.contents:
                 raise CannotParseError("Ecore file appears to be empty")
             
@@ -82,6 +81,7 @@ class EcoreParser(BaseParser):
                 )
             
             # Register the metamodel
+            # print(f"nsURI: {mm_root.nsURI}", f"nsPrefix: {mm_root.nsPrefix}", f"name: {mm_root.name}")
             if mm_root.nsURI:
                 rset.metamodel_registry[mm_root.nsURI] = mm_root
 

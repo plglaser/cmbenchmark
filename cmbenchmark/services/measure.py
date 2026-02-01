@@ -11,6 +11,7 @@ from cmbenchmark.measures.cross_language import compute_cross_language_metrics
 from cmbenchmark.measures.language_specific import compute_language_specific_metrics
 from cmbenchmark.measures.parsing_measures import compute_parsing_measures
 from cmbenchmark.measures.lexical_measures import compute_lexical_measures
+from cmbenchmark.types.profile import ScanConfig, ParseConfig, MeasureConfig
 
 
 def _load_ir_info(ir_path: Path) -> Optional[IRInfo]:
@@ -55,7 +56,15 @@ def compute_measure(
         Tuple of (MeasureResultDataset, MeasureResultPerModel) containing computed measures
     """
     if profile is None:
-        profile = BenchmarkProfile()  # default parser_language & lexical
+        # Create a minimal default profile
+        profile = BenchmarkProfile(
+            name="default",
+            version="1.0",
+            output_path="./out",
+            scan=ScanConfig(dataset_path="./data"),
+            parse=ParseConfig(parser_language="ArchiMate-Archi"),
+            measure=MeasureConfig(),
+        )
     ir_dir = Path(ir_path)
     ir_files = list(ir_dir.glob("*.json"))
 
@@ -95,10 +104,10 @@ def compute_measure(
     # Compute lexical measures if enabled
     lexical_dataset = None
     lexical_per_model = None
-    if profile.lexical.enabled:
+    if profile.measure.lexical.enabled:
         lexical_dataset, lexical_per_model = compute_lexical_measures(
             ir_models,
-            lexical_profile=profile.lexical,
+            lexical_profile=profile.measure.lexical,
         )
 
     # Combine metrics into MeasureResultDataset

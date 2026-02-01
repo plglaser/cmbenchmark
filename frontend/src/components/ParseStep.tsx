@@ -12,14 +12,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ChevronDown, ChevronRight, Eye, Info, AlertTriangle, CheckCircle, XCircle, Clock, FileText, Zap } from 'lucide-react';
 import { apiService } from '../services/api';
 import type { ParseResponse, ModelParseDiagnostics, ScanResponse } from '../types/api';
+import type { BenchmarkProfile } from '../types/profile';
 import { IRVisualization } from './IRVisualization';
 
 interface ParseStepProps {
   scanResult: ScanResponse | null;
   onParseComplete: (result: ParseResponse) => void;
+  profile: BenchmarkProfile | null;
 }
 
-export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
+export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepProps) {
   const [parsers, setParsers] = useState<string[]>([]);
   const [selectedParser, setSelectedParser] = useState('');
   const [datasetInfoPath, setDatasetInfoPath] = useState('');
@@ -43,21 +45,30 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
       .finally(() => setLoadingParsers(false));
   }, []);
 
+  // Pre-fill from profile
+  useEffect(() => {
+    if (profile) {
+      setSelectedParser(profile.parse.parser_language);
+      setOutputDir(profile.output_path);
+    }
+  }, [profile]);
+
   // Auto-fill dataset_info_path and output_dir if scan result is available
+  // This should run after profile is set, so scanResult takes precedence for datasetInfoPath
   useEffect(() => {
     if (scanResult) {
-      // Use the dataset_info_path from scan result if available, otherwise construct it
-      if (!datasetInfoPath) {
-        const path = (scanResult.parameters as any).dataset_info_path || 
-                     `${scanResult.dataset_root}/dataset_info.json`;
-        setDatasetInfoPath(path);
-      }
-      // Use the same output directory from scan result
-      if (!outputDir && scanResult.parameters.out) {
+      // Always set dataset_info_path from scan result (profile doesn't have this)
+      const path = (scanResult.parameters as any).dataset_info_path || 
+                   `${scanResult.dataset_root}/dataset_info.json`;
+      setDatasetInfoPath(path);
+      
+      // Only set output_dir from scan result if profile is not loaded
+      // (profile output_path takes precedence)
+      if (!profile && scanResult.parameters.out) {
         setOutputDir(scanResult.parameters.out);
       }
     }
-  }, [scanResult, datasetInfoPath, outputDir]);
+  }, [scanResult, profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -217,7 +228,7 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
                 onChange={(e) => setSelectedParser(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 required
-                disabled={loading || result !== null}
+                disabled={loading || result !== null || !!profile}
               >
                 <option value="">Select a parser...</option>
                 {parsers.map((parser) => (
@@ -238,7 +249,7 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
               onChange={(e) => setDatasetInfoPath(e.target.value)}
               placeholder="/path/to/dataset_info.json"
               required
-              disabled={loading || result !== null}
+              disabled={loading || result !== null || !!profile}
             />
             <p className="text-sm text-muted-foreground">
               Path to dataset_info.json from scan stage
@@ -254,7 +265,7 @@ export function ParseStep({ scanResult, onParseComplete }: ParseStepProps) {
               onChange={(e) => setOutputDir(e.target.value)}
               placeholder="/path/to/output"
               required
-              disabled={loading || result !== null}
+              disabled={loading || result !== null || !!profile}
             />
             <p className="text-sm text-muted-foreground">
               Directory where IR files and reports will be saved

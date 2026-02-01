@@ -7,15 +7,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ScrollArea } from './ui/scroll-area';
 import { apiService } from '../services/api';
 import type { MeasureResponse, ReportResponse } from '../types/api';
+import type { BenchmarkProfile } from '../types/profile';
 import { useReportData } from '../hooks/useReportData';
 import { createDimensions } from '../data/dimensions';
 
 interface ReportStepProps {
   measureResult: MeasureResponse | null;
   onReportComplete?: (result: ReportResponse) => void;
+  profile: BenchmarkProfile | null;
 }
 
-export function ReportStep({ measureResult, onReportComplete }: ReportStepProps) {
+export function ReportStep({ measureResult, onReportComplete, profile }: ReportStepProps) {
   const [measuresPath, setMeasuresPath] = useState('');
   const [measuresPerModelPath, setMeasuresPerModelPath] = useState('');
   const [irInfoPath, setIrInfoPath] = useState('');
@@ -25,7 +27,7 @@ export function ReportStep({ measureResult, onReportComplete }: ReportStepProps)
   const [selectedDimensionId, setSelectedDimensionId] = useState<string>('parsing');
   const [selectedMeasureId, setSelectedMeasureId] = useState<string | null>(null);
 
-  // Auto-fill paths if measure result is available
+  // Auto-fill paths from measure result or profile
   useEffect(() => {
     if (measureResult) {
       if (!measuresPath) {
@@ -38,8 +40,20 @@ export function ReportStep({ measureResult, onReportComplete }: ReportStepProps)
       if (!irInfoPath && measureResult.output_dir) {
         setIrInfoPath(`${measureResult.output_dir}/ir_info.json`);
       }
+    } else if (profile) {
+      // Pre-fill from profile output path
+      const outputPath = profile.output_path;
+      if (!measuresPath) {
+        setMeasuresPath(`${outputPath}/measures.json`);
+      }
+      if (!measuresPerModelPath) {
+        setMeasuresPerModelPath(`${outputPath}/measures_per_model.json`);
+      }
+      if (!irInfoPath) {
+        setIrInfoPath(`${outputPath}/ir_info.json`);
+      }
     }
-  }, [measureResult]);
+  }, [measureResult, profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,7 +122,7 @@ export function ReportStep({ measureResult, onReportComplete }: ReportStepProps)
                 onChange={(e) => setMeasuresPath(e.target.value)}
                 placeholder="/path/to/measures.json"
                 required
-                disabled={loading}
+                disabled={loading || !!profile}
               />
             </div>
 
@@ -124,7 +138,7 @@ export function ReportStep({ measureResult, onReportComplete }: ReportStepProps)
                 onChange={(e) => setMeasuresPerModelPath(e.target.value)}
                 placeholder="/path/to/measures_per_model.json"
                 required
-                disabled={loading}
+                disabled={loading || !!profile}
               />
             </div>
 
@@ -137,7 +151,7 @@ export function ReportStep({ measureResult, onReportComplete }: ReportStepProps)
                 value={irInfoPath}
                 onChange={(e) => setIrInfoPath(e.target.value)}
                 placeholder="/path/to/ir_info.json"
-                disabled={loading}
+                disabled={loading || !!profile}
               />
               <p className="text-sm text-muted-foreground">
                 Used for linking models in tables (optional)

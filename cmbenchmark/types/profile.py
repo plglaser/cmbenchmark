@@ -1,13 +1,14 @@
 """Profile configuration for benchmark runs."""
 
-from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List, Optional
+from pydantic import BaseModel, Field
+import json
 
 
-@dataclass
-class TokenizerConfig:
+class TokenizerConfig(BaseModel):
     """Config for label tokenization + normalization."""
-    name: str  # e.g. "simple_en", "split_camel", "gpt2"
+    name: str = "simple_en"  # e.g. "simple_en", "split_camel", "gpt2"
     split_on_punct: bool = True
     split_camel_case: bool = True
     strip: bool = True
@@ -19,30 +20,96 @@ class TokenizerConfig:
     noise_token_list: Optional[str] = None  # e.g. "generic_noise_v1"
 
 
-@dataclass
-class LexicalProfile:
+class LexicalProfile(BaseModel):
     """Which lexical measures to compute and how."""
     enabled: bool = True
     # what to treat as label-eligible
     include_nodes: bool = True
     include_edges: bool = False  # relationships as labels or not
-    label_attributes: List[str] = field(default_factory=lambda: ["name"])
+    label_attributes: List[str] = Field(default_factory=lambda: ["name"])
 
-    # enable/disable individual D2 measures if you ever want that
+    # enable/disable individual D2 measures
     enable_d2_m1: bool = True
     enable_d2_m2: bool = True
     enable_d2_m3: bool = True
     enable_d2_m4: bool = True
     enable_d2_m5: bool = True
 
-    tokenizer: TokenizerConfig = field(default_factory=lambda: TokenizerConfig(name="simple_en"))
+    tokenizer: TokenizerConfig = Field(default_factory=lambda: TokenizerConfig(name="simple_en"))
 
 
-@dataclass
-class BenchmarkProfile:
+class ParseProfile(BaseModel):
+    """Configuration for parsing measures."""
+    enabled: bool = True  # Whether to compute parsing measures
+
+
+class ScanConfig(BaseModel):
+    """Configuration for the scan stage."""
+    dataset_path: str
+    include: Optional[List[str]] = None
+    exclude: Optional[List[str]] = None
+    size_limit_mb: Optional[int] = None
+
+
+class ParseConfig(BaseModel):
+    """Configuration for the parse stage."""
+    parser_language: str
+
+
+class MeasureConfig(BaseModel):
+    """Configuration for the measure stage."""
+    parse: ParseProfile = Field(default_factory=ParseProfile)
+    lexical: LexicalProfile = Field(default_factory=LexicalProfile)
+
+
+class ReportConfig(BaseModel):
+    """Configuration for the report stage."""
+    # Currently no specific config needed, but kept for extensibility
+    # This class can be extended in the future with report-specific settings
+
+
+class BenchmarkProfile(BaseModel):
     """Benchmark profile configuration."""
-    profile_version: str = "1.0"
-    name: str = "default"
-    parser_language: str = "ArchiMate-Archi"  # used by parse_from_scan
-    description: str = ""
-    lexical: LexicalProfile = field(default_factory=LexicalProfile)
+    name: str
+    version: str
+    output_path: str
+    scan: ScanConfig
+    parse: ParseConfig
+    measure: MeasureConfig = Field(default_factory=MeasureConfig)
+    report: ReportConfig = Field(default_factory=ReportConfig)
+    
+    @classmethod
+    def load_from_file(cls, profile_path: str) -> "BenchmarkProfile":
+        """
+        Load profile from JSON file and resolve relative paths relative to profile file location.
+        
+        Args:
+            profile_path: Path to profile JSON file
+            
+        Returns:
+            BenchmarkProfile instance with resolved paths
+        """
+        
+        profile_file = Path(profile_path).resolve()
+        if not profile_file.exists():
+            raise FileNotFoundError(f"Profile file does not exist: {profile_path}")
+        
+        with open(profile_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        
+        # Resolve relative paths in scan.dataset_path relative to profile file location
+        profile_dir = profile_file.parent
+        if "scan" in data and "dataset_path" in data["scan"]:
+            dataset_path = data["scan"]["dataset_path"]
+            if not Path(dataset_path).is_absolute():
+                # Resolve relative to profile file location
+                data["scan"]["dataset_path"] = str((profile_dir / dataset_path).resolve())
+        
+        # Resolve relative paths in output_path relative to profile file location
+        if "output_path" in data:
+            output_path = data["output_path"]
+            if not Path(output_path).is_absolute():
+                # Resolve relative to profile file location
+                data["output_path"] = str((profile_dir / output_path).resolve())
+        
+        return cls(**data)

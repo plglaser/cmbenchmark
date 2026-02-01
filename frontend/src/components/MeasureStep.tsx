@@ -6,22 +6,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Loader2, CheckCircle2, FileJson } from 'lucide-react';
 import { apiService } from '../services/api';
 import type { ParseResponse, MeasureResponse } from '../types/api';
+import type { BenchmarkProfile } from '../types/profile';
 
 interface MeasureStepProps {
   parseResult: ParseResponse | null;
   onMeasureComplete: (result: MeasureResponse) => void;
+  profile: BenchmarkProfile | null;
 }
 
-export function MeasureStep({ parseResult, onMeasureComplete }: MeasureStepProps) {
+export function MeasureStep({ parseResult, onMeasureComplete, profile }: MeasureStepProps) {
   const [irDir, setIrDir] = useState('');
   const [outputDir, setOutputDir] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MeasureResponse | null>(null);
 
-  // Auto-fill IR directory and output directory if parse result is available
+  // Pre-fill from profile first, then from parse result
   useEffect(() => {
-    if (parseResult && parseResult.parameters.output_dir) {
+    if (profile) {
+      setOutputDir(profile.output_path);
+      // IR directory is typically in output_dir/ir
+      setIrDir(`${profile.output_path}/ir`);
+    } else if (parseResult && parseResult.parameters.output_dir) {
       const outputPath = parseResult.parameters.output_dir;
       // IR directory is typically in output_dir/ir
       if (!irDir) {
@@ -32,7 +38,7 @@ export function MeasureStep({ parseResult, onMeasureComplete }: MeasureStepProps
         setOutputDir(outputPath);
       }
     }
-  }, [parseResult]);
+  }, [profile, parseResult]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +79,7 @@ export function MeasureStep({ parseResult, onMeasureComplete }: MeasureStepProps
               onChange={(e) => setIrDir(e.target.value)}
               placeholder="/path/to/output/ir"
               required
-              disabled={loading || result !== null}
+              disabled={loading || result !== null || !!profile}
             />
             <p className="text-sm text-muted-foreground">
               Directory containing IR JSON files (pre-filled from previous step)
@@ -90,7 +96,7 @@ export function MeasureStep({ parseResult, onMeasureComplete }: MeasureStepProps
               placeholder="/path/to/output"
               required
               className="font-mono"
-              disabled={loading || result !== null}
+              disabled={loading || result !== null || !!profile}
             />
             <p className="text-sm text-muted-foreground">
               Directory where <code className="font-mono">measures.json</code> and{' '}
