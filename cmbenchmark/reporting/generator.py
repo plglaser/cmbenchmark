@@ -178,44 +178,6 @@ def _generate_html_report(report_data: Dict[str, Any]) -> str:
         </div>
 
         <div class="section">
-            <h2>Cross-Language Metrics</h2>
-            {% if report_data.metrics.avg_elements_per_model %}
-            <div class="metric-card">
-                <div class="metric-label">Average Elements per Model</div>
-                <div class="metric-value">{{ report_data.metrics.avg_elements_per_model }}</div>
-            </div>
-            {% endif %}
-            {% if report_data.metrics.avg_nodes_per_model %}
-            <div class="metric-card">
-                <div class="metric-label">Average Nodes per Model</div>
-                <div class="metric-value">{{ report_data.metrics.avg_nodes_per_model }}</div>
-            </div>
-            {% endif %}
-            {% if report_data.metrics.avg_edges_per_model %}
-            <div class="metric-card">
-                <div class="metric-label">Average Edges per Model</div>
-                <div class="metric-value">{{ report_data.metrics.avg_edges_per_model }}</div>
-            </div>
-            {% endif %}
-            {% if report_data.metrics.edge_to_node_ratio %}
-            <div class="metric-card">
-                <div class="metric-label">Edge-to-Node Ratio</div>
-                <div class="metric-value">{{ report_data.metrics.edge_to_node_ratio }}</div>
-            </div>
-            {% endif %}
-        </div>
-
-        {% if report_data.metrics.language_specific %}
-        <div class="section">
-            <h2>Language-Specific Metrics</h2>
-            {% for lang, metrics in report_data.metrics.language_specific.items() %}
-            <h3>{{ lang }}</h3>
-            <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">{{ metrics | tojson(indent=2) }}</pre>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="section">
             <h2>Raw Metrics Data</h2>
             <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">{{ report_data.metrics | tojson(indent=2) }}</pre>
         </div>

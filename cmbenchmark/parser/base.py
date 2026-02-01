@@ -61,7 +61,7 @@ class BaseParser(ABC):
             warning_type: Type of warning
             message: Warning message
         """
-        warn(message)
+        # warn(message)
         self._stats().add_warning(warning_type, message)
     
     def skip_with_warning(self, warning_type: WarningType, message: str):
@@ -72,7 +72,7 @@ class BaseParser(ABC):
             warning_type: Type of warning
             message: Warning message explaining why element was skipped
         """
-        warn(message)
+        # warn(message)
         self._stats().add_skip(warning_type, message)
 
     @abstractmethod

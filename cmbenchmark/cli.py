@@ -190,11 +190,6 @@ def _run_measure(profile: BenchmarkProfile, ir_path: str, out: str):
     table.add_column("Value", style="green")
 
     table.add_row("Number of Models", str(measure_dataset.num_models))
-    if measure_dataset.avg_elements_per_model:
-        table.add_row(
-            "Avg Elements/Model",
-            str(measure_dataset.avg_elements_per_model),
-        )
 
     console.print("\n")
     console.print(table)

@@ -274,14 +274,6 @@ class LexicalMeasuresPerModel:
 class MeasureResultDataset:
     """Dataset-level computed measures for IR models."""
     num_models: int
-    avg_elements_per_model: float
-    avg_nodes_per_model: float
-    avg_edges_per_model: float
-    total_elements: int
-    total_nodes: int
-    total_edges: int
-    edge_to_node_ratio: float
-    language_specific: Dict[str, Any]
     parsing: ParsingMeasuresDataset
     lexical: Optional["LexicalMeasuresDataset"] = None
 
@@ -367,14 +359,6 @@ class MeasureResultDataset:
         
         return cls(
             num_models=data["num_models"],
-            avg_elements_per_model=data["avg_elements_per_model"],
-            avg_nodes_per_model=data["avg_nodes_per_model"],
-            avg_edges_per_model=data["avg_edges_per_model"],
-            total_elements=data["total_elements"],
-            total_nodes=data["total_nodes"],
-            total_edges=data["total_edges"],
-            edge_to_node_ratio=data["edge_to_node_ratio"],
-            language_specific=data["language_specific"],
             parsing=parsing,
             lexical=lexical,
         )

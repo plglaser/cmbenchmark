@@ -7,8 +7,6 @@ from cmbenchmark.types.measures import MeasureResultDataset, MeasureResultPerMod
 from cmbenchmark.types.dataset import IRInfo
 from cmbenchmark.types.ir import IR
 from cmbenchmark.types.profile import BenchmarkProfile
-from cmbenchmark.measures.cross_language import compute_cross_language_metrics
-from cmbenchmark.measures.language_specific import compute_language_specific_metrics
 from cmbenchmark.measures.parsing_measures import compute_parsing_measures
 from cmbenchmark.measures.lexical_measures import compute_lexical_measures
 from cmbenchmark.types.profile import ScanConfig, ParseConfig, MeasureConfig
@@ -92,12 +90,6 @@ def compute_measure(
             "Expected locations: {ir_path}/ir_info.json or {ir_path}/../ir_info.json"
         )
 
-    # Compute cross-language metrics
-    cross_metrics = compute_cross_language_metrics(ir_models)
-
-    # Compute language-specific metrics
-    lang_metrics = compute_language_specific_metrics(ir_models)
-
     # Compute parsing measures (returns both dataset and per-model)
     parsing_dataset, parsing_per_model = compute_parsing_measures(ir_info)
 
@@ -113,14 +105,6 @@ def compute_measure(
     # Combine metrics into MeasureResultDataset
     dataset_result = MeasureResultDataset(
         num_models=len(ir_models),
-        avg_elements_per_model=cross_metrics.get("avg_elements_per_model", 0.0),
-        avg_nodes_per_model=cross_metrics.get("avg_nodes_per_model", 0.0),
-        avg_edges_per_model=cross_metrics.get("avg_edges_per_model", 0.0),
-        total_elements=cross_metrics.get("total_elements", 0),
-        total_nodes=cross_metrics.get("total_nodes", 0),
-        total_edges=cross_metrics.get("total_edges", 0),
-        edge_to_node_ratio=cross_metrics.get("edge_to_node_ratio", 0.0),
-        language_specific=lang_metrics.get("metrics", {}),
         parsing=parsing_dataset,
         lexical=lexical_dataset,
     )
