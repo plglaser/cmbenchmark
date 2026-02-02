@@ -260,6 +260,59 @@ class LexicalMeasuresDataset:
     d2_m5_lexical_diversity: D2M5LexicalDiversityDataset
 
 
+# ========== D3 Construct Coverage Measures ==========
+
+# ---------- D3.M1 — Construct Presence ----------
+@dataclass
+class D3M1ConstructPresencePerModel:
+    """Per-model D3.M1 construct presence measure."""
+    constructs_available_count: int
+    constructs_observed_count: int
+    coverage_share: float
+    present_constructs: Dict[str, bool] = field(default_factory=dict)  # construct_id -> bool
+    unknown_node_type_count: int = 0
+    unknown_edge_type_count: int = 0
+    unknown_type_share: float = 0.0
+    unknown_type_examples: Dict[str, int] = field(default_factory=dict)  # raw_type -> count
+
+
+@dataclass
+class D3M1ConstructPresenceDataset:
+    """Dataset-level D3.M1 construct presence measure."""
+    constructs_available_count: int
+    constructs_observed_count: int
+    coverage_share: float
+    coverage_share_stats: DistributionSummary
+    unknown_type_share_dataset: float = 0.0
+
+
+# ---------- D3.M3 — Construct Frequency ----------
+@dataclass
+class D3M3ConstructFrequencyPerModel:
+    """Per-model D3.M3 construct frequency measure."""
+    count_by_construct: Dict[str, int] = field(default_factory=dict)  # construct_id -> count
+
+
+@dataclass
+class D3M3ConstructFrequencyDataset:
+    """Dataset-level D3.M3 construct frequency measure."""
+    dataset_count_by_construct: Dict[str, int] = field(default_factory=dict)  # construct_id -> total_count
+
+
+@dataclass
+class ConstructMeasuresDataset:
+    """Dataset-level construct coverage measures."""
+    d3_m1_construct_presence: D3M1ConstructPresenceDataset
+    d3_m3_construct_frequency: D3M3ConstructFrequencyDataset
+
+
+@dataclass
+class ConstructMeasuresPerModel:
+    """Per-model construct coverage measures."""
+    d3_m1_construct_presence: Dict[str, D3M1ConstructPresencePerModel] = field(default_factory=dict)
+    d3_m3_construct_frequency: Dict[str, D3M3ConstructFrequencyPerModel] = field(default_factory=dict)
+
+
 @dataclass
 class LexicalMeasuresPerModel:
     """Per-model lexical measures."""
@@ -276,6 +329,7 @@ class MeasureResultDataset:
     num_models: int
     parsing: ParsingMeasuresDataset
     lexical: Optional["LexicalMeasuresDataset"] = None
+    constructs: Optional["ConstructMeasuresDataset"] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -357,10 +411,27 @@ class MeasureResultDataset:
                 d2_m5_lexical_diversity=D2M5LexicalDiversityDataset(**d2_m5_data),
             )
         
+        # Convert construct measures if present
+        constructs = None
+        constructs_data = data.get("constructs")
+        if constructs_data:
+            d3_m1_data = constructs_data.get("d3_m1_construct_presence", {})
+            d3_m3_data = constructs_data.get("d3_m3_construct_frequency", {})
+            
+            # Convert DistributionSummary dicts to objects
+            if isinstance(d3_m1_data.get("coverage_share_stats"), dict):
+                d3_m1_data["coverage_share_stats"] = _to_distribution_summary(d3_m1_data["coverage_share_stats"])
+            
+            constructs = ConstructMeasuresDataset(
+                d3_m1_construct_presence=D3M1ConstructPresenceDataset(**d3_m1_data),
+                d3_m3_construct_frequency=D3M3ConstructFrequencyDataset(**d3_m3_data),
+            )
+        
         return cls(
             num_models=data["num_models"],
             parsing=parsing,
             lexical=lexical,
+            constructs=constructs,
         )
 
 
@@ -369,6 +440,7 @@ class MeasureResultPerModel:
     """Per-model computed measures for IR models."""
     parsing: ParsingMeasuresPerModel
     lexical: Optional["LexicalMeasuresPerModel"] = None
+    constructs: Optional["ConstructMeasuresPerModel"] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -419,4 +491,23 @@ class MeasureResultPerModel:
                 d2_m5_lexical_diversity=_to_lexical_per_model_dict("d2_m5_lexical_diversity", D2M5LexicalDiversityPerModel),
             )
         
-        return cls(parsing=parsing, lexical=lexical)
+        # Convert construct measures if present
+        constructs = None
+        constructs_data = data.get("constructs")
+        if constructs_data:
+            def _to_construct_per_model_dict(measure_name: str, per_model_class: type) -> Dict[str, Any]:
+                """Convert dict of per-model construct data to typed objects."""
+                result = {}
+                for model_id, model_data in constructs_data.get(measure_name, {}).items():
+                    if isinstance(model_data, dict):
+                        result[model_id] = per_model_class(**model_data)
+                    else:
+                        result[model_id] = model_data
+                return result
+            
+            constructs = ConstructMeasuresPerModel(
+                d3_m1_construct_presence=_to_construct_per_model_dict("d3_m1_construct_presence", D3M1ConstructPresencePerModel),
+                d3_m3_construct_frequency=_to_construct_per_model_dict("d3_m3_construct_frequency", D3M3ConstructFrequencyPerModel),
+            )
+        
+        return cls(parsing=parsing, lexical=lexical, constructs=constructs)

@@ -69,6 +69,7 @@ class MeasureRequest(BaseModel):
     """Request schema for measure endpoint."""
     ir_dir: str = Field(..., description="Path to IR directory containing IR JSON files")
     output_dir: str = Field(..., description="Path to output directory for measures JSON files")
+    profile_path: Optional[str] = Field(None, description="Optional path to benchmark profile JSON file for measure configuration")
 
 
 class MeasureResponse(BaseModel):

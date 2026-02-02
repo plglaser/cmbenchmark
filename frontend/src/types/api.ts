@@ -113,6 +113,7 @@ export interface IRData {
 export interface MeasureRequest {
   ir_dir: string;
   output_dir: string;
+  profile_path?: string | null;
 }
 
 export interface MeasureResponse {

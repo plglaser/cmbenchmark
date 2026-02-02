@@ -14,7 +14,9 @@ from cmbenchmark.types.profile import (
     MeasureConfig,
     ReportConfig,
     ParseProfile,
+    ConstructCoverageProfile,
 )
+from cmbenchmark.types.constructs import ConstructDef
 
 __all__ = [
     "IR",
@@ -34,5 +36,7 @@ __all__ = [
     "MeasureConfig",
     "ReportConfig",
     "ParseProfile",
+    "ConstructCoverageProfile",
+    "ConstructDef",
 ]
 

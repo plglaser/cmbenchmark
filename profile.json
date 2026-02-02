@@ -37,6 +37,12 @@
         "stopword_list": null,
         "noise_token_list": null
       }
+    },
+    "constructs": {
+        "enabled": true,
+        "enable_d3_m1": true,
+        "enable_d3_m2": true,
+        "enable_d3_m3": true
     }
   },
   "report": {}

@@ -144,8 +144,14 @@ async def measure(request: MeasureRequest):
     The measures.json and measures_per_model.json files are saved to the output directory.
     """
     try:
+        # Load profile if provided
+        profile = None
+        if request.profile_path:
+            from cmbenchmark.types.profile import BenchmarkProfile
+            profile = BenchmarkProfile.load_from_file(request.profile_path)
+        
         # Compute measures
-        dataset_measures, per_model_measures = compute_measure(request.ir_dir)
+        dataset_measures, per_model_measures = compute_measure(request.ir_dir, profile=profile)
         
         # Save measures to output directory
         output_dir = Path(request.output_dir).resolve()

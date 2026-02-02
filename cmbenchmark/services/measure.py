@@ -9,6 +9,7 @@ from cmbenchmark.types.ir import IR
 from cmbenchmark.types.profile import BenchmarkProfile
 from cmbenchmark.measures.parsing_measures import compute_parsing_measures
 from cmbenchmark.measures.lexical_measures import compute_lexical_measures
+from cmbenchmark.measures.construct_measures import compute_construct_measures
 from cmbenchmark.types.profile import ScanConfig, ParseConfig, MeasureConfig
 
 
@@ -53,17 +54,38 @@ def compute_measure(
     Returns:
         Tuple of (MeasureResultDataset, MeasureResultPerModel) containing computed measures
     """
+    ir_dir = Path(ir_path)
+    
     if profile is None:
         # Create a minimal default profile
+        from cmbenchmark.types.profile import ConstructCoverageProfile
+        parser_language = "ArchiMate-Archi"  # Default
+        # Try to infer from IR models if available
+        ir_files = list(ir_dir.glob("*.json"))
+        if ir_files:
+            try:
+                sample_ir = IR.load(str(ir_files[0]))
+                parser_language = sample_ir.language
+            except Exception:
+                pass
+        
+        # Auto-load construct coverage for the parser language
+        construct_profile = ConstructCoverageProfile.load_for_language(
+            parser_language=parser_language,
+            construct_config={"enabled": True, "enable_d3_m1": True, "enable_d3_m2": True, "enable_d3_m3": True}
+        )
+        
+        measure_config = MeasureConfig()
+        measure_config.constructs = construct_profile
+        
         profile = BenchmarkProfile(
             name="default",
             version="1.0",
             output_path="./out",
             scan=ScanConfig(dataset_path="./data"),
-            parse=ParseConfig(parser_language="ArchiMate-Archi"),
-            measure=MeasureConfig(),
+            parse=ParseConfig(parser_language=parser_language),
+            measure=measure_config,
         )
-    ir_dir = Path(ir_path)
     ir_files = list(ir_dir.glob("*.json"))
 
     if not ir_files:
@@ -102,17 +124,28 @@ def compute_measure(
             lexical_profile=profile.measure.lexical,
         )
 
+    # Compute construct measures if enabled
+    construct_dataset = None
+    construct_per_model = None
+    if profile.measure.constructs and profile.measure.constructs.enabled:
+        construct_dataset, construct_per_model = compute_construct_measures(
+            ir_models,
+            construct_profile=profile.measure.constructs,
+        )
+
     # Combine metrics into MeasureResultDataset
     dataset_result = MeasureResultDataset(
         num_models=len(ir_models),
         parsing=parsing_dataset,
         lexical=lexical_dataset,
+        constructs=construct_dataset,
     )
 
     # Create per-model result
     per_model_result = MeasureResultPerModel(
         parsing=parsing_per_model,
         lexical=lexical_per_model,
+        constructs=construct_per_model,
     )
 
     return dataset_result, per_model_result

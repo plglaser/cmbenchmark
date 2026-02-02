@@ -5,6 +5,9 @@ export function useReportData(reportData: ReportResponse | null) {
   return useMemo(() => {
     if (!reportData) return null;
 
+
+    // TODO: Move this to server-side later
+    
     const measures = reportData.measures;
     const measuresPerModel = reportData.measures_per_model;
     const irInfo = reportData.ir_info;
@@ -214,6 +217,89 @@ export function useReportData(reportData: ReportResponse | null) {
           .slice(0, 10)
       : [];
 
+    // D3.M1 - Construct Presence
+    const constructPresence = measures?.constructs?.d3_m1_construct_presence;
+    
+    // Debug: log if constructs data is missing
+    if (!measures?.constructs) {
+      console.debug('Construct coverage data not found in measures. Make sure construct coverage is enabled in the profile and measures were recomputed.');
+    }
+    const constructPresenceChartData = constructPresence
+      ? {
+          observed: constructPresence.constructs_observed_count,
+          missing: constructPresence.constructs_available_count - constructPresence.constructs_observed_count,
+          observedShare: constructPresence.coverage_share,
+          missingShare: 1 - constructPresence.coverage_share,
+        }
+      : null;
+    
+    const coverageShares = measuresPerModel?.constructs?.d3_m1_construct_presence
+      ? Object.values(measuresPerModel.constructs.d3_m1_construct_presence).map((m: any) => m.coverage_share)
+      : [];
+    const coverageShareHistogram = createHistogramData(coverageShares);
+    
+    // Top 10 models with lowest/highest coverage
+    const coverageOutliers = measuresPerModel?.constructs?.d3_m1_construct_presence
+      ? Object.entries(measuresPerModel.constructs.d3_m1_construct_presence)
+          .map(([modelId, data]: [string, any]) => ({
+            modelId,
+            relpath: irInfo?.index?.[modelId] || modelId,
+            coverageShare: data.coverage_share,
+          }))
+      : [];
+    const lowestCoverage = [...coverageOutliers].sort((a, b) => a.coverageShare - b.coverageShare).slice(0, 10);
+    const highestCoverage = [...coverageOutliers].sort((a, b) => b.coverageShare - a.coverageShare).slice(0, 10);
+    
+    // Missing constructs (constructs never observed)
+    const missingConstructs = constructPresence && measuresPerModel?.constructs?.d3_m1_construct_presence
+      ? (() => {
+          const allPresent = new Set<string>();
+          const allConstructs = new Set<string>();
+          
+          // Collect all constructs that were present in at least one model
+          Object.values(measuresPerModel.constructs.d3_m1_construct_presence).forEach((m: any) => {
+            Object.entries(m.present_constructs || {}).forEach(([cid, present]: [string, any]) => {
+              allConstructs.add(cid);
+              if (present) allPresent.add(cid);
+            });
+          });
+          
+          // Find constructs that were never present
+          const missing = Array.from(allConstructs).filter((cid) => !allPresent.has(cid));
+          
+          // Note: We'd need access to construct definitions to get layer info
+          // For now, just return construct IDs
+          return missing.map((cid) => ({ constructId: cid }));
+        })()
+      : [];
+    
+    // Unknown types (aggregate from all models)
+    const unknownTypes = measuresPerModel?.constructs?.d3_m1_construct_presence
+      ? (() => {
+          const typeCounts: Record<string, number> = {};
+          Object.values(measuresPerModel.constructs.d3_m1_construct_presence).forEach((m: any) => {
+            Object.entries(m.unknown_type_examples || {}).forEach(([type, count]: [string, any]) => {
+              typeCounts[type] = (typeCounts[type] || 0) + count;
+            });
+          });
+          return Object.entries(typeCounts)
+            .map(([type, count]) => ({ type, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+        })()
+      : [];
+
+    // D3.M3 - Construct Frequency
+    const constructFrequency = measures?.constructs?.d3_m3_construct_frequency;
+    const constructFrequencyData = constructFrequency?.dataset_count_by_construct
+      ? Object.entries(constructFrequency.dataset_count_by_construct)
+          .map(([constructId, count]: [string, any]) => ({
+            constructId,
+            count,
+          }))
+          .sort((a, b) => b.count - a.count)
+      : [];
+
     return {
       parseStatus,
       parseStatusChartData,
@@ -244,6 +330,16 @@ export function useReportData(reportData: ReportResponse | null) {
       singleWordShareHistogram,
       lexicalDiversity,
       lexicalDiversityTop10,
+      // Construct measures
+      constructPresence,
+      constructPresenceChartData,
+      coverageShareHistogram,
+      lowestCoverage,
+      highestCoverage,
+      missingConstructs,
+      unknownTypes,
+      constructFrequency,
+      constructFrequencyData,
     };
   }, [reportData]);
 }
