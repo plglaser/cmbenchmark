@@ -1,0 +1,442 @@
+{
+    "language": "Ecore",
+    "constructs": [
+        {
+            "id": "ecore:EPackage",
+            "kind": "node_type",
+            "match_type": "EPackage",
+            "match_data_equals": {},
+            "meta": {
+                "group": "metaclass"
+            },
+            "description": "Ecore metamodel element 'EPackage'."
+        },
+        {
+            "id": "ecore:EClass",
+            "kind": "node_type",
+            "match_type": "EClass",
+            "match_data_equals": {},
+            "meta": {
+                "group": "metaclass"
+            },
+            "description": "Ecore metamodel element 'EClass'."
+        },
+        {
+            "id": "ecore:EAttribute",
+            "kind": "node_type",
+            "match_type": "EAttribute",
+            "match_data_equals": {},
+            "meta": {
+                "group": "metaclass"
+            },
+            "description": "Ecore metamodel element 'EAttribute'."
+        },
+        {
+            "id": "ecore:EOperation",
+            "kind": "node_type",
+            "match_type": "EOperation",
+            "match_data_equals": {},
+            "meta": {
+                "group": "metaclass"
+            },
+            "description": "Ecore metamodel element 'EOperation'."
+        },
+        {
+            "id": "ecore:EParameter",
+            "kind": "node_type",
+            "match_type": "EParameter",
+            "match_data_equals": {},
+            "meta": {
+                "group": "metaclass"
+            },
+            "description": "Ecore metamodel element 'EParameter'."
+        },
+        {
+            "id": "ecore:EEnum",
+            "kind": "node_type",
+            "match_type": "EEnum",
+            "match_data_equals": {},
+            "meta": {
+                "group": "metaclass"
+            },
+            "description": "Ecore metamodel element 'EEnum'."
+        },
+        {
+            "id": "ecore:EEnumLiteral",
+            "kind": "node_type",
+            "match_type": "EEnumLiteral",
+            "match_data_equals": {},
+            "meta": {
+                "group": "metaclass"
+            },
+            "description": "Ecore metamodel element 'EEnumLiteral'."
+        },
+        {
+            "id": "ecore:EDataType_Internal",
+            "kind": "node_type",
+            "match_type": "EDataType",
+            "match_data_equals": {
+                "external": false
+            },
+            "meta": {
+                "group": "metaclass"
+            },
+            "description": "Ecore metamodel element 'EDataType' (internal)."
+        },
+        {
+            "id": "ecore:EDataType_External",
+            "kind": "node_type",
+            "match_type": "EDataType",
+            "match_data_equals": {
+                "external": true
+            },
+            "meta": {
+                "group": "metaclass"
+            },
+            "description": "Ecore metamodel element 'EDataType' (external)."
+        },
+        {
+            "id": "ecore:Contains_Subpackage",
+            "kind": "edge_type",
+            "match_type": "Contains",
+            "match_data_equals": {
+                "feature": "eSubpackages"
+            },
+            "meta": {
+                "group": "containment"
+            },
+            "description": "Ecore relationship 'Contains' (feature=eSubpackages)."
+        },
+        {
+            "id": "ecore:Contains_Classifier",
+            "kind": "edge_type",
+            "match_type": "Contains",
+            "match_data_equals": {
+                "feature": "eClassifiers"
+            },
+            "meta": {
+                "group": "containment"
+            },
+            "description": "Ecore relationship 'Contains' (feature=eClassifiers)."
+        },
+        {
+            "id": "ecore:Contains_Attribute",
+            "kind": "edge_type",
+            "match_type": "Contains",
+            "match_data_equals": {
+                "feature": "eStructuralFeatures",
+                "kind": "EAttribute"
+            },
+            "meta": {
+                "group": "containment"
+            },
+            "description": "Ecore relationship 'Contains' (feature=eStructuralFeatures, kind=EAttribute)."
+        },
+        {
+            "id": "ecore:Contains_Operation",
+            "kind": "edge_type",
+            "match_type": "Contains",
+            "match_data_equals": {
+                "feature": "eOperations"
+            },
+            "meta": {
+                "group": "containment"
+            },
+            "description": "Ecore relationship 'Contains' (feature=eOperations)."
+        },
+        {
+            "id": "ecore:Contains_Parameter",
+            "kind": "edge_type",
+            "match_type": "Contains",
+            "match_data_equals": {
+                "feature": "eParameters"
+            },
+            "meta": {
+                "group": "containment"
+            },
+            "description": "Ecore relationship 'Contains' (feature=eParameters)."
+        },
+        {
+            "id": "ecore:Contains_EnumLiteral",
+            "kind": "edge_type",
+            "match_type": "Contains",
+            "match_data_equals": {
+                "feature": "eLiterals"
+            },
+            "meta": {
+                "group": "containment"
+            },
+            "description": "Ecore relationship 'Contains' (feature=eLiterals)."
+        },
+        {
+            "id": "ecore:Generalization",
+            "kind": "edge_type",
+            "match_type": "Generalization",
+            "match_data_equals": {},
+            "meta": {
+                "group": "typing"
+            },
+            "description": "Ecore relationship 'Generalization'."
+        },
+        {
+            "id": "ecore:Reference",
+            "kind": "edge_type",
+            "match_type": "Reference",
+            "match_data_equals": {},
+            "meta": {
+                "group": "references"
+            },
+            "description": "Ecore relationship 'Reference'."
+        },
+        {
+            "id": "ecore:Containment",
+            "kind": "edge_type",
+            "match_type": "Containment",
+            "match_data_equals": {},
+            "meta": {
+                "group": "references"
+            },
+            "description": "Ecore relationship 'Containment'."
+        },
+        {
+            "id": "ecore:AttributeType",
+            "kind": "edge_type",
+            "match_type": "AttributeType",
+            "match_data_equals": {
+                "kind": "attributeType"
+            },
+            "meta": {
+                "group": "typing"
+            },
+            "description": "Ecore relationship 'AttributeType' (kind=attributeType)."
+        },
+        {
+            "id": "ecore:ReturnType",
+            "kind": "edge_type",
+            "match_type": "Type",
+            "match_data_equals": {
+                "kind": "return"
+            },
+            "meta": {
+                "group": "typing"
+            },
+            "description": "Ecore relationship 'Type' (kind=return)."
+        },
+        {
+            "id": "ecore:ParameterType",
+            "kind": "edge_type",
+            "match_type": "Type",
+            "match_data_equals": {
+                "kind": "parameter"
+            },
+            "meta": {
+                "group": "typing"
+            },
+            "description": "Ecore relationship 'Type' (kind=parameter)."
+        },
+        {
+            "id": "ecore:EClass_Abstract",
+            "description": "Ecore metamodel element 'EClass' (abstract).",
+            "kind": "node_type",
+            "match_type": "EClass",
+            "match_data_equals": {
+                "abstract": true
+            },
+            "meta": {
+                "group": "modifier"
+            }
+        },
+        {
+            "id": "ecore:EClass_Interface",
+            "description": "Ecore metamodel element 'EClass' (interface).",
+            "kind": "node_type",
+            "match_type": "EClass",
+            "match_data_equals": {
+                "interface": true
+            },
+            "meta": {
+                "group": "modifier"
+            }
+        },
+        {
+            "id": "ecore:EAttribute_ID",
+            "description": "Ecore metamodel element 'EAttribute' (ID attribute).",
+            "kind": "node_type",
+            "match_type": "EAttribute",
+            "match_data_equals": {
+                "iD": true
+            },
+            "meta": {
+                "group": "modifier"
+            }
+        },
+        {
+            "id": "ecore:EAttribute_Required",
+            "description": "Ecore metamodel element 'EAttribute' (required; lowerBound >= 1).",
+            "kind": "node_type",
+            "match_type": "EAttribute",
+            "match_data_equals": {
+                "required": true
+            },
+            "meta": {
+                "group": "cardinality"
+            }
+        },
+        {
+            "id": "ecore:EAttribute_Many",
+            "description": "Ecore metamodel element 'EAttribute' (multi-valued; upperBound = -1).",
+            "kind": "node_type",
+            "match_type": "EAttribute",
+            "match_data_equals": {
+                "upperBound": -1
+            },
+            "meta": {
+                "group": "cardinality"
+            }
+        },
+        {
+            "id": "ecore:EAttribute_Unordered",
+            "description": "Ecore metamodel element 'EAttribute' (unordered; ordered=false).",
+            "kind": "node_type",
+            "match_type": "EAttribute",
+            "match_data_equals": {
+                "ordered": false
+            },
+            "meta": {
+                "group": "collection"
+            }
+        },
+        {
+            "id": "ecore:EAttribute_NonUnique",
+            "description": "Ecore metamodel element 'EAttribute' (non-unique; unique=false).",
+            "kind": "node_type",
+            "match_type": "EAttribute",
+            "match_data_equals": {
+                "unique": false
+            },
+            "meta": {
+                "group": "collection"
+            }
+        },
+        {
+            "id": "ecore:EReference_Required",
+            "description": "Ecore relationship 'Reference'/'Containment' (required; lowerBound >= 1).",
+            "kind": "edge_type",
+            "match_type": "Reference",
+            "match_data_equals": {
+                "required": true
+            },
+            "meta": {
+                "group": "cardinality"
+            }
+        },
+        {
+            "id": "ecore:EContainment_Required",
+            "description": "Ecore relationship 'Containment' (required; lowerBound >= 1).",
+            "kind": "edge_type",
+            "match_type": "Containment",
+            "match_data_equals": {
+                "required": true
+            },
+            "meta": {
+                "group": "cardinality"
+            }
+        },
+        {
+            "id": "ecore:EReference_Many",
+            "description": "Ecore relationship 'Reference'/'Containment' (multi-valued; upperBound = -1).",
+            "kind": "edge_type",
+            "match_type": "Reference",
+            "match_data_equals": {
+                "upperBound": -1
+            },
+            "meta": {
+                "group": "cardinality"
+            }
+        },
+        {
+            "id": "ecore:EContainment_Many",
+            "description": "Ecore relationship 'Containment' (multi-valued; upperBound = -1).",
+            "kind": "edge_type",
+            "match_type": "Containment",
+            "match_data_equals": {
+                "upperBound": -1
+            },
+            "meta": {
+                "group": "cardinality"
+            }
+        },
+        {
+            "id": "ecore:EReference_HasOpposite",
+            "description": "Ecore relationship 'Reference'/'Containment' (has eOpposite).",
+            "kind": "edge_type",
+            "match_type": "Reference",
+            "match_data_equals": {
+                "hasOpposite": true
+            },
+            "meta": {
+                "group": "references"
+            }
+        },
+        {
+            "id": "ecore:EContainment_HasOpposite",
+            "description": "Ecore relationship 'Containment' (has eOpposite).",
+            "kind": "edge_type",
+            "match_type": "Containment",
+            "match_data_equals": {
+                "hasOpposite": true
+            },
+            "meta": {
+                "group": "references"
+            }
+        },
+        {
+            "id": "ecore:EReference_Unordered",
+            "description": "Ecore relationship 'Reference' (unordered; ordered=false).",
+            "kind": "edge_type",
+            "match_type": "Reference",
+            "match_data_equals": {
+                "ordered": false
+            },
+            "meta": {
+                "group": "collection"
+            }
+        },
+        {
+            "id": "ecore:EContainment_Unordered",
+            "description": "Ecore relationship 'Containment' (unordered; ordered=false).",
+            "kind": "edge_type",
+            "match_type": "Containment",
+            "match_data_equals": {
+                "ordered": false
+            },
+            "meta": {
+                "group": "collection"
+            }
+        },
+        {
+            "id": "ecore:EReference_NonUnique",
+            "description": "Ecore relationship 'Reference' (non-unique; unique=false).",
+            "kind": "edge_type",
+            "match_type": "Reference",
+            "match_data_equals": {
+                "unique": false
+            },
+            "meta": {
+                "group": "collection"
+            }
+        },
+        {
+            "id": "ecore:EContainment_NonUnique",
+            "description": "Ecore relationship 'Containment' (non-unique; unique=false).",
+            "kind": "edge_type",
+            "match_type": "Containment",
+            "match_data_equals": {
+                "unique": false
+            },
+            "meta": {
+                "group": "collection"
+            }
+        }
+    ]
+}

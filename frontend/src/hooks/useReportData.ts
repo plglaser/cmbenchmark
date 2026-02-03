@@ -30,6 +30,39 @@ export function useReportData(reportData: ReportResponse | null) {
       }));
     };
 
+    // Histogram helper specialized for shares in [0, 1] with percent bins (prevents "0-0%" labels).
+    const createShareHistogramData = (values: number[], bins: number = 20) => {
+      if (values.length === 0) return [];
+      const clamped = values
+        .map((v) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0))
+        .filter((v) => Number.isFinite(v));
+      if (clamped.length === 0) return [];
+
+      const min = Math.min(...clamped);
+      const max = Math.max(...clamped);
+      if (min === max) {
+        const p = (min * 100).toFixed(1);
+        return [{ bin: `${p}-${p}%`, count: clamped.length }];
+      }
+
+      const binWidth = (max - min) / bins;
+      const binsData: number[] = new Array(bins).fill(0);
+      clamped.forEach((v) => {
+        const binIndex = Math.min(Math.floor((v - min) / binWidth), bins - 1);
+        binsData[binIndex]++;
+      });
+
+      return binsData.map((count, i) => {
+        const a = min + i * binWidth;
+        const b = min + (i + 1) * binWidth;
+        // Use 0 decimals for wide ranges, 1 decimal for narrow ones.
+        const decimals = (max - min) < 0.2 ? 1 : 0;
+        const fa = (a * 100).toFixed(decimals);
+        const fb = (b * 100).toFixed(decimals);
+        return { bin: `${fa}-${fb}%`, count };
+      });
+    };
+
     // D1.M1 - Parse Status
     const parseStatus = measures?.parsing?.d1_m1_parse_status;
     const parseStatusChartData = parseStatus
@@ -219,6 +252,8 @@ export function useReportData(reportData: ReportResponse | null) {
 
     // D3.M1 - Construct Presence
     const constructPresence = measures?.constructs?.d3_m1_construct_presence;
+    const constructCatalog: Record<string, any> = constructPresence?.construct_catalog || {};
+    const constructPresencePerModel = measuresPerModel?.constructs?.d3_m1_construct_presence;
     
     // Debug: log if constructs data is missing
     if (!measures?.constructs) {
@@ -236,57 +271,103 @@ export function useReportData(reportData: ReportResponse | null) {
     const coverageShares = measuresPerModel?.constructs?.d3_m1_construct_presence
       ? Object.values(measuresPerModel.constructs.d3_m1_construct_presence).map((m: any) => m.coverage_share)
       : [];
-    const coverageShareHistogram = createHistogramData(coverageShares);
+    const coverageShareHistogram = createShareHistogramData(coverageShares);
+
+    const unknownTypeShares = constructPresencePerModel
+      ? Object.values(constructPresencePerModel).map((m: any) => m.unknown_type_share ?? 0)
+      : [];
+    const unknownTypeShareHistogram = createShareHistogramData(unknownTypeShares);
     
     // Top 10 models with lowest/highest coverage
-    const coverageOutliers = measuresPerModel?.constructs?.d3_m1_construct_presence
-      ? Object.entries(measuresPerModel.constructs.d3_m1_construct_presence)
+    const coverageOutliers = constructPresencePerModel
+      ? Object.entries(constructPresencePerModel)
           .map(([modelId, data]: [string, any]) => ({
             modelId,
             relpath: irInfo?.index?.[modelId] || modelId,
             coverageShare: data.coverage_share,
+            constructsObservedCount: data.constructs_observed_count,
+            constructsAvailableCount: data.constructs_available_count,
+            unknownTypeShare: data.unknown_type_share,
+            unknownNodeTypeCount: data.unknown_node_type_count,
+            unknownEdgeTypeCount: data.unknown_edge_type_count,
           }))
       : [];
     const lowestCoverage = [...coverageOutliers].sort((a, b) => a.coverageShare - b.coverageShare).slice(0, 10);
     const highestCoverage = [...coverageOutliers].sort((a, b) => b.coverageShare - a.coverageShare).slice(0, 10);
     
     // Missing constructs (constructs never observed)
-    const missingConstructs = constructPresence && measuresPerModel?.constructs?.d3_m1_construct_presence
-      ? (() => {
-          const allPresent = new Set<string>();
-          const allConstructs = new Set<string>();
-          
-          // Collect all constructs that were present in at least one model
-          Object.values(measuresPerModel.constructs.d3_m1_construct_presence).forEach((m: any) => {
-            Object.entries(m.present_constructs || {}).forEach(([cid, present]: [string, any]) => {
-              allConstructs.add(cid);
-              if (present) allPresent.add(cid);
-            });
-          });
-          
-          // Find constructs that were never present
-          const missing = Array.from(allConstructs).filter((cid) => !allPresent.has(cid));
-          
-          // Note: We'd need access to construct definitions to get layer info
-          // For now, just return construct IDs
-          return missing.map((cid) => ({ constructId: cid }));
-        })()
-      : [];
+    const missingConstructs =
+      constructPresence?.missing_constructs && Array.isArray(constructPresence.missing_constructs)
+        ? constructPresence.missing_constructs.map((m: any) => ({
+            constructId: m.constructId,
+            group: m.group,
+            description: m.description,
+            kind: m.kind,
+          }))
+        : constructPresence && constructPresencePerModel
+          ? (() => {
+              const allPresent = new Set<string>();
+              const allConstructs = new Set<string>();
+              
+              // Collect all constructs that were present in at least one model
+              Object.values(constructPresencePerModel).forEach((m: any) => {
+                Object.entries(m.present_constructs || {}).forEach(([cid, present]: [string, any]) => {
+                  allConstructs.add(cid);
+                  if (present) allPresent.add(cid);
+                });
+              });
+              
+              // Find constructs that were never present
+              const missing = Array.from(allConstructs).filter((cid) => !allPresent.has(cid));
+              
+              return missing.map((cid) => ({ constructId: cid }));
+            })()
+          : [];
     
     // Unknown types (aggregate from all models)
-    const unknownTypes = measuresPerModel?.constructs?.d3_m1_construct_presence
-      ? (() => {
-          const typeCounts: Record<string, number> = {};
-          Object.values(measuresPerModel.constructs.d3_m1_construct_presence).forEach((m: any) => {
-            Object.entries(m.unknown_type_examples || {}).forEach(([type, count]: [string, any]) => {
-              typeCounts[type] = (typeCounts[type] || 0) + count;
-            });
-          });
-          return Object.entries(typeCounts)
-            .map(([type, count]) => ({ type, count }))
+    const unknownTypes =
+      constructPresence?.unknown_type_examples_dataset
+        ? Object.entries(constructPresence.unknown_type_examples_dataset)
+            .map(([type, count]: [string, any]) => ({ type, count: Number(count) || 0 }))
             .sort((a, b) => b.count - a.count)
-            .slice(0, 10);
-        })()
+            .slice(0, 25)
+        : constructPresencePerModel
+          ? (() => {
+              const typeCounts: Record<string, number> = {};
+              Object.values(constructPresencePerModel).forEach((m: any) => {
+                Object.entries(m.unknown_type_examples || {}).forEach(([type, count]: [string, any]) => {
+                  typeCounts[type] = (typeCounts[type] || 0) + (Number(count) || 0);
+                });
+              });
+              return Object.entries(typeCounts)
+                .map(([type, count]) => ({ type, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10);
+            })()
+          : [];
+
+    const coverageByGroup = constructPresence?.coverage_by_group
+      ? Object.entries(constructPresence.coverage_by_group)
+          .map(([group, stats]: [string, any]) => ({
+            group,
+            available: Number(stats.available) || 0,
+            observed: Number(stats.observed) || 0,
+            missing: Number(stats.missing) || 0,
+            coverageShare: Number(stats.coverage_share) || 0,
+          }))
+          .sort((a, b) => a.coverageShare - b.coverageShare)
+      : [];
+
+    const coverageByKind = constructPresence?.coverage_by_kind
+      ? Object.entries(constructPresence.coverage_by_kind)
+          .map(([kind, stats]: [string, any]) => ({
+            kind,
+            available: Number(stats.available) || 0,
+            observed: Number(stats.observed) || 0,
+            missing: Number(stats.missing) || 0,
+            coverageShare: Number(stats.coverage_share) || 0,
+          }))
+          .sort((a, b) => a.coverageShare - b.coverageShare)
       : [];
 
     // D3.M3 - Construct Frequency
@@ -295,10 +376,45 @@ export function useReportData(reportData: ReportResponse | null) {
       ? Object.entries(constructFrequency.dataset_count_by_construct)
           .map(([constructId, count]: [string, any]) => ({
             constructId,
-            count,
+            count: Number(count) || 0,
+            share: 0,
+            group: constructCatalog?.[constructId]?.group,
+            description: constructCatalog?.[constructId]?.description,
+            kind: constructCatalog?.[constructId]?.kind,
           }))
           .sort((a, b) => b.count - a.count)
       : [];
+
+    const totalConstructCount = constructFrequencyData.reduce((acc, d) => acc + (d.count || 0), 0);
+    constructFrequencyData.forEach((d) => {
+      d.share = totalConstructCount > 0 ? (d.count || 0) / totalConstructCount : 0;
+    });
+
+    const constructFrequencyPareto = (() => {
+      let cumulative = 0;
+      return constructFrequencyData.map((d, idx) => {
+        cumulative += d.share || 0;
+        return {
+          rank: idx + 1,
+          constructId: d.constructId,
+          count: d.count,
+          share: d.share,
+          cumulativeShare: cumulative,
+        };
+      });
+    })();
+
+    const constructFrequencyByGroup = (() => {
+      const byGroup: Record<string, number> = {};
+      constructFrequencyData.forEach((d) => {
+        const group = d.group || '—';
+        byGroup[group] = (byGroup[group] || 0) + (d.count || 0);
+      });
+      const total = Object.values(byGroup).reduce((acc, v) => acc + v, 0);
+      return Object.entries(byGroup)
+        .map(([group, count]) => ({ group, count, share: total > 0 ? count / total : 0 }))
+        .sort((a, b) => b.count - a.count);
+    })();
 
     return {
       parseStatus,
@@ -332,14 +448,20 @@ export function useReportData(reportData: ReportResponse | null) {
       lexicalDiversityTop10,
       // Construct measures
       constructPresence,
+      constructCatalog,
       constructPresenceChartData,
       coverageShareHistogram,
+      unknownTypeShareHistogram,
       lowestCoverage,
       highestCoverage,
       missingConstructs,
       unknownTypes,
+      coverageByGroup,
+      coverageByKind,
       constructFrequency,
       constructFrequencyData,
+      constructFrequencyPareto,
+      constructFrequencyByGroup,
     };
   }, [reportData]);
 }

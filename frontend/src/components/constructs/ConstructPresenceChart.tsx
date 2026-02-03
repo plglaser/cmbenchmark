@@ -1,4 +1,4 @@
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 interface ConstructPresenceChartProps {
@@ -9,8 +9,6 @@ interface ConstructPresenceChartProps {
     missingShare: number;
   } | null;
 }
-
-const COLORS = ['#10b981', '#ef4444'];
 
 export function ConstructPresenceChart({ data }: ConstructPresenceChartProps) {
   if (!data) {
@@ -28,55 +26,48 @@ export function ConstructPresenceChart({ data }: ConstructPresenceChartProps) {
     );
   }
 
-  const chartData = [
-    { name: 'Observed', value: data.observed, share: data.observedShare },
-    { name: 'Missing', value: data.missing, share: data.missingShare },
-  ];
-
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const data = payload[0];
+      const row = payload[0]?.payload;
       return (
         <div className="bg-background border rounded-lg shadow-lg p-3">
-          <p className="font-medium">{data.name}</p>
-          <p className="text-sm">
-            Count: {data.value.toLocaleString()}
-          </p>
-          <p className="text-sm">
-            Share: {(data.payload.share * 100).toFixed(1)}%
-          </p>
+          <p className="font-medium">Construct Coverage</p>
+          <p className="text-sm">Observed: {Number(row?.Observed || 0).toLocaleString()} ({(data.observedShare * 100).toFixed(1)}%)</p>
+          <p className="text-sm">Missing: {Number(row?.Missing || 0).toLocaleString()} ({(data.missingShare * 100).toFixed(1)}%)</p>
         </div>
       );
     }
     return null;
   };
 
+  const chartData = [
+    {
+      name: 'Constructs',
+      Observed: data.observed,
+      Missing: data.missing,
+    },
+  ];
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Construct Coverage Distribution</CardTitle>
+        <CardTitle className="text-base">Construct Coverage</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, share }) => `${name}: ${(share * 100).toFixed(1)}%`}
-              outerRadius={100}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {chartData.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis hide />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-          </PieChart>
+            <Bar dataKey="Observed" stackId="a" fill="#10b981" />
+            <Bar dataKey="Missing" stackId="a" fill="#ef4444" />
+          </BarChart>
         </ResponsiveContainer>
+        <p className="text-xs text-muted-foreground mt-2">
+          “Observed” means a construct appears at least once in the dataset (not how often it appears).
+        </p>
       </CardContent>
     </Card>
   );

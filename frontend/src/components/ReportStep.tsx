@@ -4,7 +4,6 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { ScrollArea } from './ui/scroll-area';
 import { apiService } from '../services/api';
 import type { MeasureResponse, ReportResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
@@ -86,11 +85,6 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
 
   // Get current dimension and measure
   const currentDimension = dimensions.find((d) => d.id === selectedDimensionId);
-  const currentMeasure =
-    currentDimension?.measures.find((m) => m.id === selectedMeasureId) ||
-    (currentDimension && currentDimension.measures.length > 0
-      ? currentDimension.measures[0]
-      : null);
 
   // Auto-select first measure when dimension changes
   useEffect(() => {
@@ -190,54 +184,45 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
 
               {dimensions.map((dimension) => (
                 <TabsContent key={dimension.id} value={dimension.id} className="mt-6">
-                  <div className="flex gap-6 h-[calc(100vh-300px)] min-h-[600px]">
-                    {/* Sidebar - Measures List */}
-                    <div className="w-64 flex-shrink-0 border-r pr-4">
-                      <ScrollArea className="h-full">
-                        <div className="space-y-1">
-                          {dimension.measures.map((measure) => (
-                            <button
-                              key={measure.id}
-                              onClick={() => setSelectedMeasureId(measure.id)}
-                              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                                selectedMeasureId === measure.id
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'hover:bg-muted'
-                              }`}
-                            >
-                              <div className="font-medium">{measure.name}</div>
-                              {measure.description && (
-                                <div className="text-xs opacity-80 mt-1">{measure.description}</div>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </ScrollArea>
+                  <Tabs
+                    value={selectedMeasureId ?? dimension.measures[0]?.id ?? ''}
+                    onValueChange={(value) => setSelectedMeasureId(value)}
+                    className="w-full"
+                  >
+                    {/* Measures tab bar (separate from dimension tab bar) */}
+                    <div className="mt-2 border rounded-md bg-muted/30 p-2">
+                      <TabsList className="w-full flex flex-wrap justify-start gap-2 h-auto bg-transparent p-0">
+                        {dimension.measures.map((measure) => (
+                          <TabsTrigger key={measure.id} value={measure.id} className="text-sm">
+                            {measure.name}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
                     </div>
 
-                    {/* Main Content - Tiles Grid */}
-                    <div className="flex-1 overflow-auto">
-                      {currentMeasure && (
+                    {dimension.measures.map((measure) => (
+                      <TabsContent key={measure.id} value={measure.id} className="mt-6">
                         <div className="space-y-6">
                           <div>
-                            <h3 className="text-lg font-semibold mb-1">{currentMeasure.name}</h3>
-                            {currentMeasure.description && (
+                            <h3 className="text-lg font-semibold mb-1">{measure.name}</h3>
+                            {measure.description && (
                               <p className="text-sm text-muted-foreground mb-4">
-                                {currentMeasure.description}
+                                {measure.description}
                               </p>
                             )}
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            {currentMeasure.tiles.map((tile) => (
+
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {measure.tiles.map((tile) => (
                               <div key={tile.id} className="min-w-0">
                                 {tile.component}
                               </div>
                             ))}
                           </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
                 </TabsContent>
               ))}
             </Tabs>

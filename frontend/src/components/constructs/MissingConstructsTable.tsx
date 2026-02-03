@@ -1,30 +1,27 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Input } from '../ui/input';
+import { useMemo, useState } from 'react';
 
 interface MissingConstructsTableProps {
   data: Array<{
     constructId: string;
-    layer?: string;
+    group?: string;
+    kind?: string;
+    description?: string;
   }>;
 }
 
 export function MissingConstructsTable({ data }: MissingConstructsTableProps) {
-  // Group by layer if available
-  const groupedByLayer: Record<string, Array<{ constructId: string; layer?: string }>> = {};
-  const ungrouped: Array<{ constructId: string; layer?: string }> = [];
-
-  data.forEach((item) => {
-    if (item.layer) {
-      if (!groupedByLayer[item.layer]) {
-        groupedByLayer[item.layer] = [];
-      }
-      groupedByLayer[item.layer].push(item);
-    } else {
-      ungrouped.push(item);
-    }
-  });
-
-  const layers = Object.keys(groupedByLayer).sort();
+  const [query, setQuery] = useState('');
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return data;
+    return data.filter((d) => {
+      const hay = `${d.group || ''} ${d.kind || ''} ${d.constructId || ''} ${d.description || ''}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [data, query]);
 
   return (
     <Card>
@@ -32,35 +29,39 @@ export function MissingConstructsTable({ data }: MissingConstructsTableProps) {
         <CardTitle className="text-base">Missing Constructs</CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="mb-3">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Filter by group, construct id, or description…"
+          />
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Layer</TableHead>
-              <TableHead>Construct ID</TableHead>
+              <TableHead>Group</TableHead>
+              <TableHead>Construct</TableHead>
+              <TableHead>Description</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {layers.length > 0 || ungrouped.length > 0 ? (
-              <>
-                {layers.map((layer) =>
-                  groupedByLayer[layer].map((item, idx) => (
-                    <TableRow key={`${layer}-${idx}`}>
-                      <TableCell>{layer}</TableCell>
-                      <TableCell className="font-mono text-sm">{item.constructId}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-                {ungrouped.map((item, idx) => (
-                  <TableRow key={`ungrouped-${idx}`}>
-                    <TableCell className="text-muted-foreground">—</TableCell>
-                    <TableCell className="font-mono text-sm">{item.constructId}</TableCell>
-                  </TableRow>
-                ))}
-              </>
+            {filtered.length > 0 ? (
+              filtered.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{item.group || <span className="text-muted-foreground">—</span>}</TableCell>
+                  <TableCell>
+                    <div className="font-mono text-sm break-all">{item.constructId}</div>
+                    {item.kind && <div className="text-xs text-muted-foreground">{item.kind}</div>}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {item.description ? item.description : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
+                </TableRow>
+              ))
             ) : (
               <TableRow>
-                <TableCell colSpan={2} className="text-center text-muted-foreground">
-                  All constructs are present
+                <TableCell colSpan={3} className="text-center text-muted-foreground">
+                  {data.length === 0 ? 'All constructs are present' : 'No matches'}
                 </TableCell>
               </TableRow>
             )}

@@ -5,6 +5,10 @@ interface ConstructFrequencyChartProps {
   data: Array<{
     constructId: string;
     count: number;
+    share?: number;
+    group?: string;
+    description?: string;
+    kind?: string;
   }>;
 }
 
@@ -23,17 +27,29 @@ export function ConstructFrequencyChart({ data }: ConstructFrequencyChartProps) 
   }
 
   // Sort by count descending and take top 20 for readability
-  const sortedData = [...data].sort((a, b) => b.count - a.count).slice(0, 20);
+  const sortedData = [...data]
+    .sort((a, b) => (b.count || 0) - (a.count || 0))
+    .slice(0, 20)
+    .map((d) => {
+      const short = d.constructId?.includes(':') ? d.constructId.split(':').slice(1).join(':') : d.constructId;
+      return { ...d, label: short && short.length > 18 ? `${short.slice(0, 16)}…` : short };
+    });
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       return (
         <div className="bg-background border rounded-lg shadow-lg p-3">
-          <p className="font-medium">{data.payload.constructId}</p>
-          <p className="text-sm">
-            Count: {data.value.toLocaleString()}
-          </p>
+          <p className="font-medium font-mono break-all">{data.payload.constructId}</p>
+          {data.payload.group && <p className="text-sm">Group: {data.payload.group}</p>}
+          {data.payload.kind && <p className="text-sm text-muted-foreground">Kind: {data.payload.kind}</p>}
+          <p className="text-sm">Count: {Number(data.value || 0).toLocaleString()}</p>
+          {typeof data.payload.share === 'number' && (
+            <p className="text-sm">Share: {(data.payload.share * 100).toFixed(2)}%</p>
+          )}
+          {data.payload.description && (
+            <p className="text-xs text-muted-foreground mt-2 max-w-[360px]">{data.payload.description}</p>
+          )}
         </div>
       );
     }
@@ -53,7 +69,7 @@ export function ConstructFrequencyChart({ data }: ConstructFrequencyChartProps) 
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              dataKey="constructId"
+              dataKey="label"
               angle={-45}
               textAnchor="end"
               height={100}
@@ -65,6 +81,9 @@ export function ConstructFrequencyChart({ data }: ConstructFrequencyChartProps) 
             <Bar dataKey="count" fill="#3b82f6" />
           </BarChart>
         </ResponsiveContainer>
+        <p className="text-xs text-muted-foreground mt-2">
+          Top 20 constructs by total occurrences (nodes + edges). Hover for full IDs and metadata.
+        </p>
       </CardContent>
     </Card>
   );

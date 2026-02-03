@@ -1,7 +1,7 @@
 """Measure-related data models."""
 
 from dataclasses import dataclass, asdict, field
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 
 @dataclass
@@ -284,6 +284,18 @@ class D3M1ConstructPresenceDataset:
     coverage_share: float
     coverage_share_stats: DistributionSummary
     unknown_type_share_dataset: float = 0.0
+    # Optional additional reporting fields (newer versions)
+    # - construct_id -> metadata to make UI/analysis more useful
+    construct_catalog: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    # - constructs never observed in the dataset
+    missing_constructs: List[Dict[str, Any]] = field(default_factory=list)
+    # - group breakdowns (e.g., ArchiMate layer, Ecore group)
+    coverage_by_group: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    coverage_by_kind: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    # - dataset-level unknown type counts
+    unknown_node_type_count_dataset: int = 0
+    unknown_edge_type_count_dataset: int = 0
+    unknown_type_examples_dataset: Dict[str, int] = field(default_factory=dict)
 
 
 # ---------- D3.M3 — Construct Frequency ----------

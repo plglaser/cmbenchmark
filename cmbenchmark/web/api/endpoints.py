@@ -17,6 +17,40 @@ from .schemas import (
 
 router = APIRouter()
 
+@router.get("/construct-profile", response_model=Dict[str, Any])
+async def get_construct_profile(
+    parser_language: str = Query(..., description="Parser language (e.g., ArchiMate-Archi, ArchiMate-XML, Ecore)"),
+):
+    """
+    Return the construct profile JSON for a given parser language.
+
+    This serves the packaged JSON files in `cmbenchmark/measures/construct_profiles/`.
+    Intended for UI introspection (e.g. showing the catalog of constructs + match rules).
+    """
+    try:
+        # Reuse the same mapping logic as ConstructCoverageProfile
+        from cmbenchmark.types.profile import _get_construct_profile_path  # type: ignore
+
+        # Be forgiving: allow passing the language name ("ArchiMate"/"Ecore") as well.
+        normalized = parser_language
+        if parser_language == "ArchiMate":
+            normalized = "ArchiMate-Archi"
+
+        profile_path = _get_construct_profile_path(normalized)
+        if not profile_path:
+            raise HTTPException(status_code=404, detail=f"No construct profile found for parser_language={parser_language}")
+
+        p = Path(profile_path)
+        if not p.exists():
+            raise HTTPException(status_code=404, detail=f"Construct profile file not found: {p}")
+
+        with open(p, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.get("/parsers", response_model=List[str])
 async def get_parsers():

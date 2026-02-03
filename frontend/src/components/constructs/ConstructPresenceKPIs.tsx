@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
+import { ConstructProfileDialog } from './ConstructProfileDialog';
 
 interface ConstructPresenceKPIsProps {
   data: {
@@ -7,20 +8,27 @@ interface ConstructPresenceKPIsProps {
     constructs_observed_count: number;
     coverage_share: number;
     unknown_type_share_dataset: number;
+    unknown_node_type_count_dataset?: number;
+    unknown_edge_type_count_dataset?: number;
     coverage_share_stats?: {
       median: number;
       mean: number;
     };
   } | null;
+  constructCatalog?: Record<string, any> | null;
+  parserLanguage?: string | null;
 }
 
-export function ConstructPresenceKPIs({ data }: ConstructPresenceKPIsProps) {
+export function ConstructPresenceKPIs({ data, constructCatalog, parserLanguage }: ConstructPresenceKPIsProps) {
   if (!data) return null;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Key Metrics</CardTitle>
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-base">Key Metrics</CardTitle>
+          <ConstructProfileDialog constructCatalog={constructCatalog} parserLanguage={parserLanguage} />
+        </div>
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="flex justify-between">
@@ -61,6 +69,19 @@ export function ConstructPresenceKPIs({ data }: ConstructPresenceKPIsProps) {
             {(data.unknown_type_share_dataset * 100).toFixed(1)}%
           </Badge>
         </div>
+        {(typeof data.unknown_node_type_count_dataset === 'number' ||
+          typeof data.unknown_edge_type_count_dataset === 'number') && (
+          <>
+            <div className="flex justify-between">
+              <span>Unknown Node Types (count):</span>
+              <Badge variant="outline">{(data.unknown_node_type_count_dataset ?? 0).toLocaleString()}</Badge>
+            </div>
+            <div className="flex justify-between">
+              <span>Unknown Edge Types (count):</span>
+              <Badge variant="outline">{(data.unknown_edge_type_count_dataset ?? 0).toLocaleString()}</Badge>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

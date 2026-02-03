@@ -1,6 +1,6 @@
 """Computation functions for construct coverage measures (D3)."""
 
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 from collections import Counter, defaultdict
 
 from cmbenchmark.types.ir import IR, Node, Edge
@@ -16,6 +16,23 @@ from cmbenchmark.types.measures import (
     DistributionSummary,
 )
 from cmbenchmark.measures.parsing_measures import _compute_distribution_summary
+
+
+def _construct_group(construct_def: ConstructDef) -> str:
+    """
+    Determine the high-level grouping label for a construct.
+
+    For ArchiMate we typically use `meta.layer`; for Ecore `meta.group`.
+    Falls back to "—" if no grouping is present.
+    """
+    meta = construct_def.meta or {}
+    return (
+        meta.get("layer")
+        or meta.get("group")
+        or meta.get("category")
+        or meta.get("kind")
+        or "—"
+    )
 
 
 def _match_constructs_for_ir(
@@ -35,29 +52,24 @@ def _match_constructs_for_ir(
     unknown_node_types: Dict[str, int] = defaultdict(int)
     unknown_edge_types: Dict[str, int] = defaultdict(int)
     
-    # Track which constructs we've seen (for presence)
-    seen_constructs: Dict[str, bool] = {}
-    
     # Match nodes
     for node in ir.nodes:
-        matched = False
+        matched_any = False
         for construct_id, construct_def in constructs.items():
             # Skip UNKNOWN constructs from matching
             if construct_id.startswith("UNKNOWN"):
                 continue
-            
+
             if construct_def.matches_node(node.type, node.data):
                 construct_counts[construct_id] += 1
-                seen_constructs[construct_id] = True
-                matched = True
-                break
-        
-        if not matched:
+                matched_any = True
+
+        if not matched_any:
             unknown_node_types[node.type] += 1
     
     # Match edges
     for edge in ir.edges:
-        matched = False
+        matched_any = False
         for construct_id, construct_def in constructs.items():
             # Skip UNKNOWN constructs from matching
             if construct_id.startswith("UNKNOWN"):
@@ -65,11 +77,9 @@ def _match_constructs_for_ir(
             
             if construct_def.matches_edge(edge.type, edge.data):
                 construct_counts[construct_id] += 1
-                seen_constructs[construct_id] = True
-                matched = True
-                break
-        
-        if not matched:
+                matched_any = True
+
+        if not matched_any:
             unknown_edge_types[edge.type] += 1
     
     return dict(construct_counts), dict(unknown_node_types), dict(unknown_edge_types)
@@ -186,6 +196,57 @@ def compute_construct_measures(
     ])
     coverage_share_dataset = constructs_observed_dataset / max(1, constructs_available_count)
     unknown_type_share_dataset = (total_unknown_nodes + total_unknown_edges) / max(1, total_elements)
+
+    # Construct catalog (metadata for UI/reporting)
+    construct_catalog: Dict[str, Dict[str, Any]] = {}
+    for cid, cdef in available_constructs.items():
+        construct_catalog[cid] = {
+            "id": cid,
+            "description": cdef.description,
+            "kind": cdef.kind,
+            "match_type": cdef.match_type,
+            "group": _construct_group(cdef),
+            "meta": cdef.meta or {},
+        }
+
+    # Missing constructs at dataset level (never observed)
+    missing_constructs: List[Dict[str, Any]] = []
+    for cid, cdef in available_constructs.items():
+        if dataset_construct_counts.get(cid, 0) <= 0:
+            missing_constructs.append(
+                {
+                    "constructId": cid,
+                    "group": _construct_group(cdef),
+                    "description": cdef.description,
+                    "kind": cdef.kind,
+                }
+            )
+    missing_constructs.sort(key=lambda x: (str(x.get("group") or ""), str(x.get("constructId") or "")))
+
+    # Coverage breakdowns by group and kind
+    coverage_by_group: Dict[str, Dict[str, Any]] = defaultdict(lambda: {"available": 0, "observed": 0, "missing": 0, "coverage_share": 0.0})
+    coverage_by_kind: Dict[str, Dict[str, Any]] = defaultdict(lambda: {"available": 0, "observed": 0, "missing": 0, "coverage_share": 0.0})
+
+    for cid, cdef in available_constructs.items():
+        group = _construct_group(cdef)
+        kind = cdef.kind
+        coverage_by_group[group]["available"] += 1
+        coverage_by_kind[kind]["available"] += 1
+        if dataset_construct_counts.get(cid, 0) > 0:
+            coverage_by_group[group]["observed"] += 1
+            coverage_by_kind[kind]["observed"] += 1
+
+    for group, stats in coverage_by_group.items():
+        stats["missing"] = stats["available"] - stats["observed"]
+        stats["coverage_share"] = stats["observed"] / max(1, stats["available"])
+    for kind, stats in coverage_by_kind.items():
+        stats["missing"] = stats["available"] - stats["observed"]
+        stats["coverage_share"] = stats["observed"] / max(1, stats["available"])
+
+    # Keep only top unknown types to avoid bloating JSON
+    unknown_type_examples_dataset_top = dict(
+        sorted(unknown_type_examples_dataset.items(), key=lambda x: x[1], reverse=True)[:25]
+    )
     
     dataset_d3m1 = D3M1ConstructPresenceDataset(
         constructs_available_count=constructs_available_count,
@@ -193,6 +254,13 @@ def compute_construct_measures(
         coverage_share=coverage_share_dataset,
         coverage_share_stats=_compute_distribution_summary(coverage_shares),
         unknown_type_share_dataset=unknown_type_share_dataset,
+        construct_catalog=construct_catalog,
+        missing_constructs=missing_constructs,
+        coverage_by_group=dict(coverage_by_group),
+        coverage_by_kind=dict(coverage_by_kind),
+        unknown_node_type_count_dataset=total_unknown_nodes,
+        unknown_edge_type_count_dataset=total_unknown_edges,
+        unknown_type_examples_dataset=unknown_type_examples_dataset_top,
     )
     
     # D3.M3: Dataset-level

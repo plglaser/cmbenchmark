@@ -110,6 +110,16 @@ export const apiService = {
     const response = await api.post<ReportResponse>('/report', request);
     return response.data;
   },
+
+  /**
+   * Get construct profile JSON for a given parser language (e.g. "Ecore", "ArchiMate-Archi")
+   */
+  async getConstructProfile(parserLanguage: string): Promise<any> {
+    const response = await api.get('/construct-profile', {
+      params: { parser_language: parserLanguage },
+    });
+    return response.data;
+  },
 };
 
 export default apiService;

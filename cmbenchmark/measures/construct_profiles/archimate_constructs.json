@@ -1,546 +1,765 @@
 {
     "language": "ArchiMate",
     "constructs": [
-      {
-        "id": "archimate:BusinessActor",
-        "kind": "node_type",
-        "match_type": "BusinessActor",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:BusinessRole",
-        "kind": "node_type",
-        "match_type": "BusinessRole",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:BusinessCollaboration",
-        "kind": "node_type",
-        "match_type": "BusinessCollaboration",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:BusinessInterface",
-        "kind": "node_type",
-        "match_type": "BusinessInterface",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:BusinessProcess",
-        "kind": "node_type",
-        "match_type": "BusinessProcess",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:BusinessFunction",
-        "kind": "node_type",
-        "match_type": "BusinessFunction",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:BusinessInteraction",
-        "kind": "node_type",
-        "match_type": "BusinessInteraction",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:BusinessService",
-        "kind": "node_type",
-        "match_type": "BusinessService",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:BusinessEvent",
-        "kind": "node_type",
-        "match_type": "BusinessEvent",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:BusinessObject",
-        "kind": "node_type",
-        "match_type": "BusinessObject",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:Contract",
-        "kind": "node_type",
-        "match_type": "Contract",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:Representation",
-        "kind": "node_type",
-        "match_type": "Representation",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-      {
-        "id": "archimate:Product",
-        "kind": "node_type",
-        "match_type": "Product",
-        "match_data_equals": {},
-        "meta": { "layer": "Business" }
-      },
-  
-      {
-        "id": "archimate:ApplicationComponent",
-        "kind": "node_type",
-        "match_type": "ApplicationComponent",
-        "match_data_equals": {},
-        "meta": { "layer": "Application" }
-      },
-      {
-        "id": "archimate:ApplicationCollaboration",
-        "kind": "node_type",
-        "match_type": "ApplicationCollaboration",
-        "match_data_equals": {},
-        "meta": { "layer": "Application" }
-      },
-      {
-        "id": "archimate:ApplicationInterface",
-        "kind": "node_type",
-        "match_type": "ApplicationInterface",
-        "match_data_equals": {},
-        "meta": { "layer": "Application" }
-      },
-      {
-        "id": "archimate:ApplicationProcess",
-        "kind": "node_type",
-        "match_type": "ApplicationProcess",
-        "match_data_equals": {},
-        "meta": { "layer": "Application" }
-      },
-      {
-        "id": "archimate:ApplicationFunction",
-        "kind": "node_type",
-        "match_type": "ApplicationFunction",
-        "match_data_equals": {},
-        "meta": { "layer": "Application" }
-      },
-      {
-        "id": "archimate:ApplicationInteraction",
-        "kind": "node_type",
-        "match_type": "ApplicationInteraction",
-        "match_data_equals": {},
-        "meta": { "layer": "Application" }
-      },
-      {
-        "id": "archimate:ApplicationService",
-        "kind": "node_type",
-        "match_type": "ApplicationService",
-        "match_data_equals": {},
-        "meta": { "layer": "Application" }
-      },
-      {
-        "id": "archimate:ApplicationEvent",
-        "kind": "node_type",
-        "match_type": "ApplicationEvent",
-        "match_data_equals": {},
-        "meta": { "layer": "Application" }
-      },
-      {
-        "id": "archimate:DataObject",
-        "kind": "node_type",
-        "match_type": "DataObject",
-        "match_data_equals": {},
-        "meta": { "layer": "Application" }
-      },
-  
-      {
-        "id": "archimate:Node",
-        "kind": "node_type",
-        "match_type": "Node",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:Device",
-        "kind": "node_type",
-        "match_type": "Device",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:SystemSoftware",
-        "kind": "node_type",
-        "match_type": "SystemSoftware",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:TechnologyCollaboration",
-        "kind": "node_type",
-        "match_type": "TechnologyCollaboration",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:TechnologyInterface",
-        "kind": "node_type",
-        "match_type": "TechnologyInterface",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:TechnologyProcess",
-        "kind": "node_type",
-        "match_type": "TechnologyProcess",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:TechnologyFunction",
-        "kind": "node_type",
-        "match_type": "TechnologyFunction",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:TechnologyInteraction",
-        "kind": "node_type",
-        "match_type": "TechnologyInteraction",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:TechnologyService",
-        "kind": "node_type",
-        "match_type": "TechnologyService",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:TechnologyEvent",
-        "kind": "node_type",
-        "match_type": "TechnologyEvent",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:Artifact",
-        "kind": "node_type",
-        "match_type": "Artifact",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:CommunicationNetwork",
-        "kind": "node_type",
-        "match_type": "CommunicationNetwork",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-      {
-        "id": "archimate:Path",
-        "kind": "node_type",
-        "match_type": "Path",
-        "match_data_equals": {},
-        "meta": { "layer": "Technology" }
-      },
-  
-      {
-        "id": "archimate:Equipment",
-        "kind": "node_type",
-        "match_type": "Equipment",
-        "match_data_equals": {},
-        "meta": { "layer": "Physical" }
-      },
-      {
-        "id": "archimate:DistributionNetwork",
-        "kind": "node_type",
-        "match_type": "DistributionNetwork",
-        "match_data_equals": {},
-        "meta": { "layer": "Physical" }
-      },
-      {
-        "id": "archimate:Facility",
-        "kind": "node_type",
-        "match_type": "Facility",
-        "match_data_equals": {},
-        "meta": { "layer": "Physical" }
-      },
-      {
-        "id": "archimate:Material",
-        "kind": "node_type",
-        "match_type": "Material",
-        "match_data_equals": {},
-        "meta": { "layer": "Physical" }
-      },
-  
-      {
-        "id": "archimate:Stakeholder",
-        "kind": "node_type",
-        "match_type": "Stakeholder",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-      {
-        "id": "archimate:Driver",
-        "kind": "node_type",
-        "match_type": "Driver",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-      {
-        "id": "archimate:Assessment",
-        "kind": "node_type",
-        "match_type": "Assessment",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-      {
-        "id": "archimate:Goal",
-        "kind": "node_type",
-        "match_type": "Goal",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-      {
-        "id": "archimate:Outcome",
-        "kind": "node_type",
-        "match_type": "Outcome",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-      {
-        "id": "archimate:Principle",
-        "kind": "node_type",
-        "match_type": "Principle",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-      {
-        "id": "archimate:Requirement",
-        "kind": "node_type",
-        "match_type": "Requirement",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-      {
-        "id": "archimate:Constraint",
-        "kind": "node_type",
-        "match_type": "Constraint",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-      {
-        "id": "archimate:Value",
-        "kind": "node_type",
-        "match_type": "Value",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-      {
-        "id": "archimate:Meaning",
-        "kind": "node_type",
-        "match_type": "Meaning",
-        "match_data_equals": {},
-        "meta": { "layer": "Motivation" }
-      },
-  
-      {
-        "id": "archimate:Resource",
-        "kind": "node_type",
-        "match_type": "Resource",
-        "match_data_equals": {},
-        "meta": { "layer": "Strategy" }
-      },
-      {
-        "id": "archimate:Capability",
-        "kind": "node_type",
-        "match_type": "Capability",
-        "match_data_equals": {},
-        "meta": { "layer": "Strategy" }
-      },
-      {
-        "id": "archimate:ValueStream",
-        "kind": "node_type",
-        "match_type": "ValueStream",
-        "match_data_equals": {},
-        "meta": { "layer": "Strategy" }
-      },
-      {
-        "id": "archimate:CourseOfAction",
-        "kind": "node_type",
-        "match_type": "CourseOfAction",
-        "match_data_equals": {},
-        "meta": { "layer": "Strategy" }
-      },
-  
-      {
-        "id": "archimate:WorkPackage",
-        "kind": "node_type",
-        "match_type": "WorkPackage",
-        "match_data_equals": {},
-        "meta": { "layer": "ImplementationMigration" }
-      },
-      {
-        "id": "archimate:ImplementationEvent",
-        "kind": "node_type",
-        "match_type": "ImplementationEvent",
-        "match_data_equals": {},
-        "meta": { "layer": "ImplementationMigration" }
-      },
-      {
-        "id": "archimate:Deliverable",
-        "kind": "node_type",
-        "match_type": "Deliverable",
-        "match_data_equals": {},
-        "meta": { "layer": "ImplementationMigration" }
-      },
-      {
-        "id": "archimate:Plateau",
-        "kind": "node_type",
-        "match_type": "Plateau",
-        "match_data_equals": {},
-        "meta": { "layer": "ImplementationMigration" }
-      },
-      {
-        "id": "archimate:Gap",
-        "kind": "node_type",
-        "match_type": "Gap",
-        "match_data_equals": {},
-        "meta": { "layer": "ImplementationMigration" }
-      },
-  
-      {
-        "id": "archimate:Location",
-        "kind": "node_type",
-        "match_type": "Location",
-        "match_data_equals": {},
-        "meta": { "layer": "Other" }
-      },
-      {
-        "id": "archimate:Grouping",
-        "kind": "node_type",
-        "match_type": "Grouping",
-        "match_data_equals": {},
-        "meta": { "layer": "Other" }
-      },
-      {
-        "id": "archimate:Junction",
-        "kind": "node_type",
-        "match_type": "Junction",
-        "match_data_equals": {},
-        "meta": { "layer": "Other" }
-      },
-      {
-        "id": "archimate:OrJunction",
-        "kind": "node_type",
-        "match_type": "OrJunction",
-        "match_data_equals": {},
-        "meta": { "layer": "Other" }
-      },
-      {
-        "id": "archimate:AndJunction",
-        "kind": "node_type",
-        "match_type": "AndJunction",
-        "match_data_equals": {},
-        "meta": { "layer": "Other" }
-      },
-  
-      {
-        "id": "archimate:Association",
-        "kind": "edge_type",
-        "match_type": "Association",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Serving",
-        "kind": "edge_type",
-        "match_type": "Serving",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Flow",
-        "kind": "edge_type",
-        "match_type": "Flow",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Realization",
-        "kind": "edge_type",
-        "match_type": "Realization",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Aggregation",
-        "kind": "edge_type",
-        "match_type": "Aggregation",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Influence",
-        "kind": "edge_type",
-        "match_type": "Influence",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Composition",
-        "kind": "edge_type",
-        "match_type": "Composition",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Triggering",
-        "kind": "edge_type",
-        "match_type": "Triggering",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Assignment",
-        "kind": "edge_type",
-        "match_type": "Assignment",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Specialization",
-        "kind": "edge_type",
-        "match_type": "Specialization",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-      {
-        "id": "archimate:Access",
-        "kind": "edge_type",
-        "match_type": "Access",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Relationship" }
-      },
-  
-      {
-        "id": "archimate:UNKNOWN_NODE_TYPE",
-        "kind": "node_type",
-        "match_type": "__UNKNOWN__",
-        "match_data_equals": {},
-        "meta": { "layer": "Unknown" }
-      },
-      {
-        "id": "archimate:UNKNOWN_EDGE_TYPE",
-        "kind": "edge_type",
-        "match_type": "__UNKNOWN__",
-        "match_data_equals": {},
-        "meta": { "relationship_group": "Unknown" }
-      }
+        {
+            "id": "archimate:BusinessActor",
+            "kind": "node_type",
+            "match_type": "BusinessActor",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessActor' (Business layer)."
+        },
+        {
+            "id": "archimate:BusinessRole",
+            "kind": "node_type",
+            "match_type": "BusinessRole",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessRole' (Business layer)."
+        },
+        {
+            "id": "archimate:BusinessCollaboration",
+            "kind": "node_type",
+            "match_type": "BusinessCollaboration",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessCollaboration' (Business layer)."
+        },
+        {
+            "id": "archimate:BusinessInterface",
+            "kind": "node_type",
+            "match_type": "BusinessInterface",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessInterface' (Business layer)."
+        },
+        {
+            "id": "archimate:BusinessProcess",
+            "kind": "node_type",
+            "match_type": "BusinessProcess",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessProcess' (Business layer)."
+        },
+        {
+            "id": "archimate:BusinessFunction",
+            "kind": "node_type",
+            "match_type": "BusinessFunction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessFunction' (Business layer)."
+        },
+        {
+            "id": "archimate:BusinessInteraction",
+            "kind": "node_type",
+            "match_type": "BusinessInteraction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessInteraction' (Business layer)."
+        },
+        {
+            "id": "archimate:BusinessService",
+            "kind": "node_type",
+            "match_type": "BusinessService",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessService' (Business layer)."
+        },
+        {
+            "id": "archimate:BusinessEvent",
+            "kind": "node_type",
+            "match_type": "BusinessEvent",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessEvent' (Business layer)."
+        },
+        {
+            "id": "archimate:BusinessObject",
+            "kind": "node_type",
+            "match_type": "BusinessObject",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'BusinessObject' (Business layer)."
+        },
+        {
+            "id": "archimate:Contract",
+            "kind": "node_type",
+            "match_type": "Contract",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'Contract' (Business layer)."
+        },
+        {
+            "id": "archimate:Representation",
+            "kind": "node_type",
+            "match_type": "Representation",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'Representation' (Business layer)."
+        },
+        {
+            "id": "archimate:Product",
+            "kind": "node_type",
+            "match_type": "Product",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Business"
+            },
+            "description": "ArchiMate element type 'Product' (Business layer)."
+        },
+        {
+            "id": "archimate:ApplicationComponent",
+            "kind": "node_type",
+            "match_type": "ApplicationComponent",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Application"
+            },
+            "description": "ArchiMate element type 'ApplicationComponent' (Application layer)."
+        },
+        {
+            "id": "archimate:ApplicationCollaboration",
+            "kind": "node_type",
+            "match_type": "ApplicationCollaboration",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Application"
+            },
+            "description": "ArchiMate element type 'ApplicationCollaboration' (Application layer)."
+        },
+        {
+            "id": "archimate:ApplicationInterface",
+            "kind": "node_type",
+            "match_type": "ApplicationInterface",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Application"
+            },
+            "description": "ArchiMate element type 'ApplicationInterface' (Application layer)."
+        },
+        {
+            "id": "archimate:ApplicationProcess",
+            "kind": "node_type",
+            "match_type": "ApplicationProcess",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Application"
+            },
+            "description": "ArchiMate element type 'ApplicationProcess' (Application layer)."
+        },
+        {
+            "id": "archimate:ApplicationFunction",
+            "kind": "node_type",
+            "match_type": "ApplicationFunction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Application"
+            },
+            "description": "ArchiMate element type 'ApplicationFunction' (Application layer)."
+        },
+        {
+            "id": "archimate:ApplicationInteraction",
+            "kind": "node_type",
+            "match_type": "ApplicationInteraction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Application"
+            },
+            "description": "ArchiMate element type 'ApplicationInteraction' (Application layer)."
+        },
+        {
+            "id": "archimate:ApplicationService",
+            "kind": "node_type",
+            "match_type": "ApplicationService",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Application"
+            },
+            "description": "ArchiMate element type 'ApplicationService' (Application layer)."
+        },
+        {
+            "id": "archimate:ApplicationEvent",
+            "kind": "node_type",
+            "match_type": "ApplicationEvent",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Application"
+            },
+            "description": "ArchiMate element type 'ApplicationEvent' (Application layer)."
+        },
+        {
+            "id": "archimate:DataObject",
+            "kind": "node_type",
+            "match_type": "DataObject",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Application"
+            },
+            "description": "ArchiMate element type 'DataObject' (Application layer)."
+        },
+        {
+            "id": "archimate:Node",
+            "kind": "node_type",
+            "match_type": "Node",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'Node' (Technology layer)."
+        },
+        {
+            "id": "archimate:Device",
+            "kind": "node_type",
+            "match_type": "Device",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'Device' (Technology layer)."
+        },
+        {
+            "id": "archimate:SystemSoftware",
+            "kind": "node_type",
+            "match_type": "SystemSoftware",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'SystemSoftware' (Technology layer)."
+        },
+        {
+            "id": "archimate:TechnologyCollaboration",
+            "kind": "node_type",
+            "match_type": "TechnologyCollaboration",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'TechnologyCollaboration' (Technology layer)."
+        },
+        {
+            "id": "archimate:TechnologyInterface",
+            "kind": "node_type",
+            "match_type": "TechnologyInterface",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'TechnologyInterface' (Technology layer)."
+        },
+        {
+            "id": "archimate:TechnologyProcess",
+            "kind": "node_type",
+            "match_type": "TechnologyProcess",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'TechnologyProcess' (Technology layer)."
+        },
+        {
+            "id": "archimate:TechnologyFunction",
+            "kind": "node_type",
+            "match_type": "TechnologyFunction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'TechnologyFunction' (Technology layer)."
+        },
+        {
+            "id": "archimate:TechnologyInteraction",
+            "kind": "node_type",
+            "match_type": "TechnologyInteraction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'TechnologyInteraction' (Technology layer)."
+        },
+        {
+            "id": "archimate:TechnologyService",
+            "kind": "node_type",
+            "match_type": "TechnologyService",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'TechnologyService' (Technology layer)."
+        },
+        {
+            "id": "archimate:TechnologyEvent",
+            "kind": "node_type",
+            "match_type": "TechnologyEvent",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'TechnologyEvent' (Technology layer)."
+        },
+        {
+            "id": "archimate:Artifact",
+            "kind": "node_type",
+            "match_type": "Artifact",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'Artifact' (Technology layer)."
+        },
+        {
+            "id": "archimate:CommunicationNetwork",
+            "kind": "node_type",
+            "match_type": "CommunicationNetwork",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'CommunicationNetwork' (Technology layer)."
+        },
+        {
+            "id": "archimate:Path",
+            "kind": "node_type",
+            "match_type": "Path",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Technology"
+            },
+            "description": "ArchiMate element type 'Path' (Technology layer)."
+        },
+        {
+            "id": "archimate:Equipment",
+            "kind": "node_type",
+            "match_type": "Equipment",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Physical"
+            },
+            "description": "ArchiMate element type 'Equipment' (Physical layer)."
+        },
+        {
+            "id": "archimate:DistributionNetwork",
+            "kind": "node_type",
+            "match_type": "DistributionNetwork",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Physical"
+            },
+            "description": "ArchiMate element type 'DistributionNetwork' (Physical layer)."
+        },
+        {
+            "id": "archimate:Facility",
+            "kind": "node_type",
+            "match_type": "Facility",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Physical"
+            },
+            "description": "ArchiMate element type 'Facility' (Physical layer)."
+        },
+        {
+            "id": "archimate:Material",
+            "kind": "node_type",
+            "match_type": "Material",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Physical"
+            },
+            "description": "ArchiMate element type 'Material' (Physical layer)."
+        },
+        {
+            "id": "archimate:Stakeholder",
+            "kind": "node_type",
+            "match_type": "Stakeholder",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Stakeholder' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Driver",
+            "kind": "node_type",
+            "match_type": "Driver",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Driver' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Assessment",
+            "kind": "node_type",
+            "match_type": "Assessment",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Assessment' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Goal",
+            "kind": "node_type",
+            "match_type": "Goal",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Goal' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Outcome",
+            "kind": "node_type",
+            "match_type": "Outcome",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Outcome' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Principle",
+            "kind": "node_type",
+            "match_type": "Principle",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Principle' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Requirement",
+            "kind": "node_type",
+            "match_type": "Requirement",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Requirement' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Constraint",
+            "kind": "node_type",
+            "match_type": "Constraint",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Constraint' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Value",
+            "kind": "node_type",
+            "match_type": "Value",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Value' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Meaning",
+            "kind": "node_type",
+            "match_type": "Meaning",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Motivation"
+            },
+            "description": "ArchiMate element type 'Meaning' (Motivation layer)."
+        },
+        {
+            "id": "archimate:Resource",
+            "kind": "node_type",
+            "match_type": "Resource",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Strategy"
+            },
+            "description": "ArchiMate element type 'Resource' (Strategy layer)."
+        },
+        {
+            "id": "archimate:Capability",
+            "kind": "node_type",
+            "match_type": "Capability",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Strategy"
+            },
+            "description": "ArchiMate element type 'Capability' (Strategy layer)."
+        },
+        {
+            "id": "archimate:ValueStream",
+            "kind": "node_type",
+            "match_type": "ValueStream",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Strategy"
+            },
+            "description": "ArchiMate element type 'ValueStream' (Strategy layer)."
+        },
+        {
+            "id": "archimate:CourseOfAction",
+            "kind": "node_type",
+            "match_type": "CourseOfAction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Strategy"
+            },
+            "description": "ArchiMate element type 'CourseOfAction' (Strategy layer)."
+        },
+        {
+            "id": "archimate:WorkPackage",
+            "kind": "node_type",
+            "match_type": "WorkPackage",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "ImplementationMigration"
+            },
+            "description": "ArchiMate element type 'WorkPackage' (ImplementationMigration layer)."
+        },
+        {
+            "id": "archimate:ImplementationEvent",
+            "kind": "node_type",
+            "match_type": "ImplementationEvent",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "ImplementationMigration"
+            },
+            "description": "ArchiMate element type 'ImplementationEvent' (ImplementationMigration layer)."
+        },
+        {
+            "id": "archimate:Deliverable",
+            "kind": "node_type",
+            "match_type": "Deliverable",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "ImplementationMigration"
+            },
+            "description": "ArchiMate element type 'Deliverable' (ImplementationMigration layer)."
+        },
+        {
+            "id": "archimate:Plateau",
+            "kind": "node_type",
+            "match_type": "Plateau",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "ImplementationMigration"
+            },
+            "description": "ArchiMate element type 'Plateau' (ImplementationMigration layer)."
+        },
+        {
+            "id": "archimate:Gap",
+            "kind": "node_type",
+            "match_type": "Gap",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "ImplementationMigration"
+            },
+            "description": "ArchiMate element type 'Gap' (ImplementationMigration layer)."
+        },
+        {
+            "id": "archimate:Location",
+            "kind": "node_type",
+            "match_type": "Location",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Other"
+            },
+            "description": "ArchiMate element type 'Location' (Other layer)."
+        },
+        {
+            "id": "archimate:Grouping",
+            "kind": "node_type",
+            "match_type": "Grouping",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Other"
+            },
+            "description": "ArchiMate element type 'Grouping' (Other layer)."
+        },
+        {
+            "id": "archimate:Junction",
+            "kind": "node_type",
+            "match_type": "Junction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Other"
+            },
+            "description": "ArchiMate element type 'Junction' (Other layer)."
+        },
+        {
+            "id": "archimate:OrJunction",
+            "kind": "node_type",
+            "match_type": "OrJunction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Other"
+            },
+            "description": "ArchiMate element type 'OrJunction' (Other layer)."
+        },
+        {
+            "id": "archimate:AndJunction",
+            "kind": "node_type",
+            "match_type": "AndJunction",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Other"
+            },
+            "description": "ArchiMate element type 'AndJunction' (Other layer)."
+        },
+        {
+            "id": "archimate:Association",
+            "kind": "edge_type",
+            "match_type": "Association",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Association' (Relationship)."
+        },
+        {
+            "id": "archimate:Serving",
+            "kind": "edge_type",
+            "match_type": "Serving",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Serving' (Relationship)."
+        },
+        {
+            "id": "archimate:Flow",
+            "kind": "edge_type",
+            "match_type": "Flow",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Flow' (Relationship)."
+        },
+        {
+            "id": "archimate:Realization",
+            "kind": "edge_type",
+            "match_type": "Realization",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Realization' (Relationship)."
+        },
+        {
+            "id": "archimate:Aggregation",
+            "kind": "edge_type",
+            "match_type": "Aggregation",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Aggregation' (Relationship)."
+        },
+        {
+            "id": "archimate:Influence",
+            "kind": "edge_type",
+            "match_type": "Influence",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Influence' (Relationship)."
+        },
+        {
+            "id": "archimate:Composition",
+            "kind": "edge_type",
+            "match_type": "Composition",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Composition' (Relationship)."
+        },
+        {
+            "id": "archimate:Triggering",
+            "kind": "edge_type",
+            "match_type": "Triggering",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Triggering' (Relationship)."
+        },
+        {
+            "id": "archimate:Assignment",
+            "kind": "edge_type",
+            "match_type": "Assignment",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Assignment' (Relationship)."
+        },
+        {
+            "id": "archimate:Specialization",
+            "kind": "edge_type",
+            "match_type": "Specialization",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Specialization' (Relationship)."
+        },
+        {
+            "id": "archimate:Access",
+            "kind": "edge_type",
+            "match_type": "Access",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Relationship"
+            },
+            "description": "ArchiMate relationship type 'Access' (Relationship)."
+        },
+        {
+            "id": "archimate:UNKNOWN_NODE_TYPE",
+            "kind": "node_type",
+            "match_type": "__UNKNOWN__",
+            "match_data_equals": {},
+            "meta": {
+                "layer": "Unknown"
+            },
+            "description": "ArchiMate element type '__UNKNOWN__' (Unknown layer)."
+        },
+        {
+            "id": "archimate:UNKNOWN_EDGE_TYPE",
+            "kind": "edge_type",
+            "match_type": "__UNKNOWN__",
+            "match_data_equals": {},
+            "meta": {
+                "relationship_group": "Unknown"
+            },
+            "description": "ArchiMate relationship type '__UNKNOWN__' (Unknown)."
+        }
     ]
 }

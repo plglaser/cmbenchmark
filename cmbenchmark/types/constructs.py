@@ -9,6 +9,7 @@ class ConstructDef:
     id: str  # canonical construct_id (e.g. archimate:BusinessObject, uml:Class)
     kind: str  # "node_type" | "edge_type" | "node_edge_type" | "node_feature" | "edge_feature" | "node_edge_feature"
     match_type: str  # actual type that is used for matching (e.g. BusinessObject, Class)
+    description: str = ""  # human-readable label shown in reports/UI
     match_data_equals: Dict[str, Any] = field(default_factory=dict)  # additional data attributes to match
     meta: Dict[str, Any] = field(default_factory=dict)  # hold additional data, e.g. language-specific like `layer` for ArchiMate nodes
 

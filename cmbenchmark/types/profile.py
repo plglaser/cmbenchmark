@@ -60,6 +60,7 @@ def _get_construct_profile_path(parser_language: str) -> Optional[str]:
     language_to_profile = {
         "ArchiMate-Archi": "archimate_constructs.json",
         "ArchiMate-XML": "archimate_constructs.json",
+        "Ecore": "ecore_constructs.json",
         # Add more mappings as needed
     }
     
@@ -147,6 +148,7 @@ class ConstructCoverageProfile(BaseModel):
         for construct_item in constructs_list:
             construct_def = ConstructDef(
                 id=construct_item["id"],
+                description=construct_item.get("description", ""),
                 kind=construct_item["kind"],
                 match_type=construct_item["match_type"],
                 match_data_equals=construct_item.get("match_data_equals", {}),
@@ -208,6 +210,7 @@ class ConstructCoverageProfile(BaseModel):
         for construct_item in constructs_list:
             construct_def = ConstructDef(
                 id=construct_item["id"],
+                description=construct_item.get("description", ""),
                 kind=construct_item["kind"],
                 match_type=construct_item["match_type"],
                 match_data_equals=construct_item.get("match_data_equals", {}),
