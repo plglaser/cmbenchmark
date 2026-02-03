@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { apiService } from '../services/api';
 import type { MeasureResponse, ReportResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
-import { useReportData } from '../hooks/useReportData';
 import { createDimensions } from '../data/dimensions';
 
 interface ReportStepProps {
@@ -76,11 +75,9 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
     }
   };
 
-  // Process report data
-  const processedData = useReportData(reportData);
   const dimensions = useMemo(
-    () => (processedData ? createDimensions(processedData) : []),
-    [processedData]
+    () => (reportData ? createDimensions(reportData) : []),
+    [reportData]
   );
 
   // Get current dimension and measure

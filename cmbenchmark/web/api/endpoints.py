@@ -12,7 +12,7 @@ from cmbenchmark.types.ir import IR
 from cmbenchmark.types.dataset import IRInfo
 from .schemas import (
     ScanRequest, ScanResponse, ParseRequest, ParseResponse, ErrorResponse,
-    MeasureRequest, MeasureResponse, ReportRequest, ReportResponse
+    MeasureRequest, MeasureResponse, ReportRequest, DerivedReportResponse
 )
 
 router = APIRouter()
@@ -208,12 +208,13 @@ async def measure(request: MeasureRequest):
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.post("/report", response_model=ReportResponse)
+@router.post("/report", response_model=DerivedReportResponse)
 async def report(request: ReportRequest):
     """
-    Load measures and IR info for reporting.
+    Build UI-ready derived report JSON from measures and IR info.
     
-    This endpoint loads the measures JSON files and optionally IR info for generating reports.
+    This endpoint loads the measures JSON files, optionally IR info, and returns a stable
+    derived payload that the frontend can render directly (charts, tables, etc.).
     """
     try:
         # Load measures.json
@@ -239,12 +240,11 @@ async def report(request: ReportRequest):
             if ir_info_path.exists():
                 with open(ir_info_path, "r", encoding="utf-8") as f:
                     ir_info = json.load(f)
-        
-        return ReportResponse(
-            measures=measures,
-            measures_per_model=measures_per_model,
-            ir_info=ir_info,
-        )
+
+        from cmbenchmark.services.report import build_report_data
+
+        derived = build_report_data(measures=measures, measures_per_model=measures_per_model, ir_info=ir_info)
+        return derived
     except HTTPException:
         raise
     except Exception as e:

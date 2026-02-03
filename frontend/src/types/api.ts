@@ -129,7 +129,80 @@ export interface ReportRequest {
 }
 
 export interface ReportResponse {
-  measures: any; // Dataset-level measures
-  measures_per_model: any; // Per-model measures
-  ir_info?: any | null; // IR info for linking models
+  // NOTE: This is a *derived* payload built on the backend (mirrors the old
+  // `useReportData()` hook output). The frontend should render this directly.
+  parseStatus?: any | null;
+  parseStatusChartData: Array<{ name: string; value: number; share: number }>;
+  skipRatioHistogram: Array<{ bin: string; count: number }>;
+  skipRatioTop10: Array<{
+    modelId: string;
+    skipRatio: number;
+    elementsLoaded: number;
+    elementsSkipped: number;
+    relpath: string;
+  }>;
+  parseTimeHistogram: Array<{ bin: string; count: number }>;
+  parseTimeScatterData: Array<{ fileSize: number; parseTime: number }>;
+  sourceSizeHistogram: Array<{ bin: string; count: number }>;
+  irSizeHistogram: Array<{ bin: string; count: number }>;
+  fileSizeTop10: Array<{ modelId: string; sourceSize: number; irSize: number; relpath: string }>;
+  warningsChartData: Array<{ type: string; count: number }>;
+  modelsWithWarnings: Array<{
+    modelId: string;
+    warningCount: number;
+    warningsByType: Record<string, number>;
+    relpath: string;
+  }>;
+
+  labelPresence?: any | null;
+  labelPresenceChartData?: { present: number; missing: number; presentShare: number; missingShare: number } | null;
+  labelPresenceByType: Array<{ type: string; missingShare: number }>;
+
+  labelLength?: any | null;
+  labelLengthCharsHistogram: Array<{ bin: string; count: number }>;
+  labelLengthTokensHistogram: Array<{ bin: string; count: number }>;
+  labelLengthTop10: Array<{
+    modelId: string;
+    relpath: string;
+    charsMedian: number;
+    tokensMedian: number;
+    shortShare: number;
+    longShare: number;
+  }>;
+
+  namingConvention?: any | null;
+  namingConventionChartData: Array<{ caseStyle: string; count: number; share: number }>;
+  namingStyleEntropies: number[];
+  namingStyleEntropyHistogram: Array<{ bin: string; count: number }>;
+
+  singleMultiWord?: any | null;
+  singleMultiWordChartData?: { single: number; multi: number; singleShare: number; multiShare: number } | null;
+  singleWordShares: number[];
+  singleWordShareHistogram: Array<{ bin: string; count: number }>;
+
+  lexicalDiversity?: any | null;
+  lexicalDiversityTop10: Array<{
+    modelId: string;
+    relpath: string;
+    totalTokens: number;
+    vocabSize: number;
+    typeTokenRatio: number;
+    stopwordShare: number;
+  }>;
+
+  constructPresence?: any | null;
+  constructCatalog: Record<string, any>;
+  constructPresenceChartData?: { observed: number; missing: number; observedShare: number; missingShare: number } | null;
+  coverageShareHistogram: Array<{ bin: string; count: number }>;
+  unknownTypeShareHistogram: Array<{ bin: string; count: number }>;
+  lowestCoverage: Array<any>;
+  highestCoverage: Array<any>;
+  missingConstructs: Array<any>;
+  unknownTypes: Array<{ type: string; count: number }>;
+  coverageByGroup: Array<any>;
+  coverageByKind: Array<any>;
+  constructFrequency?: any | null;
+  constructFrequencyData: Array<any>;
+  constructFrequencyPareto: Array<any>;
+  constructFrequencyByGroup: Array<any>;
 }

@@ -86,11 +86,216 @@ class ReportRequest(BaseModel):
     ir_info_path: Optional[str] = Field(None, description="Path to ir_info.json file (optional, for linking to models)")
 
 
-class ReportResponse(BaseModel):
-    """Response schema for report endpoint."""
-    measures: Dict[str, Any] = Field(..., description="Dataset-level measures")
-    measures_per_model: Dict[str, Any] = Field(..., description="Per-model measures")
-    ir_info: Optional[Dict[str, Any]] = Field(None, description="IR info for linking models")
+class DerivedHistogramBin(BaseModel):
+    bin: str
+    count: int
+
+
+class DerivedParseStatusChartItem(BaseModel):
+    name: str
+    value: int
+    share: float
+
+
+class DerivedSkipRatioTopItem(BaseModel):
+    modelId: str
+    skipRatio: float
+    elementsLoaded: int
+    elementsSkipped: int
+    relpath: str
+
+
+class DerivedParseTimeScatterItem(BaseModel):
+    fileSize: int
+    parseTime: int
+
+
+class DerivedFileSizeTopItem(BaseModel):
+    modelId: str
+    sourceSize: int
+    irSize: int
+    relpath: str
+
+
+class DerivedWarningsChartItem(BaseModel):
+    type: str
+    count: int
+
+
+class DerivedWarningsTopItem(BaseModel):
+    modelId: str
+    warningCount: int
+    warningsByType: Dict[str, int] = Field(default_factory=dict)
+    relpath: str
+
+
+class DerivedLabelPresenceChartData(BaseModel):
+    present: int
+    missing: int
+    presentShare: float
+    missingShare: float
+
+
+class DerivedLabelPresenceByTypeItem(BaseModel):
+    type: str
+    missingShare: float
+
+
+class DerivedLabelLengthTopItem(BaseModel):
+    modelId: str
+    relpath: str
+    charsMedian: float
+    tokensMedian: float
+    shortShare: float
+    longShare: float
+
+
+class DerivedNamingConventionChartItem(BaseModel):
+    caseStyle: str
+    count: int
+    share: float
+
+
+class DerivedSingleMultiWordChartData(BaseModel):
+    single: int
+    multi: int
+    singleShare: float
+    multiShare: float
+
+
+class DerivedLexicalDiversityTopItem(BaseModel):
+    modelId: str
+    relpath: str
+    totalTokens: int
+    vocabSize: int
+    typeTokenRatio: float
+    stopwordShare: float
+
+
+class DerivedConstructPresenceChartData(BaseModel):
+    observed: int
+    missing: int
+    observedShare: float
+    missingShare: float
+
+
+class DerivedCoverageOutlierItem(BaseModel):
+    modelId: str
+    relpath: str
+    coverageShare: float
+    constructsObservedCount: int
+    constructsAvailableCount: int
+    unknownTypeShare: float
+    unknownNodeTypeCount: int
+    unknownEdgeTypeCount: int
+
+
+class DerivedMissingConstructItem(BaseModel):
+    constructId: str
+    group: Optional[str] = None
+    description: Optional[str] = None
+    kind: Optional[str] = None
+
+
+class DerivedUnknownTypeItem(BaseModel):
+    type: str
+    count: int
+
+
+class DerivedCoverageByGroupItem(BaseModel):
+    group: str
+    available: int
+    observed: int
+    missing: int
+    coverageShare: float
+
+
+class DerivedCoverageByKindItem(BaseModel):
+    kind: str
+    available: int
+    observed: int
+    missing: int
+    coverageShare: float
+
+
+class DerivedConstructFrequencyItem(BaseModel):
+    constructId: str
+    count: int
+    share: float
+    group: Optional[str] = None
+    description: Optional[str] = None
+    kind: Optional[str] = None
+
+
+class DerivedConstructFrequencyParetoItem(BaseModel):
+    rank: int
+    constructId: str
+    count: int
+    share: float
+    cumulativeShare: float
+
+
+class DerivedConstructFrequencyByGroupItem(BaseModel):
+    group: str
+    count: int
+    share: float
+
+
+class DerivedReportResponse(BaseModel):
+    """Response schema for derived report endpoint (UI-ready)."""
+
+    # Raw-ish measure objects that KPI components render directly
+    parseStatus: Optional[Dict[str, Any]] = None
+    labelPresence: Optional[Dict[str, Any]] = None
+    labelLength: Optional[Dict[str, Any]] = None
+    namingConvention: Optional[Dict[str, Any]] = None
+    singleMultiWord: Optional[Dict[str, Any]] = None
+    lexicalDiversity: Optional[Dict[str, Any]] = None
+    constructPresence: Optional[Dict[str, Any]] = None
+    constructFrequency: Optional[Dict[str, Any]] = None
+
+    # Derived chart/table payloads
+    parseStatusChartData: List[DerivedParseStatusChartItem] = Field(default_factory=list)
+    skipRatioHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    skipRatioTop10: List[DerivedSkipRatioTopItem] = Field(default_factory=list)
+    parseTimeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    parseTimeScatterData: List[DerivedParseTimeScatterItem] = Field(default_factory=list)
+    sourceSizeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    irSizeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    fileSizeTop10: List[DerivedFileSizeTopItem] = Field(default_factory=list)
+    warningsChartData: List[DerivedWarningsChartItem] = Field(default_factory=list)
+    modelsWithWarnings: List[DerivedWarningsTopItem] = Field(default_factory=list)
+
+    labelPresenceChartData: Optional[DerivedLabelPresenceChartData] = None
+    labelPresenceByType: List[DerivedLabelPresenceByTypeItem] = Field(default_factory=list)
+
+    labelLengthCharsHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    labelLengthTokensHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    labelLengthTop10: List[DerivedLabelLengthTopItem] = Field(default_factory=list)
+
+    namingConventionChartData: List[DerivedNamingConventionChartItem] = Field(default_factory=list)
+    namingStyleEntropies: List[float] = Field(default_factory=list)
+    namingStyleEntropyHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+
+    singleMultiWordChartData: Optional[DerivedSingleMultiWordChartData] = None
+    singleWordShares: List[float] = Field(default_factory=list)
+    singleWordShareHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+
+    lexicalDiversityTop10: List[DerivedLexicalDiversityTopItem] = Field(default_factory=list)
+
+    constructCatalog: Dict[str, Any] = Field(default_factory=dict)
+    constructPresenceChartData: Optional[DerivedConstructPresenceChartData] = None
+    coverageShareHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    unknownTypeShareHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    lowestCoverage: List[DerivedCoverageOutlierItem] = Field(default_factory=list)
+    highestCoverage: List[DerivedCoverageOutlierItem] = Field(default_factory=list)
+    missingConstructs: List[DerivedMissingConstructItem] = Field(default_factory=list)
+    unknownTypes: List[DerivedUnknownTypeItem] = Field(default_factory=list)
+    coverageByGroup: List[DerivedCoverageByGroupItem] = Field(default_factory=list)
+    coverageByKind: List[DerivedCoverageByKindItem] = Field(default_factory=list)
+    constructFrequencyData: List[DerivedConstructFrequencyItem] = Field(default_factory=list)
+    constructFrequencyPareto: List[DerivedConstructFrequencyParetoItem] = Field(default_factory=list)
+    constructFrequencyByGroup: List[DerivedConstructFrequencyByGroupItem] = Field(default_factory=list)
 
 
 class ErrorResponse(BaseModel):
