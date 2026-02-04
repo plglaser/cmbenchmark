@@ -29,7 +29,10 @@ htmlcov/
 out/
 output/
 .DS_Store
+
+
 data/
+!fronted/src/data/
 
 # Web UI build artifacts
 cmbenchmark/web/static/*

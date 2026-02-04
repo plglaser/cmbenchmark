@@ -7,15 +7,39 @@ from fastapi import APIRouter, HTTPException, Query
 from cmbenchmark.services.scan import scan_dataset
 from cmbenchmark.services.parse import parse_from_scan
 from cmbenchmark.services.measure import compute_measure, save_measure_dataset, save_measure_per_model
+from cmbenchmark.services.report import generate_report
 from cmbenchmark.parser import get_all_parsers
 from cmbenchmark.types.ir import IR
 from cmbenchmark.types.dataset import IRInfo
+from cmbenchmark.types.profile import ConstructCoverageProfile, BenchmarkProfile
 from .schemas import (
     ScanRequest, ScanResponse, ParseRequest, ParseResponse, ErrorResponse,
     MeasureRequest, MeasureResponse, ReportRequest, DerivedReportResponse
 )
 
 router = APIRouter()
+
+
+def _normalize_profile(profile: BenchmarkProfile) -> BenchmarkProfile:
+    """Normalize inline profile data (absolute paths + construct profile hydration)."""
+    if profile.scan and profile.scan.dataset_path:
+        dataset_path = Path(profile.scan.dataset_path).expanduser()
+        profile.scan.dataset_path = str(dataset_path.resolve())
+
+    if profile.output_path:
+        output_path = Path(profile.output_path).expanduser()
+        profile.output_path = str(output_path.resolve())
+
+    if profile.measure and profile.measure.constructs:
+        construct_profile = profile.measure.constructs
+        if construct_profile.enabled and not construct_profile.constructs:
+            construct_config = construct_profile.model_dump()
+            profile.measure.constructs = ConstructCoverageProfile.load_for_language(
+                parser_language=profile.parse.parser_language,
+                construct_config=construct_config,
+            )
+
+    return profile
 
 @router.get("/construct-profile", response_model=Dict[str, Any])
 async def get_construct_profile(
@@ -65,18 +89,19 @@ async def scan(request: ScanRequest):
     Scan a dataset directory for model files and generate statistics.
     
     This endpoint wraps the scan_dataset service function.
-    The dataset_info.json file is saved to the output directory specified in 'out'.
+    The dataset_info.json file is saved to the profile's output_path.
     """
     try:
+        profile = _normalize_profile(request.profile)
         dataset_info = scan_dataset(
-            dataset_path=request.dataset_path,
-            include=request.include,
-            exclude=request.exclude,
-            size_limit_mb=request.size_limit_mb,
+            dataset_path=profile.scan.dataset_path,
+            include=profile.scan.include,
+            exclude=profile.scan.exclude,
+            size_limit_mb=profile.scan.size_limit_mb,
         )
         
         # Save dataset_info.json to the output directory
-        output_dir = Path(request.out).resolve()
+        output_dir = Path(profile.output_path).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
         dataset_info_path = output_dir / "dataset_info.json"
         with open(dataset_info_path, "w", encoding="utf-8") as f:
@@ -115,10 +140,12 @@ async def parse(request: ParseRequest):
     This endpoint wraps the parse_from_scan service function.
     """
     try:
+        profile = _normalize_profile(request.profile)
+        dataset_info_path = Path(profile.output_path).resolve() / "dataset_info.json"
         ir_info = parse_from_scan(
-            dataset_info_path=request.dataset_info_path,
-            output_dir=request.output_dir,
-            parser_language=request.parser_language,
+            dataset_info_path=str(dataset_info_path),
+            output_dir=profile.output_path,
+            parser_language=profile.parse.parser_language,
         )
         
         # Convert ModelParseDiagnostics to response schema
@@ -137,7 +164,7 @@ async def parse(request: ParseRequest):
             modelParseDiagnostics=diagnostics,
         )
         # Add output_dir to parameters for convenience
-        response.parameters["output_dir"] = request.output_dir
+        response.parameters["output_dir"] = profile.output_path
         return response
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -175,20 +202,17 @@ async def measure(request: MeasureRequest):
     Compute dataset-level and per-model measures from IR models.
     
     This endpoint wraps the compute_measure service function.
-    The measures.json and measures_per_model.json files are saved to the output directory.
+    The measures.json and measures_per_model.json files are saved to the profile's output_path.
     """
     try:
-        # Load profile if provided
-        profile = None
-        if request.profile_path:
-            from cmbenchmark.types.profile import BenchmarkProfile
-            profile = BenchmarkProfile.load_from_file(request.profile_path)
-        
+        profile = _normalize_profile(request.profile)
+        ir_dir = Path(profile.output_path).resolve() / "ir"
+
         # Compute measures
-        dataset_measures, per_model_measures = compute_measure(request.ir_dir, profile=profile)
+        dataset_measures, per_model_measures = compute_measure(str(ir_dir), profile=profile)
         
         # Save measures to output directory
-        output_dir = Path(request.output_dir).resolve()
+        output_dir = Path(profile.output_path).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
         
         measures_path = output_dir / "measures.json"
@@ -217,34 +241,26 @@ async def report(request: ReportRequest):
     derived payload that the frontend can render directly (charts, tables, etc.).
     """
     try:
-        # Load measures.json
-        measures_path = Path(request.measures_path)
+        profile = _normalize_profile(request.profile)
+        output_dir = Path(profile.output_path).resolve()
+        
+        measures_path = output_dir / "measures.json"
         if not measures_path.exists():
             raise HTTPException(status_code=404, detail=f"Measures file not found: {measures_path}")
-        
-        with open(measures_path, "r", encoding="utf-8") as f:
-            measures = json.load(f)
-        
-        # Load measures_per_model.json
-        measures_per_model_path = Path(request.measures_per_model_path)
+
+        measures_per_model_path = output_dir / "measures_per_model.json"
         if not measures_per_model_path.exists():
             raise HTTPException(status_code=404, detail=f"Measures per model file not found: {measures_per_model_path}")
-        
-        with open(measures_per_model_path, "r", encoding="utf-8") as f:
-            measures_per_model = json.load(f)
-        
-        # Optionally load IR info
-        ir_info = None
-        if request.ir_info_path:
-            ir_info_path = Path(request.ir_info_path)
-            if ir_info_path.exists():
-                with open(ir_info_path, "r", encoding="utf-8") as f:
-                    ir_info = json.load(f)
 
-        from cmbenchmark.services.report import build_report_data
+        ir_info_path = output_dir / "ir_info.json"
 
-        derived = build_report_data(measures=measures, measures_per_model=measures_per_model, ir_info=ir_info)
-        return derived
+        report_result = generate_report(
+            measures_path=str(measures_path),
+            measures_per_model_path=str(measures_per_model_path),
+            output_dir=str(output_dir),
+            ir_info_path=str(ir_info_path) if ir_info_path.exists() else None,
+        )
+        return report_result["data"]
     except HTTPException:
         raise
     except Exception as e:

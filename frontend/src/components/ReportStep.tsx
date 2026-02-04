@@ -62,10 +62,11 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
     setError(null);
 
     try {
+      if (!profile) {
+        throw new Error('Load a benchmark profile to build the report.');
+      }
       const response = await apiService.report({
-        measures_path: measuresPath,
-        measures_per_model_path: measuresPerModelPath,
-        ir_info_path: irInfoPath || null,
+        profile,
       });
       setReportData(response);
       if (onReportComplete) {
@@ -106,6 +107,10 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
     }
     if (measureId === 'construct-frequency') {
       const score = reportData?.constructFrequency?.score;
+      return Number.isFinite(score) ? Number(score) : null;
+    }
+    if (measureId === 'label-presence') {
+      const score = reportData?.labelPresence?.score;
       return Number.isFinite(score) ? Number(score) : null;
     }
     return null;
@@ -227,7 +232,7 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
               </div>
             )}
 
-            <Button type="submit" disabled={loading || !measuresPath || !measuresPerModelPath}>
+            <Button type="submit" disabled={loading || !profile}>
               {loading ? 'Loading...' : 'Load Report'}
             </Button>
           </form>

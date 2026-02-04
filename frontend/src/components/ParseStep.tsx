@@ -134,10 +134,11 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
     setError(null);
 
     try {
+      if (!profile) {
+        throw new Error('Load a benchmark profile to run the parse step.');
+      }
       const response = await apiService.parse({
-        dataset_info_path: datasetInfoPath,
-        output_dir: outputDir,
-        parser_language: selectedParser,
+        profile,
       });
       setResult(response);
       onParseComplete(response);
@@ -426,10 +427,7 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
             </div>
           )}
 
-          <Button
-            type="submit"
-            disabled={loading || !selectedParser || !datasetInfoPath || !outputDir || result !== null}
-          >
+          <Button type="submit" disabled={loading || !profile || result !== null}>
             {loading ? 'Parsing...' : 'Parse Models'}
           </Button>
         </form>

@@ -31,7 +31,7 @@ def test_build_report_data_top10_and_relpath_mapping():
                 "dataset_label_present_count": 7,
                 "dataset_label_present_share": 0.7,
                 "dataset_label_missing_share": 0.3,
-                "label_missing_share_by_type": {"A": 0.1},
+                "label_missing_count_by_type": {"A": 2},
             }
         },
         "constructs": {
@@ -54,6 +54,12 @@ def test_build_report_data_top10_and_relpath_mapping():
             "d1_m5_warnings": {"m1": {"warning_count": 5, "warnings_by_type": {"x": 5}}},
         },
         "constructs": {"d3_m1_construct_presence": {"m1": {"coverage_share": 0.2}}},
+        "lexical": {
+            "d2_m1_label_presence": {
+                "m1": {"label_eligible_count": 5, "label_present_count": 2},
+                "m2": {"label_eligible_count": 3, "label_present_count": 3},
+            }
+        },
     }
 
     ir_info = {"index": {"m1": "rel/m1.json"}}
@@ -63,4 +69,5 @@ def test_build_report_data_top10_and_relpath_mapping():
     assert derived["skipRatioTop10"][0]["relpath"] == "rel/m1.json"
     assert len(derived["skipRatioTop10"]) <= 10
     assert derived["parseStatusChartData"][0]["name"] == "Success"
+    assert derived["labelMissingTop10"][0]["missingCount"] == 3
 

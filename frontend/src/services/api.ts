@@ -23,28 +23,19 @@ const api = axios.create({
 
 // Zod schemas for validation
 export const ScanRequestSchema = z.object({
-  dataset_path: z.string().min(1, 'Dataset path is required'),
-  out: z.string().min(1, 'Output directory is required'),
-  include: z.array(z.string()).nullable().optional(),
-  exclude: z.array(z.string()).nullable().optional(),
-  size_limit_mb: z.number().positive().nullable().optional(),
+  profile: z.object({}).passthrough(),
 });
 
 export const ParseRequestSchema = z.object({
-  dataset_info_path: z.string().min(1, 'Dataset info path is required'),
-  output_dir: z.string().min(1, 'Output directory is required'),
-  parser_language: z.string().min(1, 'Parser language is required'),
+  profile: z.object({}).passthrough(),
 });
 
 export const MeasureRequestSchema = z.object({
-  ir_dir: z.string().min(1, 'IR directory is required'),
-  output_dir: z.string().min(1, 'Output directory is required'),
+  profile: z.object({}).passthrough(),
 });
 
 export const ReportRequestSchema = z.object({
-  measures_path: z.string().min(1, 'Measures path is required'),
-  measures_per_model_path: z.string().min(1, 'Measures per model path is required'),
-  ir_info_path: z.string().nullable().optional(),
+  profile: z.object({}).passthrough(),
 });
 
 // API functions

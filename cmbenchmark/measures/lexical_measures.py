@@ -249,7 +249,6 @@ def compute_lexical_measures(
     dataset_label_eligible_count = 0
     dataset_label_present_count = 0
     label_missing_by_type: Dict[str, int] = {}
-    label_eligible_by_type: Dict[str, int] = {}
     
     # For D2.M2: collect medians per model
     label_length_chars_medians: List[float] = []
@@ -269,6 +268,7 @@ def compute_lexical_measures(
     # For D2.M5: aggregate tokens across all models
     all_tokens: List[str] = []
     all_stopword_tokens = 0
+    label_occurrence_counts: Counter[str] = Counter()
     
     # Process each IR model
     for ir in ir_models:
@@ -282,15 +282,12 @@ def compute_lexical_measures(
         
         # Per-type missing shares
         missing_by_type: Dict[str, int] = {}
-        eligible_by_type: Dict[str, int] = {}
         for label_text, elem_type, _ in labels:
-            eligible_by_type[elem_type] = eligible_by_type.get(elem_type, 0) + 1
             if not label_text or not label_text.strip():
                 missing_by_type[elem_type] = missing_by_type.get(elem_type, 0) + 1
         
-        missing_share_by_type = {
-            elem_type: missing_by_type.get(elem_type, 0) / eligible_by_type.get(elem_type, 1)
-            for elem_type in eligible_by_type.keys()
+        missing_count_by_type = {
+            elem_type: count for elem_type, count in missing_by_type.items() if count > 0
         }
         
         per_model_d2m1[ir.id] = D2M1LabelPresencePerModel(
@@ -298,18 +295,21 @@ def compute_lexical_measures(
             label_present_count=present_count,
             label_present_share=present_share,
             label_missing_share=missing_share,
-            label_missing_share_by_type=missing_share_by_type,
+            label_missing_count_by_type=missing_count_by_type,
         )
         
         dataset_label_eligible_count += eligible_count
         dataset_label_present_count += present_count
-        for elem_type, count in eligible_by_type.items():
-            label_eligible_by_type[elem_type] = label_eligible_by_type.get(elem_type, 0) + count
         for elem_type, count in missing_by_type.items():
             label_missing_by_type[elem_type] = label_missing_by_type.get(elem_type, 0) + count
         
         # D2.M2: Label Length
         present_labels = [(label_text, elem_type) for label_text, elem_type, _ in labels if label_text and label_text.strip()]
+
+        for label_text, _ in present_labels:
+            normalized_label = label_text.strip()
+            if normalized_label:
+                label_occurrence_counts[normalized_label] += 1
         
         if present_labels:
             label_lengths_chars = [len(label_text) for label_text, _ in present_labels]
@@ -438,18 +438,8 @@ def compute_lexical_measures(
     dataset_label_present_share = dataset_label_present_count / dataset_label_eligible_count if dataset_label_eligible_count > 0 else 0.0
     dataset_label_missing_share = 1.0 - dataset_label_present_share
     
-    # Completeness category
-    if dataset_label_missing_share <= 0.1:
-        completeness_category = "high"
-    elif dataset_label_missing_share <= 0.25:
-        completeness_category = "moderate"
-    else:
-        completeness_category = "low"
-    
-    # Label missing share by type (dataset level)
-    label_missing_share_by_type = {
-        elem_type: label_missing_by_type.get(elem_type, 0) / label_eligible_by_type.get(elem_type, 1)
-        for elem_type in label_eligible_by_type.keys()
+    label_missing_count_by_type = {
+        elem_type: count for elem_type, count in label_missing_by_type.items() if count > 0
     }
     
     # Collect present/missing shares per model for stats
@@ -463,9 +453,8 @@ def compute_lexical_measures(
         dataset_label_missing_share=dataset_label_missing_share,
         label_present_share_stats=_compute_distribution_summary(label_present_shares),
         label_missing_share_stats=_compute_distribution_summary(label_missing_shares),
-        label_completeness_index=dataset_label_present_share,
-        completeness_category=completeness_category,
-        label_missing_share_by_type=label_missing_share_by_type,
+        score=dataset_label_present_share * 100,
+        label_missing_count_by_type=label_missing_count_by_type,
     )
     
     d2m2_dataset = D2M2LabelLengthDataset(
@@ -499,6 +488,8 @@ def compute_lexical_measures(
     total_tokens = len(all_tokens)
     ttr = vocab_size / total_tokens if total_tokens > 0 else 0.0
     stopword_share = all_stopword_tokens / total_tokens if total_tokens > 0 else 0.0
+    top_labels = label_occurrence_counts.most_common(50)
+    top_tokens = Counter(all_tokens).most_common(50)
     
     d2m5_dataset = D2M5LexicalDiversityDataset(
         total_tokens=total_tokens,
@@ -506,6 +497,8 @@ def compute_lexical_measures(
         type_token_ratio=ttr,
         stopword_tokens=all_stopword_tokens,
         stopword_share=stopword_share,
+        top_labels=top_labels,
+        top_tokens=top_tokens,
     )
     
     dataset_measures = LexicalMeasuresDataset(

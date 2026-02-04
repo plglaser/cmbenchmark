@@ -1,8 +1,8 @@
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 interface LabelPresenceByTypeChartProps {
-  data: Array<{ type: string; missingShare: number }>;
+  data: Array<{ type: string; missingCount: number }>;
 }
 
 export function LabelPresenceByTypeChart({ data }: LabelPresenceByTypeChartProps) {
@@ -21,7 +21,7 @@ export function LabelPresenceByTypeChart({ data }: LabelPresenceByTypeChartProps
 
   const chartData = data.map((item) => ({
     type: item.type,
-    'Missing Share': (item.missingShare * 100).toFixed(1),
+    'Missing Count': item.missingCount,
   }));
 
   return (
@@ -30,20 +30,17 @@ export function LabelPresenceByTypeChart({ data }: LabelPresenceByTypeChartProps
         <CardTitle className="text-base">Missing Labels by Element Type</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+        <ResponsiveContainer width="100%" height={320}>
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            margin={{ top: 10, right: 20, left: 20, bottom: 10 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="type" 
-              angle={-45}
-              textAnchor="end"
-              height={100}
-              interval={0}
-            />
-            <YAxis />
-            <Tooltip formatter={(value: any) => `${value}%`} />
-            <Legend />
-            <Bar dataKey="Missing Share" fill="#ef4444" />
+            <XAxis type="number" />
+            <YAxis type="category" dataKey="type" width={120} />
+            <Tooltip formatter={(value: any) => Number(value).toLocaleString()} />
+            <Bar dataKey="Missing Count" fill="#ef4444" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

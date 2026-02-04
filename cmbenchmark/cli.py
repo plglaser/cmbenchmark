@@ -228,11 +228,21 @@ def _run_report(profile: BenchmarkProfile, ir_path: str, measure_path: str, out:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with step("Generating report..."):
-        report_paths = generate_report(str(ir_dir), str(measure_file), str(output_dir))
+        measures_per_model_path = output_dir / "measures_per_model.json"
+        if not measures_per_model_path.exists():
+            error(f"Measures per model file does not exist: {measures_per_model_path}")
+            raise typer.Exit(1)
+
+        ir_info_path = output_dir / "ir_info.json"
+        report_paths = generate_report(
+            str(measure_file),
+            str(measures_per_model_path),
+            str(output_dir),
+            str(ir_info_path) if ir_info_path.exists() else None,
+        )
 
     success("Report generation complete")
     console.print(f"  JSON report: {report_paths['json']}")
-    console.print(f"  HTML report: {report_paths['html']}")
 
 
 @app.command()

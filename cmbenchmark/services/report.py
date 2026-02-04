@@ -9,7 +9,9 @@ series, histogram bins, top-N tables, etc.) so the frontend can stay "thin".
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Sequence, Tuple
 
 
@@ -273,13 +275,41 @@ def build_report_data(
             "presentShare": float(label_presence.get("dataset_label_present_share", 0) or 0),
             "missingShare": float(label_presence.get("dataset_label_missing_share", 0) or 0),
         }
-        lm_by_type = label_presence.get("label_missing_share_by_type") or {}
+        lm_by_type = label_presence.get("label_missing_count_by_type") or {}
     else:
         label_presence_chart_data = None
         lm_by_type = {}
     if not isinstance(lm_by_type, Mapping):
         lm_by_type = {}
-    label_presence_by_type = [{"type": str(t), "missingShare": float(s or 0)} for t, s in lm_by_type.items()]
+    label_presence_by_type = sorted(
+        [{"type": str(t), "missingCount": int(c or 0)} for t, c in lm_by_type.items()],
+        key=lambda x: x["missingCount"],
+        reverse=True,
+    )
+
+    d2_m1 = _get(measures_per_model, "lexical", "d2_m1_label_presence", default={})
+    if not isinstance(d2_m1, Mapping):
+        d2_m1 = {}
+    label_missing_rows: List[Dict[str, Any]] = []
+    if d2_m1:
+        for model_id, data in d2_m1.items():
+            if not isinstance(data, Mapping):
+                continue
+            eligible = int(data.get("label_eligible_count", 0) or 0)
+            present = int(data.get("label_present_count", 0) or 0)
+            missing = max(0, eligible - present)
+            if missing <= 0:
+                continue
+            label_missing_rows.append(
+                {
+                    "modelId": model_id,
+                    "relpath": str(ir_index.get(model_id) or model_id),
+                    "eligibleCount": eligible,
+                    "presentCount": present,
+                    "missingCount": missing,
+                }
+            )
+    label_missing_top10 = sorted(label_missing_rows, key=lambda x: x["missingCount"], reverse=True)[:10]
 
     # D2.M2 - Label Length
     label_length = _get(measures, "lexical", "d2_m2_label_length")
@@ -700,6 +730,16 @@ def build_report_data(
         if d4_m1
         else []
     )
+    model_size_scatter_data = [
+        {
+            "modelId": model_id,
+            "relpath": str(ir_index.get(model_id) or model_id),
+            "nodeCount": int(data.get("node_count", 0) or 0),
+            "edgeCount": int(data.get("edge_count", 0) or 0),
+        }
+        for model_id, data in d4_m1.items()
+        if isinstance(data, Mapping)
+    ]
 
     # D4.M2 - Degree
     degree = _get(measures, "size_complexity", "d4_m2_degree")
@@ -833,6 +873,7 @@ def build_report_data(
         "labelPresence": label_presence,
         "labelPresenceChartData": label_presence_chart_data,
         "labelPresenceByType": label_presence_by_type,
+        "labelMissingTop10": label_missing_top10,
         "labelLength": label_length,
         "labelLengthCharsHistogram": label_length_chars_histogram,
         "labelLengthTokensHistogram": label_length_tokens_histogram,
@@ -876,6 +917,7 @@ def build_report_data(
         "modelSizeEdgeHistogram": model_size_edge_histogram,
         "modelSizeElementHistogram": model_size_element_histogram,
         "modelSizeEdgeNodeRatioHistogram": model_size_ratio_histogram,
+        "modelSizeScatterData": model_size_scatter_data,
         "modelSizeTop10": model_size_top10,
         "degree": degree,
         "avgDegreeHistogram": avg_degree_histogram,
@@ -895,3 +937,49 @@ def build_report_data(
         "containedNodeShareHistogram": contained_node_share_histogram,
         "depthTop10": depth_top10,
     }
+
+
+def save_report(derived: Mapping[str, Any], output_path: str) -> None:
+    """Persist derived report JSON to disk."""
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(dict(derived), f, indent=2)
+
+
+def generate_report(
+    measures_path: str,
+    measures_per_model_path: str,
+    output_dir: str,
+    ir_info_path: Optional[str] = None,
+) -> Dict[str, str]:
+    """Build and persist the derived report JSON."""
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    with open(measures_path, "r", encoding="utf-8") as f:
+        measures = json.load(f)
+
+    with open(measures_per_model_path, "r", encoding="utf-8") as f:
+        measures_per_model = json.load(f)
+
+    ir_info = None
+    if ir_info_path is None:
+        default_ir_info = output_path / "ir_info.json"
+        if default_ir_info.exists():
+            ir_info_path = str(default_ir_info)
+
+    if ir_info_path:
+        p = Path(ir_info_path)
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                ir_info = json.load(f)
+
+    derived = build_report_data(
+        measures=measures,
+        measures_per_model=measures_per_model,
+        ir_info=ir_info,
+    )
+
+    report_path = output_path / "report.json"
+    save_report(derived, str(report_path))
+
+    return {"json": str(report_path), "data": derived}

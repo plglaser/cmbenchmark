@@ -174,12 +174,11 @@ export function ScanStep({ onScanComplete, profile }: ScanStepProps) {
     setError(null);
 
     try {
+      if (!profile) {
+        throw new Error('Load a benchmark profile to run the scan.');
+      }
       const response = await apiService.scan({
-        dataset_path: folderName,
-        out: out,
-        include: includePatterns.length > 0 ? includePatterns : null,
-        exclude: excludePatterns.length > 0 ? excludePatterns : null,
-        size_limit_mb: sizeLimitMb || null,
+        profile,
       });
       setResult(response);
       onScanComplete(response);
@@ -308,7 +307,7 @@ export function ScanStep({ onScanComplete, profile }: ScanStepProps) {
             </div>
           )}
 
-          <Button type="submit" disabled={loading || !folderName || !out || result !== null}>
+          <Button type="submit" disabled={loading || !profile || result !== null}>
             {loading ? 'Scanning...' : 'Scan Dataset'}
           </Button>
         </form>

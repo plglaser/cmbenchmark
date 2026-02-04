@@ -46,9 +46,11 @@ export function MeasureStep({ parseResult, onMeasureComplete, profile }: Measure
     setError(null);
 
     try {
+      if (!profile) {
+        throw new Error('Load a benchmark profile to compute measures.');
+      }
       const response = await apiService.measure({
-        ir_dir: irDir,
-        output_dir: outputDir,
+        profile,
       });
       setResult(response);
       onMeasureComplete(response);
@@ -110,7 +112,7 @@ export function MeasureStep({ parseResult, onMeasureComplete, profile }: Measure
             </div>
           )}
 
-          <Button type="submit" disabled={loading || !irDir || !outputDir || result !== null}>
+          <Button type="submit" disabled={loading || !profile || result !== null}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

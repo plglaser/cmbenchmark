@@ -1,11 +1,9 @@
 /** API types matching backend Pydantic schemas */
 
+import type { BenchmarkProfile } from './profile';
+
 export interface ScanRequest {
-  dataset_path: string;
-  out: string;
-  include?: string[] | null;
-  exclude?: string[] | null;
-  size_limit_mb?: number | null;
+  profile: BenchmarkProfile;
 }
 
 export interface ScanResponse {
@@ -37,9 +35,7 @@ export interface ScanResponse {
 }
 
 export interface ParseRequest {
-  dataset_info_path: string;
-  output_dir: string;
-  parser_language: string;
+  profile: BenchmarkProfile;
 }
 
 export interface ModelParseDiagnostics {
@@ -111,9 +107,7 @@ export interface IRData {
 }
 
 export interface MeasureRequest {
-  ir_dir: string;
-  output_dir: string;
-  profile_path?: string | null;
+  profile: BenchmarkProfile;
 }
 
 export interface MeasureResponse {
@@ -123,9 +117,7 @@ export interface MeasureResponse {
 }
 
 export interface ReportRequest {
-  measures_path: string;
-  measures_per_model_path: string;
-  ir_info_path?: string | null;
+  profile: BenchmarkProfile;
 }
 
 export interface ReportResponse {
@@ -160,7 +152,14 @@ export interface ReportResponse {
 
   labelPresence?: any | null;
   labelPresenceChartData?: { present: number; missing: number; presentShare: number; missingShare: number } | null;
-  labelPresenceByType: Array<{ type: string; missingShare: number }>;
+  labelPresenceByType: Array<{ type: string; missingCount: number }>;
+  labelMissingTop10: Array<{
+    modelId: string;
+    relpath: string;
+    eligibleCount: number;
+    presentCount: number;
+    missingCount: number;
+  }>;
 
   labelLength?: any | null;
   labelLengthCharsHistogram: Array<{ bin: string; count: number }>;
@@ -241,6 +240,12 @@ export interface ReportResponse {
   modelSizeEdgeHistogram: Array<{ bin: string; count: number }>;
   modelSizeElementHistogram: Array<{ bin: string; count: number }>;
   modelSizeEdgeNodeRatioHistogram: Array<{ bin: string; count: number }>;
+  modelSizeScatterData: Array<{
+    modelId: string;
+    relpath: string;
+    nodeCount: number;
+    edgeCount: number;
+  }>;
   modelSizeTop10: Array<{
     modelId: string;
     relpath: string;

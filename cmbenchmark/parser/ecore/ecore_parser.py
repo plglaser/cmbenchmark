@@ -167,7 +167,7 @@ class EcoreParser(BaseParser):
         if len(packages) > 1:
             for extra in packages[1:]:
                 self.skip_with_warning(
-                    WarningType.OTHER,
+                    WarningType.MULTIPLE_ROOT_PACKAGES,
                     f"Multiple root EPackages found; skipping extra package: {getattr(extra, 'name', '')}",
                 )
         return packages[0]

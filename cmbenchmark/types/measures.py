@@ -1,7 +1,7 @@
 """Measure-related data models."""
 
 from dataclasses import dataclass, asdict, field
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 
 
 @dataclass
@@ -147,12 +147,11 @@ class D2M1LabelPresenceDataset:
     label_present_share_stats: DistributionSummary
     label_missing_share_stats: DistributionSummary
 
-    # indicator
-    label_completeness_index: float  # == dataset_label_present_share
-    completeness_category: str  # "high" | "moderate" | "low"
+    # indicator (0-100)
+    score: float = 0.0
 
-    # per-node-type missing shares (dataset level, micro-averaged)
-    label_missing_share_by_type: Dict[str, float] = field(default_factory=dict)
+    # per-node-type missing counts (dataset level)
+    label_missing_count_by_type: Dict[str, int] = field(default_factory=dict)
 
 
 # ---------- D2.M2 — Label Length (dataset-level) ----------
@@ -195,6 +194,8 @@ class D2M5LexicalDiversityDataset:
     type_token_ratio: float
     stopword_tokens: int = 0
     stopword_share: float = 0.0
+    top_labels: List[Tuple[str, int]] = field(default_factory=list)
+    top_tokens: List[Tuple[str, int]] = field(default_factory=list)
 
 
 # ---------- D2.M1 per-model ----------
@@ -205,7 +206,7 @@ class D2M1LabelPresencePerModel:
     label_present_count: int
     label_present_share: float
     label_missing_share: float
-    label_missing_share_by_type: Dict[str, float] = field(default_factory=dict)
+    label_missing_count_by_type: Dict[str, int] = field(default_factory=dict)
 
 
 # ---------- D2.M2 per-model ----------
@@ -511,6 +512,13 @@ class MeasureResultDataset:
             d2_m3_data = lexical_data.get("d2_m3_naming_convention", {})
             d2_m4_data = lexical_data.get("d2_m4_single_multi_word", {})
             d2_m5_data = lexical_data.get("d2_m5_lexical_diversity", {})
+
+            if isinstance(d2_m1_data, dict):
+                if "score" not in d2_m1_data and "label_completeness_index" in d2_m1_data:
+                    d2_m1_data["score"] = float(d2_m1_data.get("label_completeness_index") or 0) * 100
+                d2_m1_data.pop("label_completeness_index", None)
+                d2_m1_data.pop("completeness_category", None)
+                d2_m1_data.pop("label_missing_share_by_type", None)
             
             # Convert DistributionSummary dicts to objects
             if isinstance(d2_m1_data.get("label_present_share_stats"), dict):
@@ -659,6 +667,9 @@ class MeasureResultPerModel:
                 result = {}
                 for model_id, model_data in lexical_data.get(measure_name, {}).items():
                     if isinstance(model_data, dict):
+                        if per_model_class is D2M1LabelPresencePerModel:
+                            model_data.pop("label_missing_share_by_type", None)
+                            model_data.setdefault("label_missing_count_by_type", {})
                         result[model_id] = per_model_class(**model_data)
                     else:
                         result[model_id] = model_data

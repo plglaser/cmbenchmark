@@ -2,24 +2,21 @@
 
 from typing import Dict, List, Any, Optional
 from pydantic import BaseModel, Field
-from cmbenchmark.services.scan import DEFAULT_INCLUDE_PATTERNS
+from cmbenchmark.types.profile import BenchmarkProfile
 
 
 # Request schemas
-class ScanRequest(BaseModel):
+class ProfileRequest(BaseModel):
+    """Request schema carrying a benchmark profile."""
+    profile: BenchmarkProfile = Field(..., description="Benchmark profile JSON")
+
+
+class ScanRequest(ProfileRequest):
     """Request schema for scan endpoint."""
-    dataset_path: str = Field(..., description="Path to dataset directory")
-    out: str = Field(..., description="Path to output directory for dataset_info.json")
-    include: Optional[List[str]] = Field(None, description=f"List of file patterns to include. If not provided, uses default patterns: {', '.join(DEFAULT_INCLUDE_PATTERNS)}. Patterns match filenames (e.g., '*.xml') or relative paths from dataset root (e.g., 'subdir/*').")
-    exclude: Optional[List[str]] = Field(None, description="List of file patterns to exclude. Applied after include filtering. Patterns match filenames (e.g., '*.tmp') or relative paths from dataset root (e.g., 'test/*', 'backup/**').")
-    size_limit_mb: Optional[int] = Field(None, description="Maximum file size in MB")
 
 
-class ParseRequest(BaseModel):
+class ParseRequest(ProfileRequest):
     """Request schema for parse endpoint."""
-    dataset_info_path: str = Field(..., description="Path to dataset_info.json from scan stage")
-    output_dir: str = Field(..., description="Path to output directory")
-    parser_language: str = Field(..., description="Parser language to use (e.g., UML, BPMN, ArchiMate)")
 
 
 # Response schemas
@@ -65,11 +62,8 @@ class ParseResponse(BaseModel):
     modelParseDiagnostics: Dict[str, ModelParseDiagnosticsResponse] = {}
 
 
-class MeasureRequest(BaseModel):
+class MeasureRequest(ProfileRequest):
     """Request schema for measure endpoint."""
-    ir_dir: str = Field(..., description="Path to IR directory containing IR JSON files")
-    output_dir: str = Field(..., description="Path to output directory for measures JSON files")
-    profile_path: Optional[str] = Field(None, description="Optional path to benchmark profile JSON file for measure configuration")
 
 
 class MeasureResponse(BaseModel):
@@ -79,11 +73,8 @@ class MeasureResponse(BaseModel):
     output_dir: str = Field(..., description="Output directory where measures were saved")
 
 
-class ReportRequest(BaseModel):
+class ReportRequest(ProfileRequest):
     """Request schema for report endpoint."""
-    measures_path: str = Field(..., description="Path to measures.json file")
-    measures_per_model_path: str = Field(..., description="Path to measures_per_model.json file")
-    ir_info_path: Optional[str] = Field(None, description="Path to ir_info.json file (optional, for linking to models)")
 
 
 class DerivedHistogramBin(BaseModel):
@@ -138,7 +129,15 @@ class DerivedLabelPresenceChartData(BaseModel):
 
 class DerivedLabelPresenceByTypeItem(BaseModel):
     type: str
-    missingShare: float
+    missingCount: int
+
+
+class DerivedLabelMissingTopItem(BaseModel):
+    modelId: str
+    relpath: str
+    eligibleCount: int
+    presentCount: int
+    missingCount: int
 
 
 class DerivedLabelLengthTopItem(BaseModel):
@@ -277,6 +276,13 @@ class DerivedModelSizeTopItem(BaseModel):
     edgeNodeRatio: float
 
 
+class DerivedModelSizeScatterItem(BaseModel):
+    modelId: str
+    relpath: str
+    nodeCount: int
+    edgeCount: int
+
+
 class DerivedDegreeTopItem(BaseModel):
     modelId: str
     relpath: str
@@ -340,6 +346,7 @@ class DerivedReportResponse(BaseModel):
 
     labelPresenceChartData: Optional[DerivedLabelPresenceChartData] = None
     labelPresenceByType: List[DerivedLabelPresenceByTypeItem] = Field(default_factory=list)
+    labelMissingTop10: List[DerivedLabelMissingTopItem] = Field(default_factory=list)
 
     labelLengthCharsHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
     labelLengthTokensHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
@@ -379,6 +386,7 @@ class DerivedReportResponse(BaseModel):
     modelSizeEdgeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
     modelSizeElementHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
     modelSizeEdgeNodeRatioHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    modelSizeScatterData: List[DerivedModelSizeScatterItem] = Field(default_factory=list)
     modelSizeTop10: List[DerivedModelSizeTopItem] = Field(default_factory=list)
 
     avgDegreeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
