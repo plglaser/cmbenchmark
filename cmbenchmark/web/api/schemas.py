@@ -241,6 +241,27 @@ class DerivedConstructFrequencyByGroupItem(BaseModel):
     share: float
 
 
+class DerivedConstructFrequencyPerModelItem(BaseModel):
+    modelId: str
+    relpath: str
+    countsByConstruct: Dict[str, int] = Field(default_factory=dict)
+
+
+class DerivedConstructFrequencyPerModelShareItem(BaseModel):
+    modelId: str
+    relpath: str
+    sharesByConstruct: Dict[str, float] = Field(default_factory=dict)
+    totalConstructInstances: int
+    utilizationEntropy: float
+
+
+class DerivedConstructFrequencyTopModelItem(BaseModel):
+    modelId: str
+    relpath: str
+    totalConstructInstances: int
+    utilizationEntropy: float
+
+
 class DerivedConstructPresencePerModelItem(BaseModel):
     modelId: str
     relpath: str
@@ -259,6 +280,7 @@ class DerivedReportResponse(BaseModel):
     lexicalDiversity: Optional[Dict[str, Any]] = None
     constructPresence: Optional[Dict[str, Any]] = None
     constructFrequency: Optional[Dict[str, Any]] = None
+    constructDimensionScore: Optional[float] = None
 
     # Derived chart/table payloads
     parseStatusChartData: List[DerivedParseStatusChartItem] = Field(default_factory=list)
@@ -269,6 +291,7 @@ class DerivedReportResponse(BaseModel):
     sourceSizeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
     irSizeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
     fileSizeTop10: List[DerivedFileSizeTopItem] = Field(default_factory=list)
+    fileSizeBottom10: List[DerivedFileSizeTopItem] = Field(default_factory=list)
     warningsChartData: List[DerivedWarningsChartItem] = Field(default_factory=list)
     modelsWithWarnings: List[DerivedWarningsTopItem] = Field(default_factory=list)
 
@@ -303,6 +326,11 @@ class DerivedReportResponse(BaseModel):
     constructFrequencyData: List[DerivedConstructFrequencyItem] = Field(default_factory=list)
     constructFrequencyPareto: List[DerivedConstructFrequencyParetoItem] = Field(default_factory=list)
     constructFrequencyByGroup: List[DerivedConstructFrequencyByGroupItem] = Field(default_factory=list)
+    constructFrequencyPerModel: List[DerivedConstructFrequencyPerModelItem] = Field(default_factory=list)
+    constructFrequencyTotalsHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    constructFrequencyEntropyHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    constructFrequencyTopModels: List[DerivedConstructFrequencyTopModelItem] = Field(default_factory=list)
+    constructFrequencyPerModelShares: List[DerivedConstructFrequencyPerModelShareItem] = Field(default_factory=list)
 
 
 class ErrorResponse(BaseModel):

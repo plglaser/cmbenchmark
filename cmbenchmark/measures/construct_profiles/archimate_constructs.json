@@ -637,7 +637,7 @@
             "match_type": "Association",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Association' (Relationship)."
         },
@@ -647,7 +647,7 @@
             "match_type": "Serving",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Serving' (Relationship)."
         },
@@ -657,7 +657,7 @@
             "match_type": "Flow",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Flow' (Relationship)."
         },
@@ -667,7 +667,7 @@
             "match_type": "Realization",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Realization' (Relationship)."
         },
@@ -677,7 +677,7 @@
             "match_type": "Aggregation",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Aggregation' (Relationship)."
         },
@@ -687,7 +687,7 @@
             "match_type": "Influence",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Influence' (Relationship)."
         },
@@ -697,7 +697,7 @@
             "match_type": "Composition",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Composition' (Relationship)."
         },
@@ -707,7 +707,7 @@
             "match_type": "Triggering",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Triggering' (Relationship)."
         },
@@ -717,7 +717,7 @@
             "match_type": "Assignment",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Assignment' (Relationship)."
         },
@@ -727,7 +727,7 @@
             "match_type": "Specialization",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Specialization' (Relationship)."
         },
@@ -737,7 +737,7 @@
             "match_type": "Access",
             "match_data_equals": {},
             "meta": {
-                "relationship_group": "Relationship"
+                "layer": "Relationship"
             },
             "description": "ArchiMate relationship type 'Access' (Relationship)."
         }

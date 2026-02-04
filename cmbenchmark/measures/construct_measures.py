@@ -2,6 +2,7 @@
 
 from typing import List, Dict, Tuple, Any
 from collections import Counter, defaultdict
+import math
 
 from cmbenchmark.types.ir import IR, Node, Edge
 from cmbenchmark.types.constructs import ConstructDef
@@ -85,6 +86,16 @@ def _match_constructs_for_ir(
     return dict(construct_counts), dict(unknown_node_types), dict(unknown_edge_types)
 
 
+def _compute_utilization_entropy(relative_frequency_by_construct: Dict[str, float]) -> float:
+    """Compute normalized utilization entropy in [0, 1] from relative frequencies."""
+    probs = [float(p) for p in relative_frequency_by_construct.values() if p > 0]
+    k = len(probs)
+    if k <= 1:
+        return 0.0
+    entropy = -sum(p * math.log(p) for p in probs)
+    return entropy / math.log(k)
+
+
 def compute_construct_measures(
     ir_models: List[IR],
     construct_profile: ConstructCoverageProfile,
@@ -109,7 +120,8 @@ def compute_construct_measures(
                 coverage_share_stats=_compute_distribution_summary([]),
                 score=0.0,
             ),
-            d3_m3_construct_frequency=D3M3ConstructFrequencyDataset(),
+            d3_m3_construct_frequency=D3M3ConstructFrequencyDataset(score=0.0),
+            score=0.0,
         )
         empty_per_model = ConstructMeasuresPerModel()
         return empty_dataset, empty_per_model
@@ -175,8 +187,20 @@ def compute_construct_measures(
         )
         
         # D3.M3: Construct Frequency (per-model)
+        total_construct_instances = sum(construct_counts.values())
+        relative_frequency_by_construct = {
+            cid: (construct_counts.get(cid, 0) / total_construct_instances)
+            if total_construct_instances > 0
+            else 0.0
+            for cid in available_constructs.keys()
+        }
+        utilization_entropy = _compute_utilization_entropy(relative_frequency_by_construct)
+
         per_model_d3m3[ir.id] = D3M3ConstructFrequencyPerModel(
             count_by_construct=dict(construct_counts),
+            total_construct_instances=total_construct_instances,
+            relative_frequency_by_construct=relative_frequency_by_construct,
+            utilization_entropy=utilization_entropy,
         )
         
         # Aggregate for dataset-level
@@ -269,14 +293,32 @@ def compute_construct_measures(
     )
     
     # D3.M3: Dataset-level
+    dataset_total_construct_instances = sum(dataset_construct_counts.values())
+    dataset_relative_frequency_by_construct = {
+        cid: (dataset_construct_counts.get(cid, 0) / dataset_total_construct_instances)
+        if dataset_total_construct_instances > 0
+        else 0.0
+        for cid in available_constructs.keys()
+    }
+    dataset_utilization_entropy = _compute_utilization_entropy(dataset_relative_frequency_by_construct)
+    d3m3_score = max(0.0, min(100.0, 100.0 * dataset_utilization_entropy))
+
     dataset_d3m3 = D3M3ConstructFrequencyDataset(
         dataset_count_by_construct=dict(dataset_construct_counts),
+        dataset_total_construct_instances=dataset_total_construct_instances,
+        dataset_relative_frequency_by_construct=dataset_relative_frequency_by_construct,
+        dataset_utilization_entropy=dataset_utilization_entropy,
+        score=d3m3_score,
     )
     
     # Combine into dataset result
+    construct_dimension_score = (dataset_d3m1.score + dataset_d3m3.score) / 2.0
+    construct_dimension_score = max(0.0, min(100.0, construct_dimension_score))
+
     dataset_result = ConstructMeasuresDataset(
         d3_m1_construct_presence=dataset_d3m1,
         d3_m3_construct_frequency=dataset_d3m3,
+        score=construct_dimension_score,
     )
     
     # Combine into per-model result

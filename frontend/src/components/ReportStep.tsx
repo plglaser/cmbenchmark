@@ -87,6 +87,10 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
       const score = reportData?.constructPresence?.score;
       return Number.isFinite(score) ? Number(score) : null;
     }
+    if (measureId === 'construct-frequency') {
+      const score = reportData?.constructFrequency?.score;
+      return Number.isFinite(score) ? Number(score) : null;
+    }
     return null;
   };
 
@@ -98,6 +102,14 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
       return 'secondary';
     }
     return 'success';
+  };
+
+  const getDimensionScore = (dimensionId: string): number | null => {
+    if (dimensionId === 'construct-coverage') {
+      const score = reportData?.constructDimensionScore;
+      return Number.isFinite(score) ? Number(score) : null;
+    }
+    return null;
   };
 
   // Get current dimension and measure
@@ -192,11 +204,21 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-5">
-                {dimensions.map((dimension) => (
-                  <TabsTrigger key={dimension.id} value={dimension.id}>
-                    {dimension.name}
-                  </TabsTrigger>
-                ))}
+                {dimensions.map((dimension) => {
+                  const score = getDimensionScore(dimension.id);
+                  return (
+                    <TabsTrigger key={dimension.id} value={dimension.id}>
+                      <span className="flex items-center gap-2">
+                        <span>{dimension.name}</span>
+                        {score !== null && (
+                          <Badge variant={getScoreVariant(score)} className="text-[10px]">
+                            {Math.round(score)}
+                          </Badge>
+                        )}
+                      </span>
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
 
               {dimensions.map((dimension) => (

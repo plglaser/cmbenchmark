@@ -146,6 +146,7 @@ export interface ReportResponse {
   sourceSizeHistogram: Array<{ bin: string; count: number }>;
   irSizeHistogram: Array<{ bin: string; count: number }>;
   fileSizeTop10: Array<{ modelId: string; sourceSize: number; irSize: number; relpath: string }>;
+  fileSizeBottom10: Array<{ modelId: string; sourceSize: number; irSize: number; relpath: string }>;
   warningsChartData: Array<{ type: string; count: number }>;
   modelsWithWarnings: Array<{
     modelId: string;
@@ -192,6 +193,7 @@ export interface ReportResponse {
 
   constructPresence?: any | null;
   constructCatalog: Record<string, any>;
+  constructDimensionScore?: number | null;
   constructPresenceChartData?: { observed: number; missing: number; observedShare: number; missingShare: number } | null;
   constructPresencePerModel: Array<{
     modelId: string;
@@ -210,4 +212,24 @@ export interface ReportResponse {
   constructFrequencyData: Array<any>;
   constructFrequencyPareto: Array<any>;
   constructFrequencyByGroup: Array<any>;
+  constructFrequencyPerModel: Array<{
+    modelId: string;
+    relpath: string;
+    countsByConstruct: Record<string, number>;
+  }>;
+  constructFrequencyTotalsHistogram: Array<{ bin: string; count: number }>;
+  constructFrequencyEntropyHistogram: Array<{ bin: string; count: number }>;
+  constructFrequencyTopModels: Array<{
+    modelId: string;
+    relpath: string;
+    totalConstructInstances: number;
+    utilizationEntropy: number;
+  }>;
+  constructFrequencyPerModelShares: Array<{
+    modelId: string;
+    relpath: string;
+    sharesByConstruct: Record<string, number>;
+    totalConstructInstances: number;
+    utilizationEntropy: number;
+  }>;
 }

@@ -7,6 +7,33 @@ interface FileSizeChartsProps {
 }
 
 export function FileSizeCharts({ sourceHistogram, irHistogram }: FileSizeChartsProps) {
+  const formatBytes = (bytes: number): string => {
+    if (!Number.isFinite(bytes)) {
+      return '-';
+    }
+    if (bytes < 1024) {
+      return `${Math.round(bytes)} B`;
+    }
+    const units = ['KB', 'MB', 'GB', 'TB'];
+    let size = bytes;
+    let unitIndex = -1;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex += 1;
+    }
+    const precision = size >= 100 ? 0 : size >= 10 ? 1 : 2;
+    return `${size.toFixed(precision)} ${units[unitIndex]}`;
+  };
+
+  const formatBinLabel = (bin: string): string => {
+    const parts = bin.split('-').map((part) => Number(part));
+    if (parts.length === 2 && parts.every((value) => Number.isFinite(value))) {
+      return `${formatBytes(parts[0])} - ${formatBytes(parts[1])}`;
+    }
+    const single = Number(bin);
+    return Number.isFinite(single) ? formatBytes(single) : bin;
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Card>
@@ -18,9 +45,9 @@ export function FileSizeCharts({ sourceHistogram, irHistogram }: FileSizeChartsP
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={sourceHistogram}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="bin" />
+                <XAxis dataKey="bin" tickFormatter={formatBinLabel} />
                 <YAxis />
-                <Tooltip />
+                <Tooltip labelFormatter={(label) => formatBinLabel(String(label))} />
                 <Bar dataKey="count" fill="#ffc658" />
               </BarChart>
             </ResponsiveContainer>
@@ -38,9 +65,9 @@ export function FileSizeCharts({ sourceHistogram, irHistogram }: FileSizeChartsP
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={irHistogram}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="bin" />
+                <XAxis dataKey="bin" tickFormatter={formatBinLabel} />
                 <YAxis />
-                <Tooltip />
+                <Tooltip labelFormatter={(label) => formatBinLabel(String(label))} />
                 <Bar dataKey="count" fill="#82ca9d" />
               </BarChart>
             </ResponsiveContainer>

@@ -8,13 +8,14 @@ interface FileSizeTableProps {
     irSize: number;
     relpath: string;
   }>;
+  title?: string;
 }
 
-export function FileSizeTable({ data }: FileSizeTableProps) {
+export function FileSizeTable({ data, title = 'Top 10 Largest Models' }: FileSizeTableProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Top 10 Largest Models</CardTitle>
+        <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>

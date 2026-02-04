@@ -10,14 +10,23 @@ interface ConstructFrequencyChartProps {
     description?: string;
     kind?: string;
   }>;
+  showCard?: boolean;
+  title?: string;
 }
 
-export function ConstructFrequencyChart({ data }: ConstructFrequencyChartProps) {
+export function ConstructFrequencyChart({
+  data,
+  showCard = true,
+  title = 'Construct Frequency',
+}: ConstructFrequencyChartProps) {
   if (!data || data.length === 0) {
+    if (!showCard) {
+      return <p className="text-muted-foreground text-center py-8">No data available</p>;
+    }
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Construct Frequency</CardTitle>
+          <CardTitle className="text-base">{title}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">No data available</p>
@@ -56,35 +65,43 @@ export function ConstructFrequencyChart({ data }: ConstructFrequencyChartProps) 
     return null;
   };
 
+  const content = (
+    <>
+      <ResponsiveContainer width="100%" height={400}>
+        <BarChart
+          data={sortedData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="label"
+            angle={-45}
+            textAnchor="end"
+            height={100}
+            tick={{ fontSize: 10 }}
+          />
+          <YAxis />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend />
+          <Bar dataKey="count" fill="#3b82f6" />
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="text-xs text-muted-foreground mt-2">
+        Top 20 constructs by total occurrences. Hover for full IDs and metadata.
+      </p>
+    </>
+  );
+
+  if (!showCard) {
+    return content;
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Construct Frequency (Top 20)</CardTitle>
+        <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart
-            data={sortedData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="label"
-              angle={-45}
-              textAnchor="end"
-              height={100}
-              tick={{ fontSize: 10 }}
-            />
-            <YAxis />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-            <Bar dataKey="count" fill="#3b82f6" />
-          </BarChart>
-        </ResponsiveContainer>
-        <p className="text-xs text-muted-foreground mt-2">
-          Top 20 constructs by total occurrences (nodes + edges). Hover for full IDs and metadata.
-        </p>
-      </CardContent>
+      <CardContent>{content}</CardContent>
     </Card>
   );
 }

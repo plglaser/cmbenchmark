@@ -20,6 +20,7 @@ interface ConstructFrequencyTreemapProps {
    * Treemaps get unreadable with too many very small tiles; default shows top 80.
    */
   maxItems?: number;
+  showCard?: boolean;
 }
 
 export function ConstructFrequencyTreemap({
@@ -27,6 +28,7 @@ export function ConstructFrequencyTreemap({
   title = 'Construct Frequency (Treemap)',
   kindFilter,
   maxItems = 80,
+  showCard = true,
 }: ConstructFrequencyTreemapProps) {
   const treemapData = useMemo(() => {
     const rows = (data || [])
@@ -54,6 +56,9 @@ export function ConstructFrequencyTreemap({
   }, [data, maxItems]);
 
   if (!data || data.length === 0) {
+    if (!showCard) {
+      return <p className="text-muted-foreground text-center py-8">No data available</p>;
+    }
     return (
       <Card>
         <CardHeader>
@@ -67,6 +72,13 @@ export function ConstructFrequencyTreemap({
   }
 
   if (treemapData.rows.length === 0) {
+    if (!showCard) {
+      return (
+        <p className="text-muted-foreground text-center py-8">
+          No non-zero construct counts available.
+        </p>
+      );
+    }
     return (
       <Card>
         <CardHeader>
@@ -97,28 +109,36 @@ export function ConstructFrequencyTreemap({
     );
   };
 
+  const content = (
+    <>
+      <ResponsiveContainer width="100%" height={420}>
+        <Treemap
+          data={treemapData.rows}
+          dataKey="size"
+          nameKey="name"
+          isAnimationActive={false}
+          type="flat"
+          stroke="#ffffff"
+        >
+          <Tooltip content={<CustomTooltip />} />
+        </Treemap>
+      </ResponsiveContainer>
+      <p className="text-xs text-muted-foreground mt-2">
+        Area encodes total occurrences. Hover tiles for full IDs and metadata. Showing top {Math.min(maxItems, treemapData.rows.length)} constructs.
+      </p>
+    </>
+  );
+
+  if (!showCard) {
+    return content;
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={420}>
-          <Treemap
-            data={treemapData.rows}
-            dataKey="size"
-            nameKey="name"
-            isAnimationActive={false}
-            type="flat"
-            stroke="#ffffff"
-          >
-            <Tooltip content={<CustomTooltip />} />
-          </Treemap>
-        </ResponsiveContainer>
-        <p className="text-xs text-muted-foreground mt-2">
-          Area encodes total occurrences. Hover tiles for full IDs and metadata. Showing top {Math.min(maxItems, treemapData.rows.length)} constructs.
-        </p>
-      </CardContent>
+      <CardContent>{content}</CardContent>
     </Card>
   );
 }

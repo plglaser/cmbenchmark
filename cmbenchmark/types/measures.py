@@ -304,12 +304,19 @@ class D3M1ConstructPresenceDataset:
 class D3M3ConstructFrequencyPerModel:
     """Per-model D3.M3 construct frequency measure."""
     count_by_construct: Dict[str, int] = field(default_factory=dict)  # construct_id -> count
+    total_construct_instances: int = 0
+    relative_frequency_by_construct: Dict[str, float] = field(default_factory=dict)
+    utilization_entropy: float = 0.0
 
 
 @dataclass
 class D3M3ConstructFrequencyDataset:
     """Dataset-level D3.M3 construct frequency measure."""
     dataset_count_by_construct: Dict[str, int] = field(default_factory=dict)  # construct_id -> total_count
+    dataset_total_construct_instances: int = 0
+    dataset_relative_frequency_by_construct: Dict[str, float] = field(default_factory=dict)
+    dataset_utilization_entropy: float = 0.0
+    score: float = 0.0
 
 
 @dataclass
@@ -317,6 +324,7 @@ class ConstructMeasuresDataset:
     """Dataset-level construct coverage measures."""
     d3_m1_construct_presence: D3M1ConstructPresenceDataset
     d3_m3_construct_frequency: D3M3ConstructFrequencyDataset
+    score: float = 0.0
 
 
 @dataclass

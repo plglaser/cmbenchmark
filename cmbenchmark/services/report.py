@@ -199,6 +199,23 @@ def build_report_data(
         if d1_m4
         else []
     )
+    file_size_bottom10 = (
+        sorted(
+            [
+                {
+                    "modelId": model_id,
+                    "sourceSize": int(data.get("file_size_bytes_source", 0) or 0),
+                    "irSize": int(data.get("file_size_bytes_ir", 0) or 0),
+                    "relpath": str(ir_index.get(model_id) or model_id),
+                }
+                for model_id, data in d1_m4.items()
+                if isinstance(data, Mapping)
+            ],
+            key=lambda x: x["sourceSize"],
+        )[:10]
+        if d1_m4
+        else []
+    )
 
     # D1.M5 - Warnings
     warnings_by_type = _get(measures, "parsing", "d1_m5_warnings", "total_warnings_by_type", default={})
@@ -356,6 +373,7 @@ def build_report_data(
     construct_catalog = _get(construct_presence, "construct_catalog", default={})
     if not isinstance(construct_catalog, Mapping):
         construct_catalog = {}
+    construct_dimension_score = _get(measures, "constructs", "score", default=None)
     construct_presence_per_model = _get(measures_per_model, "constructs", "d3_m1_construct_presence", default={})
     if not isinstance(construct_presence_per_model, Mapping):
         construct_presence_per_model = {}
@@ -504,13 +522,21 @@ def build_report_data(
     dataset_count_by_construct = _get(construct_frequency, "dataset_count_by_construct", default={})
     if not isinstance(dataset_count_by_construct, Mapping):
         dataset_count_by_construct = {}
+    dataset_relative_frequency_by_construct = _get(
+        construct_frequency, "dataset_relative_frequency_by_construct", default={}
+    )
+    if not isinstance(dataset_relative_frequency_by_construct, Mapping):
+        dataset_relative_frequency_by_construct = {}
+    dataset_total_construct_instances = int(
+        _get(construct_frequency, "dataset_total_construct_instances", default=0) or 0
+    )
 
     construct_frequency_data = sorted(
         [
             {
                 "constructId": str(cid),
                 "count": int(count or 0),
-                "share": 0.0,
+                "share": float(dataset_relative_frequency_by_construct.get(str(cid), 0.0) or 0.0),
                 "group": _get(construct_catalog, str(cid), "group"),
                 "description": _get(construct_catalog, str(cid), "description"),
                 "kind": _get(construct_catalog, str(cid), "kind"),
@@ -520,10 +546,13 @@ def build_report_data(
         key=lambda x: x["count"],
         reverse=True,
     )
-    total_construct_count = sum(int(d.get("count", 0) or 0) for d in construct_frequency_data)
+    total_construct_count = dataset_total_construct_instances or sum(
+        int(d.get("count", 0) or 0) for d in construct_frequency_data
+    )
     if total_construct_count > 0:
         for d in construct_frequency_data:
-            d["share"] = (int(d.get("count", 0) or 0)) / total_construct_count
+            if not _is_finite_number(d.get("share")) or float(d.get("share", 0) or 0) <= 0:
+                d["share"] = (int(d.get("count", 0) or 0)) / total_construct_count
 
     cumulative = 0.0
     construct_frequency_pareto: List[Dict[str, Any]] = []
@@ -553,6 +582,74 @@ def build_report_data(
         reverse=True,
     )
 
+    construct_frequency_per_model = _get(
+        measures_per_model, "constructs", "d3_m3_construct_frequency", default={}
+    )
+    if not isinstance(construct_frequency_per_model, Mapping):
+        construct_frequency_per_model = {}
+    construct_frequency_per_model_rows: List[Dict[str, Any]] = []
+    construct_frequency_per_model_shares: List[Dict[str, Any]] = []
+    construct_frequency_totals: List[Dict[str, Any]] = []
+    for model_id, data in construct_frequency_per_model.items():
+        if not isinstance(data, Mapping):
+            continue
+        counts = data.get("count_by_construct") or {}
+        if not isinstance(counts, Mapping):
+            counts = {}
+        shares = data.get("relative_frequency_by_construct") or {}
+        if not isinstance(shares, Mapping):
+            shares = {}
+        total_instances = int(data.get("total_construct_instances", 0) or 0)
+        utilization_entropy = float(data.get("utilization_entropy", 0) or 0)
+        construct_frequency_per_model_rows.append(
+            {
+                "modelId": str(model_id),
+                "relpath": str(ir_index.get(model_id) or model_id),
+                "countsByConstruct": {str(cid): int(c or 0) for cid, c in counts.items() if int(c or 0) > 0},
+            }
+        )
+        construct_frequency_per_model_shares.append(
+            {
+                "modelId": str(model_id),
+                "relpath": str(ir_index.get(model_id) or model_id),
+                "sharesByConstruct": {
+                    str(cid): float(s or 0) for cid, s in shares.items() if float(s or 0) > 0
+                },
+                "totalConstructInstances": total_instances,
+                "utilizationEntropy": utilization_entropy,
+            }
+        )
+        construct_frequency_totals.append(
+            {
+                "modelId": str(model_id),
+                "relpath": str(ir_index.get(model_id) or model_id),
+                "totalConstructInstances": total_instances,
+                "utilizationEntropy": utilization_entropy,
+            }
+        )
+
+    total_construct_instances_per_model = [
+        v.get("totalConstructInstances")
+        for v in construct_frequency_totals
+        if _is_finite_number(v.get("totalConstructInstances"))
+    ]
+    utilization_entropies = [
+        v.get("utilizationEntropy")
+        for v in construct_frequency_totals
+        if _is_finite_number(v.get("utilizationEntropy"))
+    ]
+    construct_frequency_total_histogram = create_histogram_data(total_construct_instances_per_model)
+    construct_frequency_entropy_histogram = create_share_histogram_data(utilization_entropies)
+    construct_frequency_top_models = (
+        sorted(
+            construct_frequency_totals,
+            key=lambda x: x.get("totalConstructInstances", 0) or 0,
+            reverse=True,
+        )[:10]
+        if construct_frequency_totals
+        else []
+    )
+
     return {
         # Parsing measures
         "parseStatus": parse_status,
@@ -564,6 +661,7 @@ def build_report_data(
         "sourceSizeHistogram": source_size_histogram,
         "irSizeHistogram": ir_size_histogram,
         "fileSizeTop10": file_size_top10,
+        "fileSizeBottom10": file_size_bottom10,
         "warningsChartData": warnings_chart_data,
         "modelsWithWarnings": models_with_warnings,
         # Lexical measures
@@ -586,6 +684,7 @@ def build_report_data(
         "lexicalDiversityTop10": lexical_diversity_top10,
         # Construct measures
         "constructPresence": construct_presence,
+        "constructDimensionScore": construct_dimension_score,
         "constructCatalog": dict(construct_catalog),
         "constructPresenceChartData": construct_presence_chart_data,
         "constructPresencePerModel": construct_presence_per_model_rows,
@@ -601,4 +700,9 @@ def build_report_data(
         "constructFrequencyData": construct_frequency_data,
         "constructFrequencyPareto": construct_frequency_pareto,
         "constructFrequencyByGroup": construct_frequency_by_group,
+        "constructFrequencyPerModel": construct_frequency_per_model_rows,
+        "constructFrequencyTotalsHistogram": construct_frequency_total_histogram,
+        "constructFrequencyEntropyHistogram": construct_frequency_entropy_histogram,
+        "constructFrequencyTopModels": construct_frequency_top_models,
+        "constructFrequencyPerModelShares": construct_frequency_per_model_shares,
     }

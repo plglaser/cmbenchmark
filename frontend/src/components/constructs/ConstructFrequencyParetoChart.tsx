@@ -17,14 +17,23 @@ interface ConstructFrequencyParetoChartProps {
     share: number;
     cumulativeShare: number;
   }>;
+  showCard?: boolean;
+  title?: string;
 }
 
-export function ConstructFrequencyParetoChart({ data }: ConstructFrequencyParetoChartProps) {
+export function ConstructFrequencyParetoChart({
+  data,
+  showCard = true,
+  title = 'Construct Concentration (Pareto)',
+}: ConstructFrequencyParetoChartProps) {
   if (!data || data.length === 0) {
+    if (!showCard) {
+      return <p className="text-muted-foreground text-center py-8">No frequency data available</p>;
+    }
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Construct Concentration (Pareto)</CardTitle>
+          <CardTitle className="text-base">{title}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">No frequency data available</p>
@@ -46,32 +55,40 @@ export function ConstructFrequencyParetoChart({ data }: ConstructFrequencyPareto
     );
   };
 
+  const content = (
+    <>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="rank" tickFormatter={(v) => `${v}`} />
+          <YAxis domain={[0, 1]} tickFormatter={(v) => `${Math.round(v * 100)}%`} />
+          <Tooltip content={<CustomTooltip />} />
+          <Line
+            type="monotone"
+            dataKey="cumulativeShare"
+            name="Cumulative share"
+            stroke="#8b5cf6"
+            strokeWidth={2}
+            dot={false}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+      <p className="text-xs text-muted-foreground mt-2">
+        Shows how quickly a small set of constructs accounts for most occurrences (long-tail vs concentrated datasets).
+      </p>
+    </>
+  );
+
+  if (!showCard) {
+    return content;
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Construct Concentration (Pareto)</CardTitle>
+        <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="rank" tickFormatter={(v) => `${v}`} />
-            <YAxis domain={[0, 1]} tickFormatter={(v) => `${Math.round(v * 100)}%`} />
-            <Tooltip content={<CustomTooltip />} />
-            <Line
-              type="monotone"
-              dataKey="cumulativeShare"
-              name="Cumulative share"
-              stroke="#8b5cf6"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-        <p className="text-xs text-muted-foreground mt-2">
-          Shows how quickly a small set of constructs accounts for most occurrences (long-tail vs concentrated datasets).
-        </p>
-      </CardContent>
+      <CardContent>{content}</CardContent>
     </Card>
   );
 }
