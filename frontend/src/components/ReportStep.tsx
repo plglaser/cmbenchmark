@@ -8,6 +8,7 @@ import { apiService } from '../services/api';
 import type { MeasureResponse, ReportResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
 import { createDimensions } from '../data/dimensions';
+import { ExpandableTileDialog } from './report/ExpandableTileDialog';
 
 interface ReportStepProps {
   measureResult: MeasureResponse | null;
@@ -210,11 +211,14 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
                           </div>
 
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            {measure.tiles.map((tile) => (
-                              <div key={tile.id} className="min-w-0">
-                                {tile.component}
-                              </div>
-                            ))}
+                            {measure.tiles.map((tile) => {
+                              const tileKey = `${dimension.id}:${measure.id}:${tile.id}`;
+                              return (
+                                <ExpandableTileDialog key={tileKey} title={tile.title}>
+                                  {tile.component}
+                                </ExpandableTileDialog>
+                              );
+                            })}
                           </div>
                         </div>
                       </TabsContent>

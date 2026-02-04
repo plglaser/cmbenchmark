@@ -10,10 +10,65 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ChevronDown, ChevronRight, Eye, Info, AlertTriangle, CheckCircle, XCircle, Clock, FileText, Zap } from 'lucide-react';
+import {
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import { apiService } from '../services/api';
 import type { ParseResponse, ModelParseDiagnostics, ScanResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
 import { IRVisualization } from './IRVisualization';
+
+const truncatePath = (path: string, maxLength: number = 50) => {
+  if (path.length <= maxLength) return path;
+  return path.substring(0, maxLength - 3) + '...';
+};
+
+const formatBytes = (bytes: number) => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+};
+
+const formatTime = (ms: number) => {
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+};
+
+const getStatusBadgeVariant = (status: string) => {
+  switch (status) {
+    case 'success':
+      return 'default';
+    case 'warning':
+      return 'secondary';
+    case 'failure':
+      return 'destructive';
+    default:
+      return 'outline';
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'success':
+      return <CheckCircle className="h-4 w-4 text-green-600" />;
+    case 'warning':
+      return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+    case 'failure':
+      return <XCircle className="h-4 w-4 text-red-600" />;
+    default:
+      return null;
+  }
+};
 
 interface ParseStepProps {
   scanResult: ScanResponse | null;
@@ -33,6 +88,9 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedDiagnostics, setSelectedDiagnostics] = useState<ModelParseDiagnostics | null>(null);
   const [selectedIrId, setSelectedIrId] = useState<string | null>(null);
+  const [fileTableSorting, setFileTableSorting] = useState<SortingState>([{ id: 'relpath', desc: false }]);
+  const [fileTableColumnFilters, setFileTableColumnFilters] = useState<ColumnFiltersState>([]);
+  const [fileTablePagination, setFileTablePagination] = useState({ pageIndex: 0, pageSize: 20 });
 
   useEffect(() => {
     // Load available parsers
@@ -133,6 +191,8 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
     const avgCompressionRatio = totalSourceSize > 0 
       ? ((totalSourceSize - totalIrSize) / totalSourceSize) * 100 
       : 0;
+    const irToSourceRatio = totalSourceSize > 0 ? totalIrSize / totalSourceSize : 0;
+    const irLargerThanSource = totalSourceSize > 0 ? totalIrSize > totalSourceSize : false;
 
     return {
       diagnostics,
@@ -146,6 +206,8 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
       totalSourceSize,
       totalIrSize,
       avgCompressionRatio,
+      irToSourceRatio,
+      irLargerThanSource,
     };
   }, [result]);
 
@@ -163,49 +225,135 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
       .sort((a, b) => a.relpath.localeCompare(b.relpath));
   }, [result]);
 
-  const truncatePath = (path: string, maxLength: number = 50) => {
-    if (path.length <= maxLength) return path;
-    return path.substring(0, maxLength - 3) + '...';
-  };
+  type ParsedFileRow = (typeof parsedFiles)[number];
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  };
+  const fileTableColumns = useMemo<ColumnDef<ParsedFileRow>[]>(() => {
+    const sortableHeader = (label: string) => ({ column }: { column: any }) => (
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="-ml-3 h-8"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        <span>{label}</span>
+        {column.getIsSorted() === 'desc' ? (
+          <ChevronDown className="ml-2 h-4 w-4" />
+        ) : column.getIsSorted() === 'asc' ? (
+          <ChevronRight className="ml-2 h-4 w-4 rotate-90" />
+        ) : (
+          <ChevronRight className="ml-2 h-4 w-4 opacity-50" />
+        )}
+      </Button>
+    );
 
-  const formatTime = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
-  };
+    return [
+      {
+        accessorKey: 'relpath',
+        header: sortableHeader('File'),
+        cell: ({ row }) => (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <code className="text-xs font-mono truncate block max-w-[420px]">
+                  {truncatePath(row.original.relpath, 80)}
+                </code>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-mono text-xs">{row.original.relpath}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ),
+      },
+      {
+        accessorKey: 'status',
+        header: sortableHeader('Status'),
+        filterFn: (row, id, value) => {
+          if (!value || value === 'all') return true;
+          return row.getValue(id) === value;
+        },
+        cell: ({ row }) => (
+          <Badge variant={getStatusBadgeVariant(row.original.status)}>
+            {row.original.status}
+          </Badge>
+        ),
+      },
+      {
+        id: 'elements_loaded',
+        accessorFn: (row) => row.diagnostics.elements_loaded,
+        header: sortableHeader('Elements'),
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {row.original.diagnostics.elements_loaded}
+            {row.original.diagnostics.elements_skipped > 0 && (
+              <span className="text-muted-foreground"> / {row.original.diagnostics.elements_skipped} skipped</span>
+            )}
+          </span>
+        ),
+      },
+      {
+        id: 'parse_time_ms',
+        accessorFn: (row) => row.diagnostics.parse_time_ms,
+        header: sortableHeader('Time'),
+        cell: ({ row }) => (
+          <span className="text-sm">{formatTime(row.original.diagnostics.parse_time_ms)}</span>
+        ),
+      },
+      {
+        id: 'warning_count',
+        accessorFn: (row) => row.diagnostics.warning_count,
+        header: sortableHeader('Warnings'),
+        cell: ({ row }) => (
+          <span className="text-sm">{row.original.diagnostics.warning_count}</span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <div className="text-right">Actions</div>,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="flex justify-end gap-2">
+            {row.original.status !== 'failure' && row.original.irId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedIrId(row.original.irId!)}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedDiagnostics(row.original.diagnostics)}
+            >
+              <Info className="h-4 w-4 mr-1" />
+              Details
+            </Button>
+          </div>
+        ),
+      },
+    ];
+  }, []);
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'success':
-        return 'default';
-      case 'warning':
-        return 'secondary';
-      case 'failure':
-        return 'destructive';
-      default:
-        return 'outline';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'failure':
-        return <XCircle className="h-4 w-4 text-red-600" />;
-      default:
-        return null;
-    }
-  };
+  const fileTable = useReactTable({
+    data: parsedFiles,
+    columns: fileTableColumns,
+    state: {
+      sorting: fileTableSorting,
+      columnFilters: fileTableColumnFilters,
+      pagination: fileTablePagination,
+    },
+    onSortingChange: setFileTableSorting,
+    onColumnFiltersChange: setFileTableColumnFilters,
+    onPaginationChange: setFileTablePagination,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
 
   return (
     <Card>
@@ -447,10 +595,16 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
                         </div>
                         <div className="w-full bg-muted rounded-full h-2">
                           <div
-                            className="bg-indigo-600 h-2 rounded-full"
-                            style={{ width: `${diagnosticsData.totalSourceSize > 0 ? (diagnosticsData.totalIrSize / diagnosticsData.totalSourceSize) * 100 : 0}%` }}
+                            className={diagnosticsData.irLargerThanSource ? 'bg-red-600 h-2 rounded-full' : 'bg-indigo-600 h-2 rounded-full'}
+                            style={{ width: `${Math.min(100, diagnosticsData.totalSourceSize > 0 ? (diagnosticsData.totalIrSize / diagnosticsData.totalSourceSize) * 100 : 0)}%` }}
                           />
                         </div>
+                        {diagnosticsData.totalSourceSize > 0 && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            IR is {(diagnosticsData.irToSourceRatio * 100).toFixed(1)}% of source
+                            {diagnosticsData.irLargerThanSource ? ' (larger than source)' : ''}
+                          </p>
+                        )}
                       </div>
                       <div className="pt-2 border-t">
                         <div className="flex justify-between">
@@ -561,88 +715,123 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
                     </Button>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="mt-4">
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[30%]">File</TableHead>
-                            <TableHead className="w-[15%]">Status</TableHead>
-                            <TableHead className="w-[15%]">Elements</TableHead>
-                            <TableHead className="w-[15%]">Time</TableHead>
-                            <TableHead className="w-[15%]">Warnings</TableHead>
-                            <TableHead className="w-[10%] text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {parsedFiles.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                No files parsed
-                              </TableCell>
-                            </TableRow>
-                          ) : (
-                            parsedFiles.map((file, idx) => (
-                              <TableRow key={`${file.relpath}-${idx}`}>
-                                <TableCell>
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <code className="text-xs font-mono truncate block max-w-[300px]">
-                                          {truncatePath(file.relpath)}
-                                        </code>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p className="font-mono text-xs">{file.relpath}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                </TableCell>
-                                <TableCell>
-                                  <Badge variant={getStatusBadgeVariant(file.status)}>
-                                    {file.status}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm">
-                                    {file.diagnostics.elements_loaded}
-                                    {file.diagnostics.elements_skipped > 0 && (
-                                      <span className="text-muted-foreground"> / {file.diagnostics.elements_skipped} skipped</span>
-                                    )}
-                                  </span>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm">{formatTime(file.diagnostics.parse_time_ms)}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm">{file.diagnostics.warning_count}</span>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <div className="flex justify-end gap-2">
-                                    {file.status !== 'failure' && file.irId && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setSelectedIrId(file.irId!)}
-                                      >
-                                        <Eye className="h-4 w-4 mr-1" />
-                                        View
-                                      </Button>
-                                    )}
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => setSelectedDiagnostics(file.diagnostics)}
-                                    >
-                                      <Info className="h-4 w-4 mr-1" />
-                                      Details
-                                    </Button>
-                                  </div>
+                    <div className="space-y-3">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div className="flex flex-1 items-center gap-2">
+                          <Input
+                            placeholder="Filter by file path..."
+                            value={(fileTable.getColumn('relpath')?.getFilterValue() as string) ?? ''}
+                            onChange={(e) => fileTable.getColumn('relpath')?.setFilterValue(e.target.value)}
+                            className="max-w-md"
+                          />
+                          <select
+                            value={(fileTable.getColumn('status')?.getFilterValue() as string) ?? 'all'}
+                            onChange={(e) => fileTable.getColumn('status')?.setFilterValue(e.target.value)}
+                            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          >
+                            <option value="all">All statuses</option>
+                            <option value="success">success</option>
+                            <option value="warning">warning</option>
+                            <option value="failure">failure</option>
+                          </select>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Rows</span>
+                          <select
+                            value={String(fileTable.getState().pagination.pageSize)}
+                            onChange={(e) => fileTable.setPageSize(Number(e.target.value))}
+                            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          >
+                            {[10, 20, 50, 100].map((s) => (
+                              <option key={s} value={String(s)}>{s}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="overflow-hidden rounded-md border">
+                        <Table>
+                          <TableHeader>
+                            {fileTable.getHeaderGroups().map((headerGroup) => (
+                              <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header) => (
+                                  <TableHead key={header.id} className={header.column.id === 'actions' ? 'text-right' : undefined}>
+                                    {header.isPlaceholder
+                                      ? null
+                                      : flexRender(header.column.columnDef.header, header.getContext())}
+                                  </TableHead>
+                                ))}
+                              </TableRow>
+                            ))}
+                          </TableHeader>
+                          <TableBody>
+                            {fileTable.getRowModel().rows?.length ? (
+                              fileTable.getRowModel().rows.map((row) => (
+                                <TableRow key={row.id}>
+                                  {row.getVisibleCells().map((cell) => (
+                                    <TableCell key={cell.id} className={cell.column.id === 'actions' ? 'text-right' : undefined}>
+                                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </TableCell>
+                                  ))}
+                                </TableRow>
+                              ))
+                            ) : (
+                              <TableRow>
+                                <TableCell colSpan={fileTableColumns.length} className="h-24 text-center text-muted-foreground">
+                                  No results.
                                 </TableCell>
                               </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+
+                      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <p className="text-sm text-muted-foreground">
+                          Showing {fileTable.getRowModel().rows.length} of {fileTable.getFilteredRowModel().rows.length} filtered row(s)
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileTable.setPageIndex(0)}
+                            disabled={!fileTable.getCanPreviousPage()}
+                          >
+                            First
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileTable.previousPage()}
+                            disabled={!fileTable.getCanPreviousPage()}
+                          >
+                            Prev
+                          </Button>
+                          <span className="text-sm text-muted-foreground px-2">
+                            Page {fileTable.getState().pagination.pageIndex + 1} of {fileTable.getPageCount()}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileTable.nextPage()}
+                            disabled={!fileTable.getCanNextPage()}
+                          >
+                            Next
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileTable.setPageIndex(fileTable.getPageCount() - 1)}
+                            disabled={!fileTable.getCanNextPage()}
+                          >
+                            Last
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </CollapsibleContent>
                 </Collapsible>

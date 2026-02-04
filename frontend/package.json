@@ -20,6 +20,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@types/node": "^25.2.0",
     "@uiw/react-json-view": "^2.0.0-alpha.41",
+    "@tanstack/react-table": "^8.21.3",
     "axios": "^1.6.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",

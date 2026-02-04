@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -86,6 +87,12 @@ def parse_from_scan(
 
     output_path = Path(output_dir)
     ir_dir = output_path / "ir"
+    # Ensure a clean IR directory per run to avoid mixing stale artifacts
+    if ir_dir.exists():
+        if ir_dir.is_dir():
+            shutil.rmtree(ir_dir)
+        else:
+            ir_dir.unlink()
     ir_dir.mkdir(parents=True, exist_ok=True)
 
     parser_class = _get_parser_by_language(parser_language)
