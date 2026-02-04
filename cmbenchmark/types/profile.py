@@ -41,6 +41,15 @@ class LexicalProfile(BaseModel):
     tokenizer: TokenizerConfig = Field(default_factory=lambda: TokenizerConfig(name="simple_en"))
 
 
+class SizeComplexityProfile(BaseModel):
+    """Configuration for size & complexity measures (D4)."""
+    enabled: bool = True
+    enable_d4_m1: bool = True
+    enable_d4_m2: bool = True
+    enable_d4_m3: bool = True
+    enable_d4_m4: bool = True
+
+
 class ParseProfile(BaseModel):
     """Configuration for parsing measures."""
     enabled: bool = True  # Whether to compute parsing measures
@@ -247,6 +256,7 @@ class MeasureConfig(BaseModel):
     parse: ParseProfile = Field(default_factory=ParseProfile)
     lexical: LexicalProfile = Field(default_factory=LexicalProfile)
     constructs: Optional[ConstructCoverageProfile] = None
+    size_complexity: SizeComplexityProfile = Field(default_factory=SizeComplexityProfile)
 
 
 class ReportConfig(BaseModel):

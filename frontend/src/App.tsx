@@ -88,7 +88,7 @@ function App() {
             <CardHeader>
               <CardTitle>Benchmark Profile</CardTitle>
               <CardDescription>
-                Load a profile JSON file to pre-fill all parameters (optional)
+                Load a profile JSON file to pre-fill all parameters
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

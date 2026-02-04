@@ -268,11 +268,50 @@ class DerivedConstructPresencePerModelItem(BaseModel):
     presentConstructs: Dict[str, bool] = Field(default_factory=dict)
 
 
+class DerivedModelSizeTopItem(BaseModel):
+    modelId: str
+    relpath: str
+    nodeCount: int
+    edgeCount: int
+    elementCount: int
+    edgeNodeRatio: float
+
+
+class DerivedDegreeTopItem(BaseModel):
+    modelId: str
+    relpath: str
+    avgDegree: float
+    avgInDegree: float
+    avgOutDegree: float
+    degreeMedian: float
+
+
+class DerivedConnectivityTopItem(BaseModel):
+    modelId: str
+    relpath: str
+    isolatedNodeShare: float
+    isolatedNodeCount: int
+    nComponents: int
+    largestComponentSize: int
+
+
+class DerivedDepthTopItem(BaseModel):
+    modelId: str
+    relpath: str
+    maxDepth: int
+    meanDepth: float
+    rootCount: int
+    containedNodeShare: float
+
+
 class DerivedReportResponse(BaseModel):
     """Response schema for derived report endpoint (UI-ready)."""
 
     # Raw-ish measure objects that KPI components render directly
     parseStatus: Optional[Dict[str, Any]] = None
+    parseElementsSkips: Optional[Dict[str, Any]] = None
+    parseWarnings: Optional[Dict[str, Any]] = None
+    parsingDimensionScore: Optional[float] = None
     labelPresence: Optional[Dict[str, Any]] = None
     labelLength: Optional[Dict[str, Any]] = None
     namingConvention: Optional[Dict[str, Any]] = None
@@ -281,6 +320,10 @@ class DerivedReportResponse(BaseModel):
     constructPresence: Optional[Dict[str, Any]] = None
     constructFrequency: Optional[Dict[str, Any]] = None
     constructDimensionScore: Optional[float] = None
+    modelSize: Optional[Dict[str, Any]] = None
+    degree: Optional[Dict[str, Any]] = None
+    connectivity: Optional[Dict[str, Any]] = None
+    containmentDepth: Optional[Dict[str, Any]] = None
 
     # Derived chart/table payloads
     parseStatusChartData: List[DerivedParseStatusChartItem] = Field(default_factory=list)
@@ -331,6 +374,29 @@ class DerivedReportResponse(BaseModel):
     constructFrequencyEntropyHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
     constructFrequencyTopModels: List[DerivedConstructFrequencyTopModelItem] = Field(default_factory=list)
     constructFrequencyPerModelShares: List[DerivedConstructFrequencyPerModelShareItem] = Field(default_factory=list)
+
+    modelSizeNodeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    modelSizeEdgeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    modelSizeElementHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    modelSizeEdgeNodeRatioHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    modelSizeTop10: List[DerivedModelSizeTopItem] = Field(default_factory=list)
+
+    avgDegreeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    avgInDegreeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    avgOutDegreeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    degreeMedianHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    degreeTop10: List[DerivedDegreeTopItem] = Field(default_factory=list)
+
+    nComponentsHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    largestComponentSizeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    isolatedNodeCountHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    isolatedNodeShareHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    connectivityTop10: List[DerivedConnectivityTopItem] = Field(default_factory=list)
+
+    maxDepthHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    meanDepthHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    containedNodeShareHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
+    depthTop10: List[DerivedDepthTopItem] = Field(default_factory=list)
 
 
 class ErrorResponse(BaseModel):

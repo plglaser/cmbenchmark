@@ -84,6 +84,7 @@ def compute_d1_m1_parse_status(ir_info: IRInfo) -> Tuple[D1M1ParseStatusResult, 
             share_partial=0.0,
             share_failed=0.0,
             parsing_robustness_index=0.0,
+            score=0.0,
         )
         return dataset_result, {}
     
@@ -97,6 +98,7 @@ def compute_d1_m1_parse_status(ir_info: IRInfo) -> Tuple[D1M1ParseStatusResult, 
     
     # Parsing robustness index: (success + 0.5 * partial) / total
     parsing_robustness_index = (n_success + 0.5 * n_partial) / n_models
+    score = max(0.0, min(1.0, parsing_robustness_index)) * 100.0
     
     dataset_result = D1M1ParseStatusResult(
         n_models=n_models,
@@ -107,6 +109,7 @@ def compute_d1_m1_parse_status(ir_info: IRInfo) -> Tuple[D1M1ParseStatusResult, 
         share_partial=share_partial,
         share_failed=share_failed,
         parsing_robustness_index=parsing_robustness_index,
+        score=score,
     )
     
     # Per-model values
@@ -143,6 +146,7 @@ def compute_d1_m2_elements_loaded_skipped(ir_info: IRInfo) -> Tuple[D1M2Elements
             skip_ratio_stats=_compute_distribution_summary([]),
             n_models_with_skips=0,
             share_models_with_skips=0.0,
+            score=0.0,
         )
         return dataset_result, {}
     
@@ -151,6 +155,7 @@ def compute_d1_m2_elements_loaded_skipped(ir_info: IRInfo) -> Tuple[D1M2Elements
     
     total_elements = total_elements_loaded + total_elements_skipped
     dataset_skip_ratio = total_elements_skipped / total_elements if total_elements > 0 else 0.0
+    score = max(0.0, min(1.0, 1.0 - dataset_skip_ratio)) * 100.0
     
     # Compute skip ratios per model
     skip_ratios = [d.skip_ratio for d in successful_diagnostics.values()]
@@ -166,6 +171,7 @@ def compute_d1_m2_elements_loaded_skipped(ir_info: IRInfo) -> Tuple[D1M2Elements
         skip_ratio_stats=skip_ratio_stats,
         n_models_with_skips=n_models_with_skips,
         share_models_with_skips=share_models_with_skips,
+        score=score,
     )
     
     # Per-model values (only for successful models)
@@ -290,11 +296,13 @@ def compute_d1_m5_warnings(ir_info: IRInfo) -> Tuple[D1M5WarningsResult, Dict[st
             total_warnings_by_type={},
             n_models_with_warning_type={},
             share_models_with_warning_type={},
+            score=0.0,
         )
         return dataset_result, {}
     
     n_models_with_warnings = sum(1 for d in successful_diagnostics.values() if d.warning_count > 0)
     share_models_with_warnings = n_models_with_warnings / len(successful_diagnostics) if successful_diagnostics else 0.0
+    score = max(0.0, min(1.0, 1.0 - share_models_with_warnings)) * 100.0
     
     warning_counts = [float(d.warning_count) for d in successful_diagnostics.values()]
     warning_count_stats = _compute_distribution_summary(warning_counts)
@@ -325,6 +333,7 @@ def compute_d1_m5_warnings(ir_info: IRInfo) -> Tuple[D1M5WarningsResult, Dict[st
         total_warnings_by_type=total_warnings_by_type,
         n_models_with_warning_type=n_models_with_warning_type,
         share_models_with_warning_type=share_models_with_warning_type,
+        score=score,
     )
     
     # Per-model values (only for successful models)

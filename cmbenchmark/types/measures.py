@@ -29,6 +29,7 @@ class D1M1ParseStatusResult:
     share_partial: float
     share_failed: float
     parsing_robustness_index: float
+    score: float = 0.0
 
 
 # D1.M2 — Elements Loaded vs. Skipped
@@ -41,6 +42,7 @@ class D1M2ElementsLoadedSkippedResult:
     skip_ratio_stats: DistributionSummary
     n_models_with_skips: int
     share_models_with_skips: float
+    score: float = 0.0
 
 
 # D1.M3 — Parsing Time
@@ -70,6 +72,7 @@ class D1M5WarningsResult:
     total_warnings_by_type: Dict[str, int] = field(default_factory=dict)
     n_models_with_warning_type: Dict[str, int] = field(default_factory=dict)
     share_models_with_warning_type: Dict[str, float] = field(default_factory=dict)
+    score: float = 0.0
 
 
 # Per-model entry dataclasses
@@ -335,6 +338,108 @@ class ConstructMeasuresPerModel:
 
 
 @dataclass
+class D4M1ModelSizePerModel:
+    """Per-model D4.M1 model size measure."""
+    node_count: int
+    edge_count: int
+    element_count: int
+    edge_node_ratio: float
+
+
+@dataclass
+class D4M1ModelSizeDataset:
+    """Dataset-level D4.M1 model size measure."""
+    total_node_count: int
+    total_edge_count: int
+    total_element_count: int
+    node_count_stats: DistributionSummary
+    edge_count_stats: DistributionSummary
+    element_count_stats: DistributionSummary
+    edge_node_ratio_stats: DistributionSummary
+
+
+@dataclass
+class D4M2DegreePerModel:
+    """Per-model D4.M2 degree measure."""
+    avg_degree: float
+    avg_in_degree: float
+    avg_out_degree: float
+    degree_stats: DistributionSummary
+    in_degree_stats: DistributionSummary
+    out_degree_stats: DistributionSummary
+    degree_median: float
+
+
+@dataclass
+class D4M2DegreeDataset:
+    """Dataset-level D4.M2 degree measure."""
+    avg_degree_stats: DistributionSummary
+    avg_in_degree_stats: DistributionSummary
+    avg_out_degree_stats: DistributionSummary
+    degree_median_stats: DistributionSummary
+
+
+@dataclass
+class D4M3ConnectivityPerModel:
+    """Per-model D4.M3 connectivity measure."""
+    n_components: int
+    largest_component_size: int
+    isolated_node_count: int
+    isolated_node_share: float
+    component_size_stats: DistributionSummary
+
+
+@dataclass
+class D4M3ConnectivityDataset:
+    """Dataset-level D4.M3 connectivity measure."""
+    n_components_stats: DistributionSummary
+    largest_component_size_stats: DistributionSummary
+    isolated_node_count_stats: DistributionSummary
+    isolated_node_share_stats: DistributionSummary
+    total_components: int
+    total_isolated_nodes: int
+
+
+@dataclass
+class D4M4ContainmentDepthPerModel:
+    """Per-model D4.M4 containment depth measure."""
+    max_depth: int
+    mean_depth: float
+    median_depth: float
+    depth_stats: DistributionSummary
+    root_count: int
+    contained_node_share: float
+
+
+@dataclass
+class D4M4ContainmentDepthDataset:
+    """Dataset-level D4.M4 containment depth measure."""
+    max_depth_stats: DistributionSummary
+    mean_depth_stats: DistributionSummary
+    contained_node_share_stats: DistributionSummary
+    total_contained_nodes: int
+    total_root: int
+
+
+@dataclass
+class SizeComplexityMeasuresDataset:
+    """Dataset-level size & complexity measures."""
+    d4_m1_model_size: D4M1ModelSizeDataset
+    d4_m2_degree: D4M2DegreeDataset
+    d4_m3_connectivity: D4M3ConnectivityDataset
+    d4_m4_containment_depth: D4M4ContainmentDepthDataset
+
+
+@dataclass
+class SizeComplexityMeasuresPerModel:
+    """Per-model size & complexity measures."""
+    d4_m1_model_size: Dict[str, D4M1ModelSizePerModel] = field(default_factory=dict)
+    d4_m2_degree: Dict[str, D4M2DegreePerModel] = field(default_factory=dict)
+    d4_m3_connectivity: Dict[str, D4M3ConnectivityPerModel] = field(default_factory=dict)
+    d4_m4_containment_depth: Dict[str, D4M4ContainmentDepthPerModel] = field(default_factory=dict)
+
+
+@dataclass
 class LexicalMeasuresPerModel:
     """Per-model lexical measures."""
     d2_m1_label_presence: Dict[str, D2M1LabelPresencePerModel] = field(default_factory=dict)
@@ -351,6 +456,7 @@ class MeasureResultDataset:
     parsing: ParsingMeasuresDataset
     lexical: Optional["LexicalMeasuresDataset"] = None
     constructs: Optional["ConstructMeasuresDataset"] = None
+    size_complexity: Optional["SizeComplexityMeasuresDataset"] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -447,12 +553,65 @@ class MeasureResultDataset:
                 d3_m1_construct_presence=D3M1ConstructPresenceDataset(**d3_m1_data),
                 d3_m3_construct_frequency=D3M3ConstructFrequencyDataset(**d3_m3_data),
             )
+
+        # Convert size & complexity measures if present
+        size_complexity = None
+        size_complexity_data = data.get("size_complexity")
+        if size_complexity_data:
+            d4_m1_data = size_complexity_data.get("d4_m1_model_size", {})
+            d4_m2_data = size_complexity_data.get("d4_m2_degree", {})
+            d4_m3_data = size_complexity_data.get("d4_m3_connectivity", {})
+            d4_m4_data = size_complexity_data.get("d4_m4_containment_depth", {})
+
+            # Convert DistributionSummary dicts to objects
+            for key in [
+                "node_count_stats",
+                "edge_count_stats",
+                "element_count_stats",
+                "edge_node_ratio_stats",
+            ]:
+                if isinstance(d4_m1_data.get(key), dict):
+                    d4_m1_data[key] = _to_distribution_summary(d4_m1_data[key])
+
+            for key in [
+                "avg_degree_stats",
+                "avg_in_degree_stats",
+                "avg_out_degree_stats",
+                "degree_median_stats",
+            ]:
+                if isinstance(d4_m2_data.get(key), dict):
+                    d4_m2_data[key] = _to_distribution_summary(d4_m2_data[key])
+
+            for key in [
+                "n_components_stats",
+                "largest_component_size_stats",
+                "isolated_node_count_stats",
+                "isolated_node_share_stats",
+            ]:
+                if isinstance(d4_m3_data.get(key), dict):
+                    d4_m3_data[key] = _to_distribution_summary(d4_m3_data[key])
+
+            for key in [
+                "max_depth_stats",
+                "mean_depth_stats",
+                "contained_node_share_stats",
+            ]:
+                if isinstance(d4_m4_data.get(key), dict):
+                    d4_m4_data[key] = _to_distribution_summary(d4_m4_data[key])
+
+            size_complexity = SizeComplexityMeasuresDataset(
+                d4_m1_model_size=D4M1ModelSizeDataset(**d4_m1_data),
+                d4_m2_degree=D4M2DegreeDataset(**d4_m2_data),
+                d4_m3_connectivity=D4M3ConnectivityDataset(**d4_m3_data),
+                d4_m4_containment_depth=D4M4ContainmentDepthDataset(**d4_m4_data),
+            )
         
         return cls(
             num_models=data["num_models"],
             parsing=parsing,
             lexical=lexical,
             constructs=constructs,
+            size_complexity=size_complexity,
         )
 
 
@@ -462,6 +621,7 @@ class MeasureResultPerModel:
     parsing: ParsingMeasuresPerModel
     lexical: Optional["LexicalMeasuresPerModel"] = None
     constructs: Optional["ConstructMeasuresPerModel"] = None
+    size_complexity: Optional["SizeComplexityMeasuresPerModel"] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -530,5 +690,26 @@ class MeasureResultPerModel:
                 d3_m1_construct_presence=_to_construct_per_model_dict("d3_m1_construct_presence", D3M1ConstructPresencePerModel),
                 d3_m3_construct_frequency=_to_construct_per_model_dict("d3_m3_construct_frequency", D3M3ConstructFrequencyPerModel),
             )
+
+        # Convert size & complexity measures if present
+        size_complexity = None
+        size_complexity_data = data.get("size_complexity")
+        if size_complexity_data:
+            def _to_size_per_model_dict(measure_name: str, per_model_class: type) -> Dict[str, Any]:
+                """Convert dict of per-model size/complexity data to typed objects."""
+                result = {}
+                for model_id, model_data in size_complexity_data.get(measure_name, {}).items():
+                    if isinstance(model_data, dict):
+                        result[model_id] = per_model_class(**model_data)
+                    else:
+                        result[model_id] = model_data
+                return result
+
+            size_complexity = SizeComplexityMeasuresPerModel(
+                d4_m1_model_size=_to_size_per_model_dict("d4_m1_model_size", D4M1ModelSizePerModel),
+                d4_m2_degree=_to_size_per_model_dict("d4_m2_degree", D4M2DegreePerModel),
+                d4_m3_connectivity=_to_size_per_model_dict("d4_m3_connectivity", D4M3ConnectivityPerModel),
+                d4_m4_containment_depth=_to_size_per_model_dict("d4_m4_containment_depth", D4M4ContainmentDepthPerModel),
+            )
         
-        return cls(parsing=parsing, lexical=lexical, constructs=constructs)
+        return cls(parsing=parsing, lexical=lexical, constructs=constructs, size_complexity=size_complexity)

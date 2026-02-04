@@ -132,6 +132,9 @@ export interface ReportResponse {
   // NOTE: This is a *derived* payload built on the backend (mirrors the old
   // `useReportData()` hook output). The frontend should render this directly.
   parseStatus?: any | null;
+  parseElementsSkips?: any | null;
+  parseWarnings?: any | null;
+  parsingDimensionScore?: number | null;
   parseStatusChartData: Array<{ name: string; value: number; share: number }>;
   skipRatioHistogram: Array<{ bin: string; count: number }>;
   skipRatioTop10: Array<{
@@ -231,5 +234,60 @@ export interface ReportResponse {
     sharesByConstruct: Record<string, number>;
     totalConstructInstances: number;
     utilizationEntropy: number;
+  }>;
+
+  modelSize?: any | null;
+  modelSizeNodeHistogram: Array<{ bin: string; count: number }>;
+  modelSizeEdgeHistogram: Array<{ bin: string; count: number }>;
+  modelSizeElementHistogram: Array<{ bin: string; count: number }>;
+  modelSizeEdgeNodeRatioHistogram: Array<{ bin: string; count: number }>;
+  modelSizeTop10: Array<{
+    modelId: string;
+    relpath: string;
+    nodeCount: number;
+    edgeCount: number;
+    elementCount: number;
+    edgeNodeRatio: number;
+  }>;
+
+  degree?: any | null;
+  avgDegreeHistogram: Array<{ bin: string; count: number }>;
+  avgInDegreeHistogram: Array<{ bin: string; count: number }>;
+  avgOutDegreeHistogram: Array<{ bin: string; count: number }>;
+  degreeMedianHistogram: Array<{ bin: string; count: number }>;
+  degreeTop10: Array<{
+    modelId: string;
+    relpath: string;
+    avgDegree: number;
+    avgInDegree: number;
+    avgOutDegree: number;
+    degreeMedian: number;
+  }>;
+
+  connectivity?: any | null;
+  nComponentsHistogram: Array<{ bin: string; count: number }>;
+  largestComponentSizeHistogram: Array<{ bin: string; count: number }>;
+  isolatedNodeCountHistogram: Array<{ bin: string; count: number }>;
+  isolatedNodeShareHistogram: Array<{ bin: string; count: number }>;
+  connectivityTop10: Array<{
+    modelId: string;
+    relpath: string;
+    isolatedNodeShare: number;
+    isolatedNodeCount: number;
+    nComponents: number;
+    largestComponentSize: number;
+  }>;
+
+  containmentDepth?: any | null;
+  maxDepthHistogram: Array<{ bin: string; count: number }>;
+  meanDepthHistogram: Array<{ bin: string; count: number }>;
+  containedNodeShareHistogram: Array<{ bin: string; count: number }>;
+  depthTop10: Array<{
+    modelId: string;
+    relpath: string;
+    maxDepth: number;
+    meanDepth: number;
+    rootCount: number;
+    containedNodeShare: number;
   }>;
 }

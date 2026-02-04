@@ -30,6 +30,14 @@ export interface ParseProfile {
   enabled?: boolean;
 }
 
+export interface SizeComplexityProfile {
+  enabled?: boolean;
+  enable_d4_m1?: boolean;
+  enable_d4_m2?: boolean;
+  enable_d4_m3?: boolean;
+  enable_d4_m4?: boolean;
+}
+
 export interface ScanConfig {
   dataset_path: string;
   include?: string[] | null;
@@ -44,6 +52,7 @@ export interface ParseConfig {
 export interface MeasureConfig {
   parse?: ParseProfile;
   lexical?: LexicalProfile;
+  size_complexity?: SizeComplexityProfile;
 }
 
 export interface ReportConfig {

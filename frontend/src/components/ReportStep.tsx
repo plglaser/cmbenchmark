@@ -9,6 +9,7 @@ import { apiService } from '../services/api';
 import type { MeasureResponse, ReportResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
 import { createDimensions } from '../data/dimensions';
+import { ScoreRadar } from './report/ScoreRadar';
 import { ExpandableTileDialog } from './report/ExpandableTileDialog';
 
 interface ReportStepProps {
@@ -83,6 +84,22 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
   );
 
   const getMeasureScore = (measureId: string): number | null => {
+    if (measureId === 'parse-status') {
+      const score = reportData?.parseStatus?.score;
+      if (Number.isFinite(score)) {
+        return Number(score);
+      }
+      const robustnessIndex = reportData?.parseStatus?.parsing_robustness_index;
+      return Number.isFinite(robustnessIndex) ? Number(robustnessIndex) * 100 : null;
+    }
+    if (measureId === 'elements-skips') {
+      const score = reportData?.parseElementsSkips?.score;
+      return Number.isFinite(score) ? Number(score) : null;
+    }
+    if (measureId === 'warnings') {
+      const score = reportData?.parseWarnings?.score;
+      return Number.isFinite(score) ? Number(score) : null;
+    }
     if (measureId === 'construct-presence') {
       const score = reportData?.constructPresence?.score;
       return Number.isFinite(score) ? Number(score) : null;
@@ -105,6 +122,10 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
   };
 
   const getDimensionScore = (dimensionId: string): number | null => {
+    if (dimensionId === 'parsing') {
+      const score = reportData?.parsingDimensionScore;
+      return Number.isFinite(score) ? Number(score) : null;
+    }
     if (dimensionId === 'construct-coverage') {
       const score = reportData?.constructDimensionScore;
       return Number.isFinite(score) ? Number(score) : null;
@@ -114,6 +135,25 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
 
   // Get current dimension and measure
   const currentDimension = dimensions.find((d) => d.id === selectedDimensionId);
+  const parsingScoreData = useMemo(() => {
+    if (!reportData) return [];
+    return [
+      { measure: 'Parse Status', score: reportData?.parseStatus?.score },
+      { measure: 'Elements & Skips', score: reportData?.parseElementsSkips?.score },
+      { measure: 'Warnings', score: reportData?.parseWarnings?.score },
+    ]
+      .filter((item) => Number.isFinite(item.score))
+      .map((item) => ({ measure: item.measure, score: Number(item.score) }));
+  }, [reportData]);
+  const constructScoreData = useMemo(() => {
+    if (!reportData) return [];
+    return [
+      { measure: 'Construct Presence', score: reportData?.constructPresence?.score },
+      { measure: 'Construct Frequency', score: reportData?.constructFrequency?.score },
+    ]
+      .filter((item) => Number.isFinite(item.score))
+      .map((item) => ({ measure: item.measure, score: Number(item.score) }));
+  }, [reportData]);
 
   // Auto-select first measure when dimension changes
   useEffect(() => {
@@ -228,6 +268,26 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
                     onValueChange={(value) => setSelectedMeasureId(value)}
                     className="w-full"
                   >
+                    {dimension.id === 'parsing' && parsingScoreData.length > 0 && (
+                      <div className="mb-4">
+                        <ScoreRadar
+                          title="Parsing Score Radar"
+                          data={parsingScoreData}
+                          stroke="#2563eb"
+                          fill="#60a5fa"
+                        />
+                      </div>
+                    )}
+                    {dimension.id === 'construct-coverage' && constructScoreData.length > 0 && (
+                      <div className="mb-4">
+                        <ScoreRadar
+                          title="Construct Coverage Score Radar"
+                          data={constructScoreData}
+                          stroke="#10b981"
+                          fill="#34d399"
+                        />
+                      </div>
+                    )}
                     {/* Measures tab bar (separate from dimension tab bar) */}
                     <div className="mt-2 border rounded-md bg-muted/30 p-2">
                       <TabsList className="w-full flex flex-wrap justify-start gap-2 h-auto bg-transparent p-0">

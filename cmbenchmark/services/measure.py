@@ -10,6 +10,7 @@ from cmbenchmark.types.profile import BenchmarkProfile
 from cmbenchmark.measures.parsing_measures import compute_parsing_measures
 from cmbenchmark.measures.lexical_measures import compute_lexical_measures
 from cmbenchmark.measures.construct_measures import compute_construct_measures
+from cmbenchmark.measures.size_complexity_measures import compute_size_complexity_measures
 from cmbenchmark.types.profile import ScanConfig, ParseConfig, MeasureConfig
 
 
@@ -133,12 +134,21 @@ def compute_measure(
             construct_profile=profile.measure.constructs,
         )
 
+    # Compute size & complexity measures if enabled
+    size_complexity_dataset = None
+    size_complexity_per_model = None
+    if profile.measure.size_complexity.enabled:
+        size_complexity_dataset, size_complexity_per_model = compute_size_complexity_measures(
+            ir_models
+        )
+
     # Combine metrics into MeasureResultDataset
     dataset_result = MeasureResultDataset(
         num_models=len(ir_models),
         parsing=parsing_dataset,
         lexical=lexical_dataset,
         constructs=construct_dataset,
+        size_complexity=size_complexity_dataset,
     )
 
     # Create per-model result
@@ -146,6 +156,7 @@ def compute_measure(
         parsing=parsing_per_model,
         lexical=lexical_per_model,
         constructs=construct_per_model,
+        size_complexity=size_complexity_per_model,
     )
 
     return dataset_result, per_model_result
