@@ -25,7 +25,7 @@ ARCHI_NAMESPACES = [
 ]
 
 PARSER_PARAMETERS = {
-    "normalize_deprecated_types": True
+    "normalize_deprecated_types": False
 }
 
 # Valid folder types for elements

@@ -241,6 +241,12 @@ class DerivedConstructFrequencyByGroupItem(BaseModel):
     share: float
 
 
+class DerivedConstructPresencePerModelItem(BaseModel):
+    modelId: str
+    relpath: str
+    presentConstructs: Dict[str, bool] = Field(default_factory=dict)
+
+
 class DerivedReportResponse(BaseModel):
     """Response schema for derived report endpoint (UI-ready)."""
 
@@ -285,6 +291,7 @@ class DerivedReportResponse(BaseModel):
 
     constructCatalog: Dict[str, Any] = Field(default_factory=dict)
     constructPresenceChartData: Optional[DerivedConstructPresenceChartData] = None
+    constructPresencePerModel: List[DerivedConstructPresencePerModelItem] = Field(default_factory=list)
     coverageShareHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
     unknownTypeShareHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
     lowestCoverage: List[DerivedCoverageOutlierItem] = Field(default_factory=list)

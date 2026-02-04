@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ScrollArea } from './ui/scroll-area';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, CheckCircle, EyeOff, FileX, Ban } from 'lucide-react';
 import { apiService } from '../services/api';
 import type { ScanResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
@@ -103,6 +103,12 @@ export function ScanStep({ onScanComplete, profile }: ScanStepProps) {
   const [filterTooLarge, setFilterTooLarge] = useState('');
   const [filterExcluded, setFilterExcluded] = useState('');
   const [filterDuplicates, setFilterDuplicates] = useState('');
+
+  const countDuplicateFiles = (groups: { count: number }[]) =>
+    groups.reduce((sum, group) => sum + group.count, 0);
+
+  const totals = result?.totals;
+  const duplicateFileCount = result ? countDuplicateFiles(result.duplicates_groups) : 0;
 
   // Pre-fill from profile
   useEffect(() => {
@@ -307,33 +313,149 @@ export function ScanStep({ onScanComplete, profile }: ScanStepProps) {
           </Button>
         </form>
 
-        {result && (
+        {result && totals && (
           <div className="mt-6 space-y-4">
-            <div className="p-4 bg-muted rounded-md">
-              <h3 className="font-semibold mb-2">Scan Results</h3>
-              <div className="space-y-1 text-sm">
-                <p><strong>Dataset Root:</strong> {result.dataset_root}</p>
-                <p><strong>Scanned At:</strong> {new Date(result.scanned_at).toLocaleString()}</p>
-                <p><strong>Total Files Seen:</strong> {result.totals.total_seen}</p>
-                <p><strong>Candidates:</strong> {result.totals.candidates}</p>
-                <p><strong>Unreadable:</strong> {result.totals.unreadable}</p>
-                <p><strong>Too Large:</strong> {result.totals.too_large}</p>
-                <p><strong>Filtered:</strong> {result.totals.filtered}</p>
-                <p><strong>Duplicates:</strong> {result.duplicates_groups.length} {result.duplicates_groups.length === 1 ? 'group' : 'groups'} ({result.duplicates_groups.reduce((sum, group) => sum + group.count, 0)} {result.duplicates_groups.reduce((sum, group) => sum + group.count, 0) === 1 ? 'file' : 'files'})</p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total Seen</p>
+                      <p className="text-2xl font-bold">{totals.total_seen}</p>
+                    </div>
+                    <FileText className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Candidates</p>
+                      <p className="text-2xl font-bold text-green-600">{totals.candidates}</p>
+                    </div>
+                    <CheckCircle className="h-8 w-8 text-green-600" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Unreadable</p>
+                      <p className="text-2xl font-bold text-yellow-600">{totals.unreadable}</p>
+                    </div>
+                    <EyeOff className="h-8 w-8 text-yellow-600" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Too Large</p>
+                      <p className="text-2xl font-bold text-orange-600">{totals.too_large}</p>
+                    </div>
+                    <FileX className="h-8 w-8 text-orange-600" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Filtered</p>
+                      <p className="text-2xl font-bold text-red-600">{totals.filtered}</p>
+                    </div>
+                    <Ban className="h-8 w-8 text-red-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Scan Summary</CardTitle>
+                  <CardDescription>Key paths and scan metadata</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-muted-foreground">Dataset Root</span>
+                      <code className="font-mono text-xs">{result.dataset_root}</code>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-muted-foreground">Scanned At</span>
+                      <span>{new Date(result.scanned_at).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-muted-foreground">Dataset Info</span>
+                      <code className="font-mono text-xs">
+                        {(result.parameters as any).dataset_info_path || `${result.dataset_root}/dataset_info.json`}
+                      </code>
+                    </div>
+                    {result.parameters.out && (
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-muted-foreground">Output Dir</span>
+                        <code className="font-mono text-xs">{result.parameters.out}</code>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Scan Breakdown</CardTitle>
+                  <CardDescription>Distribution of scanned files</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {[
+                    { label: 'Candidates', count: totals.candidates, color: 'bg-green-600' },
+                    { label: 'Unreadable', count: totals.unreadable, color: 'bg-yellow-600' },
+                    { label: 'Too Large', count: totals.too_large, color: 'bg-yellow-600' },
+                    { label: 'Filtered', count: totals.filtered, color: 'bg-red-600' },
+                  ].map((item) => {
+                    const percentage = totals.total_seen > 0 ? (item.count / totals.total_seen) * 100 : 0;
+                    return (
+                      <div key={item.label}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium">{item.label}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {item.count} ({percentage.toFixed(1)}%)
+                          </span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+                          <div className={`${item.color} h-full`} style={{ width: `${percentage}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="pt-2 border-t text-sm text-muted-foreground">
+                    Duplicates: {result.duplicates_groups.length} {result.duplicates_groups.length === 1 ? 'group' : 'groups'} ({duplicateFileCount}{' '}
+                    {duplicateFileCount === 1 ? 'file' : 'files'})
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {Object.keys(result.extensions).length > 0 && (
-              <div className="p-4 bg-muted rounded-md">
-                <h3 className="font-semibold mb-2">File Extensions</h3>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(result.extensions).map(([ext, count]) => (
-                    <span key={ext} className="px-2 py-1 bg-background rounded text-sm">
-                      {ext}: {count}
-                    </span>
-                  ))}
-                </div>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>File Extensions</CardTitle>
+                  <CardDescription>Counts grouped by extension</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(result.extensions).map(([ext, count]) => (
+                      <span key={ext} className="px-2 py-1 bg-muted rounded text-sm">
+                        {ext}: {count}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>

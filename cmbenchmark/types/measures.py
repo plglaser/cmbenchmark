@@ -284,6 +284,7 @@ class D3M1ConstructPresenceDataset:
     coverage_share: float
     coverage_share_stats: DistributionSummary
     unknown_type_share_dataset: float = 0.0
+    score: float = 0.0
     # Optional additional reporting fields (newer versions)
     # - construct_id -> metadata to make UI/analysis more useful
     construct_catalog: Dict[str, Dict[str, Any]] = field(default_factory=dict)

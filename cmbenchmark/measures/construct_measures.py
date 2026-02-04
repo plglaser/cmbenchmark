@@ -107,6 +107,7 @@ def compute_construct_measures(
                 constructs_observed_count=0,
                 coverage_share=0.0,
                 coverage_share_stats=_compute_distribution_summary([]),
+                score=0.0,
             ),
             d3_m3_construct_frequency=D3M3ConstructFrequencyDataset(),
         )
@@ -248,12 +249,16 @@ def compute_construct_measures(
         sorted(unknown_type_examples_dataset.items(), key=lambda x: x[1], reverse=True)[:25]
     )
     
+    score = 100.0 * coverage_share_dataset * (1.0 - unknown_type_share_dataset)
+    score = max(0.0, min(100.0, score))
+
     dataset_d3m1 = D3M1ConstructPresenceDataset(
         constructs_available_count=constructs_available_count,
         constructs_observed_count=constructs_observed_dataset,
         coverage_share=coverage_share_dataset,
         coverage_share_stats=_compute_distribution_summary(coverage_shares),
         unknown_type_share_dataset=unknown_type_share_dataset,
+        score=score,
         construct_catalog=construct_catalog,
         missing_constructs=missing_constructs,
         coverage_by_group=dict(coverage_by_group),

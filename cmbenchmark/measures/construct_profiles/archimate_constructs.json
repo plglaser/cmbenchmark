@@ -740,26 +740,6 @@
                 "relationship_group": "Relationship"
             },
             "description": "ArchiMate relationship type 'Access' (Relationship)."
-        },
-        {
-            "id": "archimate:UNKNOWN_NODE_TYPE",
-            "kind": "node_type",
-            "match_type": "__UNKNOWN__",
-            "match_data_equals": {},
-            "meta": {
-                "layer": "Unknown"
-            },
-            "description": "ArchiMate element type '__UNKNOWN__' (Unknown layer)."
-        },
-        {
-            "id": "archimate:UNKNOWN_EDGE_TYPE",
-            "kind": "edge_type",
-            "match_type": "__UNKNOWN__",
-            "match_data_equals": {},
-            "meta": {
-                "relationship_group": "Unknown"
-            },
-            "description": "ArchiMate relationship type '__UNKNOWN__' (Unknown)."
         }
     ]
 }

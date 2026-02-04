@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Badge } from './ui/badge';
 import { apiService } from '../services/api';
 import type { MeasureResponse, ReportResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
@@ -80,6 +81,24 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
     () => (reportData ? createDimensions(reportData) : []),
     [reportData]
   );
+
+  const getMeasureScore = (measureId: string): number | null => {
+    if (measureId === 'construct-presence') {
+      const score = reportData?.constructPresence?.score;
+      return Number.isFinite(score) ? Number(score) : null;
+    }
+    return null;
+  };
+
+  const getScoreVariant = (score: number): 'destructive' | 'secondary' | 'success' => {
+    if (score < 40) {
+      return 'destructive';
+    }
+    if (score < 70) {
+      return 'secondary';
+    }
+    return 'success';
+  };
 
   // Get current dimension and measure
   const currentDimension = dimensions.find((d) => d.id === selectedDimensionId);
@@ -190,11 +209,21 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
                     {/* Measures tab bar (separate from dimension tab bar) */}
                     <div className="mt-2 border rounded-md bg-muted/30 p-2">
                       <TabsList className="w-full flex flex-wrap justify-start gap-2 h-auto bg-transparent p-0">
-                        {dimension.measures.map((measure) => (
-                          <TabsTrigger key={measure.id} value={measure.id} className="text-sm">
-                            {measure.name}
-                          </TabsTrigger>
-                        ))}
+                        {dimension.measures.map((measure) => {
+                          const score = getMeasureScore(measure.id);
+                          return (
+                            <TabsTrigger key={measure.id} value={measure.id} className="text-sm">
+                              <span className="flex items-center gap-2">
+                                <span>{measure.name}</span>
+                                {score !== null && (
+                                  <Badge variant={getScoreVariant(score)} className="text-[10px]">
+                                    {Math.round(score)}
+                                  </Badge>
+                                )}
+                              </span>
+                            </TabsTrigger>
+                          );
+                        })}
                       </TabsList>
                     </div>
 

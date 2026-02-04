@@ -193,6 +193,11 @@ export interface ReportResponse {
   constructPresence?: any | null;
   constructCatalog: Record<string, any>;
   constructPresenceChartData?: { observed: number; missing: number; observedShare: number; missingShare: number } | null;
+  constructPresencePerModel: Array<{
+    modelId: string;
+    relpath: string;
+    presentConstructs: Record<string, boolean>;
+  }>;
   coverageShareHistogram: Array<{ bin: string; count: number }>;
   unknownTypeShareHistogram: Array<{ bin: string; count: number }>;
   lowestCoverage: Array<any>;

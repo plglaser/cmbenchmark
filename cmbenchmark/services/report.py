@@ -373,6 +373,22 @@ def build_report_data(
     unknown_type_shares = [v.get("unknown_type_share", 0) for v in construct_presence_per_model.values() if isinstance(v, Mapping)]
     unknown_type_share_histogram = create_share_histogram_data(unknown_type_shares)
 
+    construct_presence_per_model_rows: List[Dict[str, Any]] = []
+    if construct_presence_per_model:
+        for model_id, data in construct_presence_per_model.items():
+            if not isinstance(data, Mapping):
+                continue
+            present_constructs = data.get("present_constructs") or {}
+            if not isinstance(present_constructs, Mapping):
+                present_constructs = {}
+            construct_presence_per_model_rows.append(
+                {
+                    "modelId": str(model_id),
+                    "relpath": str(ir_index.get(model_id) or model_id),
+                    "presentConstructs": {str(cid): bool(present) for cid, present in present_constructs.items()},
+                }
+            )
+
     coverage_outliers = [
         {
             "modelId": model_id,
@@ -572,6 +588,7 @@ def build_report_data(
         "constructPresence": construct_presence,
         "constructCatalog": dict(construct_catalog),
         "constructPresenceChartData": construct_presence_chart_data,
+        "constructPresencePerModel": construct_presence_per_model_rows,
         "coverageShareHistogram": coverage_share_histogram,
         "unknownTypeShareHistogram": unknown_type_share_histogram,
         "lowestCoverage": lowest_coverage,
