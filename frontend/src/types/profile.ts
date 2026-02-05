@@ -30,6 +30,13 @@ export interface ParseProfile {
   enabled?: boolean;
 }
 
+export interface ConstructCoverageConfig {
+  enabled?: boolean;
+  enable_d3_m1?: boolean;
+  enable_d3_m2?: boolean;
+  enable_d3_m3?: boolean;
+}
+
 export interface SizeComplexityProfile {
   enabled?: boolean;
   enable_d4_m1?: boolean;
@@ -52,6 +59,7 @@ export interface ParseConfig {
 export interface MeasureConfig {
   parse?: ParseProfile;
   lexical?: LexicalProfile;
+  constructs?: ConstructCoverageConfig | null;
   size_complexity?: SizeComplexityProfile;
 }
 

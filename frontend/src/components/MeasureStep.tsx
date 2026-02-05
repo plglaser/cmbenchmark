@@ -1,44 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Loader2, CheckCircle2, FileJson } from 'lucide-react';
 import { apiService } from '../services/api';
-import type { ParseResponse, MeasureResponse } from '../types/api';
+import type { MeasureResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
+import { ReadonlyField } from './profile/ReadonlyField';
+import { ReadonlyListField } from './profile/ReadonlyListField';
+import { ConfigCard } from './profile/ConfigCard';
 
 interface MeasureStepProps {
-  parseResult: ParseResponse | null;
   onMeasureComplete: (result: MeasureResponse) => void;
   profile: BenchmarkProfile | null;
 }
 
-export function MeasureStep({ parseResult, onMeasureComplete, profile }: MeasureStepProps) {
-  const [irDir, setIrDir] = useState('');
-  const [outputDir, setOutputDir] = useState('');
+export function MeasureStep({ onMeasureComplete, profile }: MeasureStepProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MeasureResponse | null>(null);
-
-  // Pre-fill from profile first, then from parse result
-  useEffect(() => {
-    if (profile) {
-      setOutputDir(profile.output_path);
-      // IR directory is typically in output_dir/ir
-      setIrDir(`${profile.output_path}/ir`);
-    } else if (parseResult && parseResult.parameters.output_dir) {
-      const outputPath = parseResult.parameters.output_dir;
-      // IR directory is typically in output_dir/ir
-      if (!irDir) {
-        setIrDir(`${outputPath}/ir`);
-      }
-      // Use the same output directory from parse result
-      if (!outputDir) {
-        setOutputDir(outputPath);
-      }
-    }
-  }, [profile, parseResult]);
+  const [parseConfigOpen, setParseConfigOpen] = useState(false);
+  const [lexicalConfigOpen, setLexicalConfigOpen] = useState(false);
+  const [constructConfigOpen, setConstructConfigOpen] = useState(false);
+  const [sizeConfigOpen, setSizeConfigOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,40 +54,84 @@ export function MeasureStep({ parseResult, onMeasureComplete, profile }: Measure
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="ir-dir">IR Directory *</Label>
-            <Input
-              id="ir-dir"
-              type="text"
-              className="font-mono"
-              value={irDir}
-              onChange={(e) => setIrDir(e.target.value)}
-              placeholder="/path/to/output/ir"
-              required
-              disabled={loading || result !== null || !!profile}
-            />
-            <p className="text-sm text-muted-foreground">
-              Directory containing IR JSON files (pre-filled from previous step)
-            </p>
-          </div>
+          {!profile && (
+            <div className="p-3 text-sm text-muted-foreground bg-muted rounded-md">
+              Upload a benchmark profile to view parameters and run measure computation.
+            </div>
+          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="output-dir-measure">Output Directory *</Label>
-            <Input
-              id="output-dir-measure"
-              type="text"
-              value={outputDir}
-              onChange={(e) => setOutputDir(e.target.value)}
-              placeholder="/path/to/output"
-              required
-              className="font-mono"
-              disabled={loading || result !== null || !!profile}
-            />
-            <p className="text-sm text-muted-foreground">
-              Directory where <code className="font-mono">measures.json</code> and{' '}
-              <code className="font-mono">measures_per_model.json</code> will be saved (pre-filled)
-            </p>
-          </div>
+          {profile && (
+            <div className="space-y-6">
+              {!profile.measure && (
+                <ReadonlyField label="Measure Config" value={undefined} />
+              )}
+
+              {profile.measure && (
+                <>
+                  <ConfigCard title="Parsing Measures" open={parseConfigOpen} onOpenChange={setParseConfigOpen}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <ReadonlyField label="Enabled" value={profile.measure.parse?.enabled} />
+                    </div>
+                  </ConfigCard>
+
+                  <ConfigCard title="Lexical Measures" open={lexicalConfigOpen} onOpenChange={setLexicalConfigOpen}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <ReadonlyField label="Enabled" value={profile.measure.lexical?.enabled} />
+                      <ReadonlyField label="Include Nodes" value={profile.measure.lexical?.include_nodes} />
+                      <ReadonlyField label="Include Edges" value={profile.measure.lexical?.include_edges} />
+                      <ReadonlyListField
+                        label="Label Attributes"
+                        values={profile.measure.lexical?.label_attributes ?? undefined}
+                      />
+                      <ReadonlyField label="Enable D2.M1" value={profile.measure.lexical?.enable_d2_m1} />
+                      <ReadonlyField label="Enable D2.M2" value={profile.measure.lexical?.enable_d2_m2} />
+                      <ReadonlyField label="Enable D2.M3" value={profile.measure.lexical?.enable_d2_m3} />
+                      <ReadonlyField label="Enable D2.M4" value={profile.measure.lexical?.enable_d2_m4} />
+                      <ReadonlyField label="Enable D2.M5" value={profile.measure.lexical?.enable_d2_m5} />
+                    </div>
+
+                    <div className="pt-2 border-t space-y-3">
+                      <div className="text-sm font-semibold">Tokenizer</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <ReadonlyField label="Name" value={profile.measure.lexical?.tokenizer?.name} />
+                        <ReadonlyField label="Split on Punct" value={profile.measure.lexical?.tokenizer?.split_on_punct} />
+                        <ReadonlyField label="Split Camel Case" value={profile.measure.lexical?.tokenizer?.split_camel_case} />
+                        <ReadonlyField label="Strip" value={profile.measure.lexical?.tokenizer?.strip} />
+                        <ReadonlyField label="Lowercase" value={profile.measure.lexical?.tokenizer?.lowercase} />
+                        <ReadonlyField label="Keep Numbers" value={profile.measure.lexical?.tokenizer?.keep_numbers} />
+                        <ReadonlyField
+                          label="Collapse Whitespace"
+                          value={profile.measure.lexical?.tokenizer?.collapse_whitespace}
+                        />
+                        <ReadonlyField label="Unicode NFKC" value={profile.measure.lexical?.tokenizer?.unicode_nfkc} />
+                        <ReadonlyField label="Stopword List" value={profile.measure.lexical?.tokenizer?.stopword_list} />
+                        <ReadonlyField label="Noise Token List" value={profile.measure.lexical?.tokenizer?.noise_token_list} />
+                      </div>
+                    </div>
+                  </ConfigCard>
+
+                  <ConfigCard title="Construct Measures" open={constructConfigOpen} onOpenChange={setConstructConfigOpen}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <ReadonlyField label="Enabled" value={profile.measure.constructs?.enabled} />
+                      <ReadonlyField label="Enable D3.M1" value={profile.measure.constructs?.enable_d3_m1} />
+                      <ReadonlyField label="Enable D3.M2" value={profile.measure.constructs?.enable_d3_m2} />
+                      <ReadonlyField label="Enable D3.M3" value={profile.measure.constructs?.enable_d3_m3} />
+                    </div>
+                  </ConfigCard>
+
+                  <ConfigCard title="Size & Complexity" open={sizeConfigOpen} onOpenChange={setSizeConfigOpen}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <ReadonlyField label="Enabled" value={profile.measure.size_complexity?.enabled} />
+                      <ReadonlyField label="Enable D4.M1" value={profile.measure.size_complexity?.enable_d4_m1} />
+                      <ReadonlyField label="Enable D4.M2" value={profile.measure.size_complexity?.enable_d4_m2} />
+                      <ReadonlyField label="Enable D4.M3" value={profile.measure.size_complexity?.enable_d4_m3} />
+                      <ReadonlyField label="Enable D4.M4" value={profile.measure.size_complexity?.enable_d4_m4} />
+                    </div>
+                  </ConfigCard>
+                </>
+              )}
+            </div>
+          )}
 
           {error && (
             <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">

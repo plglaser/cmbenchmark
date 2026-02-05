@@ -37,25 +37,36 @@ Scan a dataset directory for model files.
 **Request Body:**
 ```json
 {
-  "dataset_path": "/path/to/dataset",
-  "exclude": "*.xml,*.tmp",  // optional
-  "size_limit_mb": 100  // optional
+  "profile": {
+    "name": "Example",
+    "version": "1.0",
+    "output_path": "/path/to/output",
+    "scan": {
+      "dataset_path": "/path/to/dataset",
+      "include": ["*.xml"],
+      "exclude": ["**/tmp/**"],
+      "size_limit_mb": 100
+    },
+    "parse": {
+      "parser_language": "ArchiMate-Archi"
+    }
+  }
 }
 ```
 
 **Response:**
 Returns scan results including statistics, file extensions, duplicates, etc.
-The `dataset_info.json` file is automatically saved to the dataset root directory.
+The `dataset_info.json` file is saved to the profile's `output_path`.
 
 ### POST /api/parse
-Parse models from dataset_info.json.
+Parse models from `dataset_info.json` saved in the profile output directory.
 
 **Request Body:**
 ```json
 {
-  "dataset_info_path": "/path/to/dataset_info.json",
-  "output_dir": "/path/to/output",
-  "parser_language": "UML"
+  "profile": {
+    "...": "same profile structure as scan"
+  }
 }
 ```
 

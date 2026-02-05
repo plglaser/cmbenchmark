@@ -1,60 +1,27 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { apiService } from '../services/api';
-import type { MeasureResponse, ReportResponse } from '../types/api';
+import type { ReportResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
 import { createDimensions } from '../data/dimensions';
-import { ScoreRadar } from './report/ScoreRadar';
 import { ExpandableTileDialog } from './report/ExpandableTileDialog';
 
 interface ReportStepProps {
-  measureResult: MeasureResponse | null;
   onReportComplete?: (result: ReportResponse) => void;
   profile: BenchmarkProfile | null;
 }
 
-export function ReportStep({ measureResult, onReportComplete, profile }: ReportStepProps) {
-  const [measuresPath, setMeasuresPath] = useState('');
-  const [measuresPerModelPath, setMeasuresPerModelPath] = useState('');
-  const [irInfoPath, setIrInfoPath] = useState('');
+export function ReportStep({ onReportComplete, profile }: ReportStepProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportResponse | null>(null);
   const [selectedDimensionId, setSelectedDimensionId] = useState<string>('parsing');
   const [selectedMeasureId, setSelectedMeasureId] = useState<string | null>(null);
-
-  // Auto-fill paths from measure result or profile
-  useEffect(() => {
-    if (measureResult) {
-      if (!measuresPath) {
-        setMeasuresPath(measureResult.measures_path);
-      }
-      if (!measuresPerModelPath) {
-        setMeasuresPerModelPath(measureResult.measures_per_model_path);
-      }
-      // Try to infer ir_info.json path from measures path
-      if (!irInfoPath && measureResult.output_dir) {
-        setIrInfoPath(`${measureResult.output_dir}/ir_info.json`);
-      }
-    } else if (profile) {
-      // Pre-fill from profile output path
-      const outputPath = profile.output_path;
-      if (!measuresPath) {
-        setMeasuresPath(`${outputPath}/measures.json`);
-      }
-      if (!measuresPerModelPath) {
-        setMeasuresPerModelPath(`${outputPath}/measures_per_model.json`);
-      }
-      if (!irInfoPath) {
-        setIrInfoPath(`${outputPath}/ir_info.json`);
-      }
-    }
-  }, [measureResult, profile]);
+  const [configOpen, setConfigOpen] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,8 +47,8 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
   };
 
   const dimensions = useMemo(
-    () => (reportData ? createDimensions(reportData) : []),
-    [reportData]
+    () => (reportData ? createDimensions(reportData, profile?.parse?.parser_language ?? null) : []),
+    [reportData, profile]
   );
 
   const getMeasureScore = (measureId: string): number | null => {
@@ -140,25 +107,6 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
 
   // Get current dimension and measure
   const currentDimension = dimensions.find((d) => d.id === selectedDimensionId);
-  const parsingScoreData = useMemo(() => {
-    if (!reportData) return [];
-    return [
-      { measure: 'Parse Status', score: reportData?.parseStatus?.score },
-      { measure: 'Elements & Skips', score: reportData?.parseElementsSkips?.score },
-      { measure: 'Warnings', score: reportData?.parseWarnings?.score },
-    ]
-      .filter((item) => Number.isFinite(item.score))
-      .map((item) => ({ measure: item.measure, score: Number(item.score) }));
-  }, [reportData]);
-  const constructScoreData = useMemo(() => {
-    if (!reportData) return [];
-    return [
-      { measure: 'Construct Presence', score: reportData?.constructPresence?.score },
-      { measure: 'Construct Frequency', score: reportData?.constructFrequency?.score },
-    ]
-      .filter((item) => Number.isFinite(item.score))
-      .map((item) => ({ measure: item.measure, score: Number(item.score) }));
-  }, [reportData]);
 
   // Auto-select first measure when dimension changes
   useEffect(() => {
@@ -180,51 +128,36 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
       <CardContent>
         {!reportData && (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="measures-path">Measures Path (measures.json) *</Label>
-              <Input
-                id="measures-path"
-                type="text"
-                className="font-mono"
-                value={measuresPath}
-                onChange={(e) => setMeasuresPath(e.target.value)}
-                placeholder="/path/to/measures.json"
-                required
-                disabled={loading || !!profile}
-              />
-            </div>
+            {!profile && (
+              <div className="p-3 text-sm text-muted-foreground bg-muted rounded-md">
+                Upload a benchmark profile to view parameters and load the report.
+              </div>
+            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="measures-per-model-path">
-                Measures Per Model Path (measures_per_model.json) *
-              </Label>
-              <Input
-                id="measures-per-model-path"
-                type="text"
-                className="font-mono"
-                value={measuresPerModelPath}
-                onChange={(e) => setMeasuresPerModelPath(e.target.value)}
-                placeholder="/path/to/measures_per_model.json"
-                required
-                disabled={loading || !!profile}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="ir-info-path">IR Info Path (ir_info.json) - Optional</Label>
-              <Input
-                id="ir-info-path"
-                type="text"
-                className="font-mono"
-                value={irInfoPath}
-                onChange={(e) => setIrInfoPath(e.target.value)}
-                placeholder="/path/to/ir_info.json"
-                disabled={loading || !!profile}
-              />
-              <p className="text-sm text-muted-foreground">
-                Used for linking models in tables (optional)
-              </p>
-            </div>
+            {profile && (
+              <div className="space-y-4">
+                <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
+                  <div className="rounded-md border">
+                    <CollapsibleTrigger asChild>
+                      <button
+                        type="button"
+                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold"
+                      >
+                        <span>Report Configuration</span>
+                        <span className="text-xs text-muted-foreground">
+                          {configOpen ? 'Hide' : 'Show'}
+                        </span>
+                      </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <p className="text-sm text-muted-foreground">
+                        Report uses the profile output directory and generated measures. No additional parameters.
+                      </p>
+                    </CollapsibleContent>
+                  </div>
+                </Collapsible>
+              </div>
+            )}
 
             {error && (
               <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
@@ -248,15 +181,19 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
               }}
               className="w-full"
             >
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="flex w-full flex-wrap gap-2 rounded-xl bg-muted/40 p-1.5 shadow-sm border border-border/60">
                 {dimensions.map((dimension) => {
                   const score = getDimensionScore(dimension.id);
                   return (
-                    <TabsTrigger key={dimension.id} value={dimension.id}>
+                    <TabsTrigger
+                      key={dimension.id}
+                      value={dimension.id}
+                      className="flex-1 min-w-[160px] justify-center rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                    >
                       <span className="flex items-center gap-2">
                         <span>{dimension.name}</span>
                         {score !== null && (
-                          <Badge variant={getScoreVariant(score)} className="text-[10px]">
+                          <Badge variant={getScoreVariant(score)} className="text-[10px] h-5 px-2">
                             {Math.round(score)}
                           </Badge>
                         )}
@@ -273,37 +210,21 @@ export function ReportStep({ measureResult, onReportComplete, profile }: ReportS
                     onValueChange={(value) => setSelectedMeasureId(value)}
                     className="w-full"
                   >
-                    {dimension.id === 'parsing' && parsingScoreData.length > 0 && (
-                      <div className="mb-4">
-                        <ScoreRadar
-                          title="Parsing Score Radar"
-                          data={parsingScoreData}
-                          stroke="#2563eb"
-                          fill="#60a5fa"
-                        />
-                      </div>
-                    )}
-                    {dimension.id === 'construct-coverage' && constructScoreData.length > 0 && (
-                      <div className="mb-4">
-                        <ScoreRadar
-                          title="Construct Coverage Score Radar"
-                          data={constructScoreData}
-                          stroke="#10b981"
-                          fill="#34d399"
-                        />
-                      </div>
-                    )}
                     {/* Measures tab bar (separate from dimension tab bar) */}
-                    <div className="mt-2 border rounded-md bg-muted/30 p-2">
-                      <TabsList className="w-full flex flex-wrap justify-start gap-2 h-auto bg-transparent p-0">
+                    <div className="mt-3 rounded-xl border border-border/60 bg-muted/20 p-2 shadow-sm">
+                      <TabsList className="flex w-full flex-wrap justify-start gap-2 h-auto bg-transparent p-0">
                         {dimension.measures.map((measure) => {
                           const score = getMeasureScore(measure.id);
                           return (
-                            <TabsTrigger key={measure.id} value={measure.id} className="text-sm">
+                            <TabsTrigger
+                              key={measure.id}
+                              value={measure.id}
+                              className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                            >
                               <span className="flex items-center gap-2">
                                 <span>{measure.name}</span>
                                 {score !== null && (
-                                  <Badge variant={getScoreVariant(score)} className="text-[10px]">
+                                  <Badge variant={getScoreVariant(score)} className="text-[10px] h-5 px-2">
                                     {Math.round(score)}
                                   </Badge>
                                 )}

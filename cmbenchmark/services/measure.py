@@ -11,7 +11,8 @@ from cmbenchmark.measures.parsing_measures import compute_parsing_measures
 from cmbenchmark.measures.lexical_measures import compute_lexical_measures
 from cmbenchmark.measures.construct_measures import compute_construct_measures
 from cmbenchmark.measures.size_complexity_measures import compute_size_complexity_measures
-from cmbenchmark.types.profile import ScanConfig, ParseConfig, MeasureConfig
+from cmbenchmark.types.profile import ScanConfig, ParseConfig, MeasureConfig, ConstructCoverageConfig
+from cmbenchmark.construct_catalog import load_construct_defs
 
 
 def _load_ir_info(ir_path: Path) -> Optional[IRInfo]:
@@ -59,7 +60,6 @@ def compute_measure(
     
     if profile is None:
         # Create a minimal default profile
-        from cmbenchmark.types.profile import ConstructCoverageProfile
         parser_language = "ArchiMate-Archi"  # Default
         # Try to infer from IR models if available
         ir_files = list(ir_dir.glob("*.json"))
@@ -70,14 +70,13 @@ def compute_measure(
             except Exception:
                 pass
         
-        # Auto-load construct coverage for the parser language
-        construct_profile = ConstructCoverageProfile.load_for_language(
-            parser_language=parser_language,
-            construct_config={"enabled": True, "enable_d3_m1": True, "enable_d3_m2": True, "enable_d3_m3": True}
-        )
-        
         measure_config = MeasureConfig()
-        measure_config.constructs = construct_profile
+        measure_config.constructs = ConstructCoverageConfig(
+            enabled=True,
+            enable_d3_m1=True,
+            enable_d3_m2=True,
+            enable_d3_m3=True,
+        )
         
         profile = BenchmarkProfile(
             name="default",
@@ -129,9 +128,10 @@ def compute_measure(
     construct_dataset = None
     construct_per_model = None
     if profile.measure.constructs and profile.measure.constructs.enabled:
+        constructs = load_construct_defs(profile.parse.parser_language)
         construct_dataset, construct_per_model = compute_construct_measures(
             ir_models,
-            construct_profile=profile.measure.constructs,
+            constructs=constructs or {},
         )
 
     # Compute size & complexity measures if enabled

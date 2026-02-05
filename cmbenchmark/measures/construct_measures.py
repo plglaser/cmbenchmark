@@ -6,7 +6,6 @@ import math
 
 from cmbenchmark.types.ir import IR, Node, Edge
 from cmbenchmark.types.constructs import ConstructDef
-from cmbenchmark.types.profile import ConstructCoverageProfile
 from cmbenchmark.types.measures import (
     ConstructMeasuresDataset,
     ConstructMeasuresPerModel,
@@ -98,19 +97,19 @@ def _compute_utilization_entropy(relative_frequency_by_construct: Dict[str, floa
 
 def compute_construct_measures(
     ir_models: List[IR],
-    construct_profile: ConstructCoverageProfile,
+    constructs: Dict[str, ConstructDef],
 ) -> Tuple[ConstructMeasuresDataset, ConstructMeasuresPerModel]:
     """
     Compute construct coverage measures (D3.M1, D3.M3) for IR models.
     
     Args:
         ir_models: List of IR models to analyze
-        construct_profile: Configuration for construct measures
+        constructs: Construct definitions for matching
         
     Returns:
         Tuple of (dataset_measures, per_model_measures)
     """
-    if not construct_profile.enabled or not construct_profile.constructs:
+    if not constructs:
         # Return empty measures if not enabled
         empty_dataset = ConstructMeasuresDataset(
             d3_m1_construct_presence=D3M1ConstructPresenceDataset(
@@ -125,8 +124,6 @@ def compute_construct_measures(
         )
         empty_per_model = ConstructMeasuresPerModel()
         return empty_dataset, empty_per_model
-    
-    constructs = construct_profile.constructs
     
     # Filter out UNKNOWN constructs from available count
     available_constructs = {

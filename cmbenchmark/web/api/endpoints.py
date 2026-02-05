@@ -11,7 +11,8 @@ from cmbenchmark.services.report import generate_report
 from cmbenchmark.parser import get_all_parsers
 from cmbenchmark.types.ir import IR
 from cmbenchmark.types.dataset import IRInfo
-from cmbenchmark.types.profile import ConstructCoverageProfile, BenchmarkProfile
+from cmbenchmark.types.profile import BenchmarkProfile
+from cmbenchmark.construct_catalog import load_construct_profile_json, get_construct_profile_path
 from .schemas import (
     ScanRequest, ScanResponse, ParseRequest, ParseResponse, ErrorResponse,
     MeasureRequest, MeasureResponse, ReportRequest, DerivedReportResponse
@@ -21,7 +22,7 @@ router = APIRouter()
 
 
 def _normalize_profile(profile: BenchmarkProfile) -> BenchmarkProfile:
-    """Normalize inline profile data (absolute paths + construct profile hydration)."""
+    """Normalize inline profile data (absolute paths)."""
     if profile.scan and profile.scan.dataset_path:
         dataset_path = Path(profile.scan.dataset_path).expanduser()
         profile.scan.dataset_path = str(dataset_path.resolve())
@@ -29,15 +30,6 @@ def _normalize_profile(profile: BenchmarkProfile) -> BenchmarkProfile:
     if profile.output_path:
         output_path = Path(profile.output_path).expanduser()
         profile.output_path = str(output_path.resolve())
-
-    if profile.measure and profile.measure.constructs:
-        construct_profile = profile.measure.constructs
-        if construct_profile.enabled and not construct_profile.constructs:
-            construct_config = construct_profile.model_dump()
-            profile.measure.constructs = ConstructCoverageProfile.load_for_language(
-                parser_language=profile.parse.parser_language,
-                construct_config=construct_config,
-            )
 
     return profile
 
@@ -52,24 +44,19 @@ async def get_construct_profile(
     Intended for UI introspection (e.g. showing the catalog of constructs + match rules).
     """
     try:
-        # Reuse the same mapping logic as ConstructCoverageProfile
-        from cmbenchmark.types.profile import _get_construct_profile_path  # type: ignore
-
         # Be forgiving: allow passing the language name ("ArchiMate"/"Ecore") as well.
         normalized = parser_language
         if parser_language == "ArchiMate":
             normalized = "ArchiMate-Archi"
 
-        profile_path = _get_construct_profile_path(normalized)
+        profile_path = get_construct_profile_path(normalized)
         if not profile_path:
             raise HTTPException(status_code=404, detail=f"No construct profile found for parser_language={parser_language}")
 
-        p = Path(profile_path)
-        if not p.exists():
-            raise HTTPException(status_code=404, detail=f"Construct profile file not found: {p}")
-
-        with open(p, "r", encoding="utf-8") as f:
-            return json.load(f)
+        data = load_construct_profile_json(normalized)
+        if not data:
+            raise HTTPException(status_code=404, detail=f"Construct profile file not found: {profile_path}")
+        return data
     except HTTPException:
         raise
     except Exception as e:

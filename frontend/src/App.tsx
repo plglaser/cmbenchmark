@@ -160,7 +160,6 @@ function App() {
           {scanResult && (
             <ParseStep
               key={`parse-${resetKey}`}
-              scanResult={scanResult}
               onParseComplete={setParseResult}
               profile={profile}
             />
@@ -169,7 +168,6 @@ function App() {
           {parseResult && (
             <MeasureStep
               key={`measure-${resetKey}`}
-              parseResult={parseResult}
               onMeasureComplete={setMeasureResult}
               profile={profile}
             />
@@ -178,7 +176,6 @@ function App() {
           {measureResult && (
             <ReportStep
               key={`report-${resetKey}`}
-              measureResult={measureResult}
               profile={profile}
             />
           )}

@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
@@ -22,9 +21,11 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { apiService } from '../services/api';
-import type { ParseResponse, ModelParseDiagnostics, ScanResponse } from '../types/api';
+import type { ParseResponse, ModelParseDiagnostics } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
 import { IRVisualization } from './IRVisualization';
+import { ReadonlyField } from './profile/ReadonlyField';
+import { ConfigCard } from './profile/ConfigCard';
 
 const truncatePath = (path: string, maxLength: number = 50) => {
   if (path.length <= maxLength) return path;
@@ -71,62 +72,21 @@ const getStatusIcon = (status: string) => {
 };
 
 interface ParseStepProps {
-  scanResult: ScanResponse | null;
   onParseComplete: (result: ParseResponse) => void;
   profile: BenchmarkProfile | null;
 }
 
-export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepProps) {
-  const [parsers, setParsers] = useState<string[]>([]);
-  const [selectedParser, setSelectedParser] = useState('');
-  const [datasetInfoPath, setDatasetInfoPath] = useState('');
-  const [outputDir, setOutputDir] = useState('');
+export function ParseStep({ onParseComplete, profile }: ParseStepProps) {
   const [loading, setLoading] = useState(false);
-  const [loadingParsers, setLoadingParsers] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ParseResponse | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [configOpen, setConfigOpen] = useState(true);
   const [selectedDiagnostics, setSelectedDiagnostics] = useState<ModelParseDiagnostics | null>(null);
   const [selectedIrId, setSelectedIrId] = useState<string | null>(null);
   const [fileTableSorting, setFileTableSorting] = useState<SortingState>([{ id: 'relpath', desc: false }]);
   const [fileTableColumnFilters, setFileTableColumnFilters] = useState<ColumnFiltersState>([]);
   const [fileTablePagination, setFileTablePagination] = useState({ pageIndex: 0, pageSize: 20 });
-
-  useEffect(() => {
-    // Load available parsers
-    apiService.getParsers()
-      .then(setParsers)
-      .catch((err) => {
-        console.error('Failed to load parsers:', err);
-        setError('Failed to load available parsers');
-      })
-      .finally(() => setLoadingParsers(false));
-  }, []);
-
-  // Pre-fill from profile
-  useEffect(() => {
-    if (profile) {
-      setSelectedParser(profile.parse.parser_language);
-      setOutputDir(profile.output_path);
-    }
-  }, [profile]);
-
-  // Auto-fill dataset_info_path and output_dir if scan result is available
-  // This should run after profile is set, so scanResult takes precedence for datasetInfoPath
-  useEffect(() => {
-    if (scanResult) {
-      // Always set dataset_info_path from scan result (profile doesn't have this)
-      const path = (scanResult.parameters as any).dataset_info_path || 
-                   `${scanResult.dataset_root}/dataset_info.json`;
-      setDatasetInfoPath(path);
-      
-      // Only set output_dir from scan result if profile is not loaded
-      // (profile output_path takes precedence)
-      if (!profile && scanResult.parameters.out) {
-        setOutputDir(scanResult.parameters.out);
-      }
-    }
-  }, [scanResult, profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -366,60 +326,21 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="parser-language">Parser Language *</Label>
-            {loadingParsers ? (
-              <p className="text-sm text-muted-foreground">Loading parsers...</p>
-            ) : (
-              <select
-                id="parser-language"
-                value={selectedParser}
-                onChange={(e) => setSelectedParser(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                required
-                disabled={loading || result !== null || !!profile}
-              >
-                <option value="">Select a parser...</option>
-                {parsers.map((parser) => (
-                  <option key={parser} value={parser}>
-                    {parser}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
+          {!profile && (
+            <div className="p-3 text-sm text-muted-foreground bg-muted rounded-md">
+              Upload a benchmark profile to view parameters and run the parse step.
+            </div>
+          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="dataset-info-path">Dataset Info Path *</Label>
-            <Input
-              id="dataset-info-path"
-              type="text"
-              value={datasetInfoPath}
-              onChange={(e) => setDatasetInfoPath(e.target.value)}
-              placeholder="/path/to/dataset_info.json"
-              required
-              disabled={loading || result !== null || !!profile}
-            />
-            <p className="text-sm text-muted-foreground">
-              Path to dataset_info.json from scan stage
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="output-dir">Output Directory *</Label>
-            <Input
-              id="output-dir"
-              type="text"
-              value={outputDir}
-              onChange={(e) => setOutputDir(e.target.value)}
-              placeholder="/path/to/output"
-              required
-              disabled={loading || result !== null || !!profile}
-            />
-            <p className="text-sm text-muted-foreground">
-              Directory where IR files and reports will be saved
-            </p>
-          </div>
+          {profile && (
+            <div className="space-y-4">
+              <ConfigCard title="Parser Configuration" open={configOpen} onOpenChange={setConfigOpen}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <ReadonlyField label="Parser Language" value={profile.parse?.parser_language} />
+                </div>
+              </ConfigCard>
+            </div>
+          )}
 
           {error && (
             <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
@@ -934,10 +855,10 @@ export function ParseStep({ scanResult, onParseComplete, profile }: ParseStepPro
           </Dialog>
         )}
 
-        {selectedIrId && (
+        {selectedIrId && profile && (
           <IRVisualization
             irId={selectedIrId}
-            outputDir={outputDir}
+            outputDir={profile.output_path}
             open={!!selectedIrId}
             onOpenChange={(open) => !open && setSelectedIrId(null)}
           />

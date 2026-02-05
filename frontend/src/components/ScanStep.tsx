@@ -1,7 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -10,94 +9,21 @@ import { ChevronDown, ChevronRight, FileText, CheckCircle, EyeOff, FileX, Ban } 
 import { apiService } from '../services/api';
 import type { ScanResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
+import { ReadonlyField } from './profile/ReadonlyField';
+import { ReadonlyListField } from './profile/ReadonlyListField';
+import { ConfigCard } from './profile/ConfigCard';
 
 interface ScanStepProps {
   onScanComplete: (result: ScanResponse) => void;
   profile: BenchmarkProfile | null;
 }
 
-interface PatternInputProps {
-  label: string;
-  patterns: string[];
-  onAdd: (pattern: string) => void;
-  onRemove: (index: number) => void;
-  placeholder: string;
-  helpText: React.ReactNode;
-  disabled: boolean;
-}
-
-function PatternInput({ label, patterns, onAdd, onRemove, placeholder, helpText, disabled }: PatternInputProps) {
-  const [inputValue, setInputValue] = useState('');
-
-  const handleAdd = () => {
-    if (inputValue.trim()) {
-      onAdd(inputValue.trim());
-      setInputValue('');
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <div className="flex gap-2">
-        <Input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleAdd();
-            }
-          }}
-          placeholder={placeholder}
-          disabled={disabled}
-          className="font-mono"
-        />
-        <Button
-          type="button"
-          onClick={handleAdd}
-          disabled={disabled || !inputValue.trim()}
-          variant="outline"
-        >
-          Add
-        </Button>
-      </div>
-      {patterns.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {patterns.map((pattern, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center gap-1 px-2 py-1 bg-muted rounded text-sm"
-            >
-              {pattern}
-              <button
-                type="button"
-                onClick={() => onRemove(index)}
-                className="text-muted-foreground hover:text-foreground"
-                disabled={disabled}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-      <p className="text-sm text-muted-foreground">{helpText}</p>
-    </div>
-  );
-}
-
 export function ScanStep({ onScanComplete, profile }: ScanStepProps) {
-  const [folderName, setFolderName] = useState('');
-  const [out, setOut] = useState('');
-  const [includePatterns, setIncludePatterns] = useState<string[]>([]);
-  const [excludePatterns, setExcludePatterns] = useState<string[]>([]);
-  const [sizeLimitMb, setSizeLimitMb] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResponse | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [configOpen, setConfigOpen] = useState(true);
   const [filterCandidates, setFilterCandidates] = useState('');
   const [filterUnreadable, setFilterUnreadable] = useState('');
   const [filterTooLarge, setFilterTooLarge] = useState('');
@@ -109,23 +35,6 @@ export function ScanStep({ onScanComplete, profile }: ScanStepProps) {
 
   const totals = result?.totals;
   const duplicateFileCount = result ? countDuplicateFiles(result.duplicates_groups) : 0;
-
-  // Pre-fill from profile
-  useEffect(() => {
-    if (profile) {
-      setFolderName(profile.scan.dataset_path);
-      setOut(profile.output_path);
-      if (profile.scan.include) {
-        setIncludePatterns(profile.scan.include);
-      }
-      if (profile.scan.exclude) {
-        setExcludePatterns(profile.scan.exclude);
-      }
-      if (profile.scan.size_limit_mb !== null && profile.scan.size_limit_mb !== undefined) {
-        setSizeLimitMb(profile.scan.size_limit_mb);
-      }
-    }
-  }, [profile]);
 
   // Memoized filtered lists
   const filteredCandidates = useMemo(() => {
@@ -199,107 +108,23 @@ export function ScanStep({ onScanComplete, profile }: ScanStepProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="dataset-path">Dataset Path *</Label>
-            <Input
-              id="dataset-path"
-              type="text"
-              className="font-mono"
-              
-              // webkitdirectory=""
-              // directory=""
-              // multiple
-              value={folderName}
-              onChange={(e) => setFolderName(e.target.value)}
-              placeholder="/path/to/dataset"
-              required
-              disabled={loading || result !== null || !!profile}
-              /*
-              onChange={(e) => {
-                const files = Array.from(e.currentTarget.files ?? []);
-                if (files.length === 0) {
-                  setFolderName("");
-                  return;
-                }
-            
-                const rel = (files[0] as any).webkitRelativePath as string | undefined;
-                // TODO: properly split name to select correct dataset path
-                const name = rel?.split("/")[0] ?? "Selected folder";
-            
-                setFolderName(rel);
-              }}*/
-            />
-          </div>
+          {!profile && (
+            <div className="p-3 text-sm text-muted-foreground bg-muted rounded-md">
+              Upload a benchmark profile to view parameters and run the scan.
+            </div>
+          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="out">Output Directory *</Label>
-            <Input
-              id="out"
-              type="text"
-              value={out}
-              onChange={(e) => setOut(e.target.value)}
-              placeholder="/path/to/output"
-              required
-              className="font-mono"
-              disabled={loading || result !== null || !!profile}
-            />
-            <p className="text-sm text-muted-foreground">
-              Directory where <code className="font-mono">dataset_info.json</code> will be saved
-            </p>
-          </div>
-
-          <PatternInput
-            label="Include Patterns (optional)"
-            patterns={includePatterns}
-            onAdd={(pattern) => setIncludePatterns([...includePatterns, pattern])}
-            onRemove={(index) => setIncludePatterns(includePatterns.filter((_, i) => i !== index))}
-            placeholder="*.xml"
-            helpText={
-              <>
-                If not provided, uses default patterns:{' '}
-                <code className="font-mono">*.xmi</code>,{' '}
-                <code className="font-mono">*.uml</code>,{' '}
-                <code className="font-mono">*.xml</code>,{' '}
-                <code className="font-mono">*.bpmn</code>,{' '}
-                <code className="font-mono">*.bpmn2</code>,{' '}
-                <code className="font-mono">*.ecore</code>,{' '}
-                <code className="font-mono">*.archimate</code>
-              </>
-            }
-            disabled={loading || result !== null || !!profile}
-          />
-
-          <PatternInput
-            label="Exclude Patterns (optional)"
-            patterns={excludePatterns}
-            onAdd={(pattern) => setExcludePatterns([...excludePatterns, pattern])}
-            onRemove={(index) => setExcludePatterns(excludePatterns.filter((_, i) => i !== index))}
-            placeholder="test/*"
-            helpText={
-              <>
-                Applied after include filtering. Patterns match filenames (e.g.,{' '}
-                <code className="font-mono">*.tmp</code>) or relative paths from dataset root (e.g.,{' '}
-                <code className="font-mono">test/*</code>).
-              </>
-            }
-            disabled={loading || result !== null || !!profile}
-          />
-
-          <div className="space-y-2">
-            <Label htmlFor="size-limit">Size Limit MB (optional)</Label>
-            <Input
-              id="size-limit"
-              type="number"
-              value={sizeLimitMb || ''}
-              onChange={(e) => setSizeLimitMb(e.target.value ? parseInt(e.target.value) : null)}
-              placeholder="100"
-              min="1"
-              disabled={loading || result !== null || !!profile}
-            />
-            <p className="text-sm text-muted-foreground">
-              Maximum file size in MB (files exceeding this will be marked as too_large)
-            </p>
-          </div>
+          {profile && (
+            <div className="space-y-4">
+              <ConfigCard title="Scan Configuration" open={configOpen} onOpenChange={setConfigOpen}>
+                <ReadonlyField label="Dataset Path" value={profile.scan?.dataset_path} />
+                <ReadonlyField label="Output Directory" value={profile.output_path} />
+                <ReadonlyListField label="Include Patterns" values={profile.scan?.include ?? undefined} />
+                <ReadonlyListField label="Exclude Patterns" values={profile.scan?.exclude ?? undefined} />
+                <ReadonlyField label="Size Limit MB" value={profile.scan?.size_limit_mb ?? undefined} />
+              </ConfigCard>
+            </div>
+          )}
 
           {error && (
             <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
