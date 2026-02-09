@@ -2,6 +2,10 @@
 
 A Python-based benchmarking tool for assessing datasets of conceptual models (e.g., UML, ArchiMate, BPMN, Ecore).
 
+## Requirements
+
+- Node.js
+
 ## Installation
 
 ```bash
@@ -9,6 +13,26 @@ pip install -e .
 ```
 
 ## Usage
+
+## Docker
+
+```bash
+docker build -t cmbenchmark .
+docker run --rm -p 8000:8000 \
+  -v "$PWD/out:/out" \
+  -v "$PWD/data:/data" \
+  cmbenchmark
+```
+
+You can then access the Web UI at `http://0.0.0.0:8000`. 
+
+### Web UI
+
+```bash
+cmbenchmark web
+```
+
+You can then access the Web UI at `http://localhost:8000`. 
 
 ### Individual Commands
 

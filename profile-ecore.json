@@ -3,7 +3,7 @@
   "version": "1.0",
   "output_path": "./out",
   "scan": {
-    "dataset_path": "./data/ecore-models",
+    "dataset_path": "/data/ecore-models",
     "include": ["*.ecore"],
     "exclude": ["**/tmp/**"],
     "size_limit_mb": 10
