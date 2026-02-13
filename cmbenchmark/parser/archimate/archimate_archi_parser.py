@@ -39,6 +39,8 @@ ELEMENT_FOLDER_TYPES = {
     "other"
 }
 
+CONNECTORS_FOLDER_TYPE = "connectors"
+
 
 @register_parser
 class ArchiMateArchiParser(BaseParser):
@@ -127,62 +129,74 @@ class ArchiMateArchiParser(BaseParser):
             List of parsed nodes
         """
         nodes = []
-        
-        # Traverse folders for elements
+
+        # Traverse top-level folders and recurse into nested subfolders.
         for folder in root.findall("folder"):
             folder_type = folder.attrib.get("type", "")
-            # Skip non-element folders
             if folder_type not in ELEMENT_FOLDER_TYPES:
                 continue
-            
-            # Parse elements
-            for element in folder.findall("element"):
-                # Extract required attributes
-                elem_id = element.attrib.get("id")
-                if not elem_id:
-                    self.skip_with_warning(
-                        WarningType.MISSING_ATTRIBUTE,
-                        f"Element missing 'id' attribute in folder '{folder_type}'."
-                    )
-                    continue
-                
-                # Check for duplicate ID
-                if elem_id in id_lookup:
-                    self.skip_with_warning(
-                        WarningType.DUPLICATE_ID,
-                        f"Element '{elem_id}' in folder '{folder_type}' has duplicate ID (already exists)."
-                    )
-                    continue
-                
-                xsi_type = element.attrib.get(XSI_TYPE_ATTR, "")
-                if not xsi_type:
-                    self.skip_with_warning(
-                        WarningType.MISSING_ATTRIBUTE,
-                        f"Element '{elem_id}' missing 'xsi:type' attribute in folder '{folder_type}'."
-                    )
-                    continue
-                normalized_type = normalize_element_type(
-                    xsi_type, 
-                    normalize_deprecated=self.normalize_deprecated_types
-                )
+            nodes.extend(self._parse_elements_in_folder(folder, folder_type, id_lookup))
 
-                node_name = element.attrib.get("name", "")
-                elem_data = extract_element_data(element, exclude_attrs={"id", "name", "xsi:type"})
-                documentation = extract_documentation(element)
-                if documentation:
-                    elem_data["documentation"] = documentation   
-                # Record layer using folder type
-                elem_data["layer"] = folder_type
+        return nodes
 
-                node = Node(
-                    id=elem_id,
-                    type=normalized_type,
-                    name=node_name,
-                    data=elem_data
+    def _parse_elements_in_folder(
+        self,
+        folder: ET.Element,
+        layer_type: str,
+        id_lookup: Dict[str, Node]
+    ) -> List[Node]:
+        """Parse element nodes in a folder and all nested subfolders."""
+        nodes = []
+
+        for element in folder.findall("element"):
+            # Extract required attributes
+            elem_id = element.attrib.get("id")
+            if not elem_id:
+                self.skip_with_warning(
+                    WarningType.MISSING_ATTRIBUTE,
+                    f"Element missing 'id' attribute in folder '{layer_type}'."
                 )
-                nodes.append(node)
-                id_lookup[elem_id] = node
-        
+                continue
+
+            # Check for duplicate ID
+            if elem_id in id_lookup:
+                self.skip_with_warning(
+                    WarningType.DUPLICATE_ID,
+                    f"Element '{elem_id}' in folder '{layer_type}' has duplicate ID (already exists)."
+                )
+                continue
+
+            xsi_type = element.attrib.get(XSI_TYPE_ATTR, "")
+            if not xsi_type:
+                self.skip_with_warning(
+                    WarningType.MISSING_ATTRIBUTE,
+                    f"Element '{elem_id}' missing 'xsi:type' attribute in folder '{layer_type}'."
+                )
+                continue
+            normalized_type = normalize_element_type(
+                xsi_type,
+                normalize_deprecated=self.normalize_deprecated_types
+            )
+
+            node_name = element.attrib.get("name", "")
+            elem_data = extract_element_data(element, exclude_attrs={"id", "name", "xsi:type"})
+            documentation = extract_documentation(element)
+            if documentation:
+                elem_data["documentation"] = documentation
+            elem_data["layer"] = layer_type
+
+            node = Node(
+                id=elem_id,
+                type=normalized_type,
+                name=node_name,
+                data=elem_data
+            )
+            nodes.append(node)
+            id_lookup[elem_id] = node
+
+        for subfolder in folder.findall("folder"):
+            nodes.extend(self._parse_elements_in_folder(subfolder, layer_type, id_lookup))
+
         return nodes
 
     def _parse_relationships(
@@ -287,6 +301,81 @@ class ArchiMateArchiParser(BaseParser):
         
         return edges
 
+    def _parse_connectors(
+        self,
+        root: ET.Element,
+        id_lookup: Dict[str, Node]
+    ) -> List[Node]:
+        """
+        Parse connector elements from connectors folder.
+
+        Args:
+            root: Root XML element
+            id_lookup: Dictionary to store nodes by ID
+
+        Returns:
+            List of parsed connector nodes
+        """
+        connector_nodes = []
+
+        # Find connectors folder
+        connectors_folder = None
+        for folder in root.findall("folder"):
+            if folder.attrib.get("type", "") == CONNECTORS_FOLDER_TYPE:
+                connectors_folder = folder
+                break
+
+        if connectors_folder is None:
+            return connector_nodes
+
+        # Parse connector elements (e.g., Junction)
+        for element in connectors_folder.findall("element"):
+            elem_id = element.attrib.get("id")
+            if not elem_id:
+                self.skip_with_warning(
+                    WarningType.MISSING_ATTRIBUTE,
+                    "Connector element missing 'id' attribute."
+                )
+                continue
+
+            if elem_id in id_lookup:
+                self.skip_with_warning(
+                    WarningType.DUPLICATE_ID,
+                    f"Connector element '{elem_id}' has duplicate ID (already exists)."
+                )
+                continue
+
+            xsi_type = element.attrib.get(XSI_TYPE_ATTR, "")
+            if not xsi_type:
+                self.skip_with_warning(
+                    WarningType.MISSING_ATTRIBUTE,
+                    f"Connector element '{elem_id}' missing 'xsi:type' attribute."
+                )
+                continue
+
+            normalized_type = normalize_element_type(
+                xsi_type,
+                normalize_deprecated=self.normalize_deprecated_types
+            )
+
+            node_name = element.attrib.get("name", "")
+            elem_data = extract_element_data(element, exclude_attrs={"id", "name", "xsi:type"})
+            documentation = extract_documentation(element)
+            if documentation:
+                elem_data["documentation"] = documentation
+            elem_data["layer"] = CONNECTORS_FOLDER_TYPE
+
+            node = Node(
+                id=elem_id,
+                type=normalized_type,
+                name=node_name,
+                data=elem_data
+            )
+            connector_nodes.append(node)
+            id_lookup[elem_id] = node
+
+        return connector_nodes
+
     def parse(self, filepath: str) -> Tuple[IR, ParserRunStats]:
         """
         Parse a ArchiMate model file into IR.
@@ -308,7 +397,10 @@ class ArchiMateArchiParser(BaseParser):
         id_lookup: Dict[str, Node] = {}
         nodes = self._parse_elements(root, id_lookup)
         
-        # Step 3: Parse relationships
+        # Step 3: Parse connectors
+        nodes.extend(self._parse_connectors(root, id_lookup))
+
+        # Step 4: Parse relationships
         edges = self._parse_relationships(root, id_lookup)
         
         ir = IR(

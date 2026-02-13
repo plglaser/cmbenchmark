@@ -20,6 +20,8 @@ from cmbenchmark.types.measures import (
     D2M4SingleMultiWordPerModel,
     D2M5LexicalDiversityDataset,
     D2M5LexicalDiversityPerModel,
+    D2M6LanguageUsageDataset,
+    D2M6LanguageUsagePerModel,
     DistributionSummary,
 )
 from cmbenchmark.types.profile import LexicalProfile, TokenizerConfig
@@ -72,6 +74,34 @@ class SimpleTokenizer:
     
     def tokenize(self, text: str) -> List[str]:
         """Tokenize text according to configuration."""
+        return self._tokenize_internal(
+            text=text,
+            filter_stopwords=True,
+            filter_noise=True,
+        )
+
+    def tokenize_with_filters(
+        self,
+        text: str,
+        *,
+        filter_stopwords: bool = True,
+        filter_noise: bool = True,
+    ) -> List[str]:
+        """Tokenize text while allowing callers to control final token filters."""
+        return self._tokenize_internal(
+            text=text,
+            filter_stopwords=filter_stopwords,
+            filter_noise=filter_noise,
+        )
+
+    def _tokenize_internal(
+        self,
+        text: str,
+        *,
+        filter_stopwords: bool,
+        filter_noise: bool,
+    ) -> List[str]:
+        """Tokenize text according to configuration and optional token filters."""
         if not text:
             return []
         
@@ -87,13 +117,13 @@ class SimpleTokenizer:
         if self.config.collapse_whitespace:
             text = re.sub(r'\s+', ' ', text)
         
-        # Lowercase
-        if self.config.lowercase:
-            text = text.lower()
-        
         # Split camel case
         if self.config.split_camel_case:
             text = self._split_camel_case(text)
+
+        # Lowercase after camel-case splitting so case boundaries are preserved.
+        if self.config.lowercase:
+            text = text.lower()
         
         # Split on punctuation
         if self.config.split_on_punct:
@@ -111,18 +141,20 @@ class SimpleTokenizer:
             tokens = [t for t in tokens if not t.isdigit()]
         
         # Filter stopwords
-        if self._stopwords:
-            tokens = [t for t in tokens if t not in self._stopwords]
+        if filter_stopwords and self._stopwords:
+            tokens = [t for t in tokens if t.lower() not in self._stopwords]
         
         # Filter noise tokens
-        if self._noise_tokens:
+        if filter_noise and self._noise_tokens:
             tokens = [t for t in tokens if t not in self._noise_tokens]
         
         return tokens
     
     def _split_camel_case(self, text: str) -> str:
         """Insert spaces before capital letters in camelCase."""
-        # Pattern: lowercase or digit followed by uppercase
+        # Split acronym boundaries (e.g. "HTTPServer" -> "HTTP Server"),
+        # then split lower/digit to upper boundaries (e.g. "myValue" -> "my Value").
+        text = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1 \2', text)
         return re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', text)
 
 
@@ -131,26 +163,26 @@ def build_tokenizer(cfg: TokenizerConfig) -> LabelTokenizer:
     return SimpleTokenizer(cfg)
 
 
-def _extract_labels(ir: IR, profile: LexicalProfile) -> List[Tuple[str, str, str]]:
+def _extract_labels(ir: IR, profile: LexicalProfile) -> List[Tuple[Optional[str], str, str]]:
     """
-    Extract labels from IR according to profile.
+    Extract label candidates from IR according to profile.
     
     Returns:
-        List of (label_text, element_type, element_id) tuples
+        List of (label_text, element_type, element_id) tuples.
+        Every tuple represents one eligible label slot (included element + existing label attribute).
+        `label_text` is `None` when the slot exists but is not a string value.
     """
-    labels = []
+    labels: List[Tuple[Optional[str], str, str]] = []
     
     if profile.include_nodes:
         for node in ir.nodes:
             for attr in profile.label_attributes:
                 if hasattr(node, attr):
                     label_text = getattr(node, attr)
-                    if label_text and isinstance(label_text, str):
-                        labels.append((label_text, node.type, node.id))
+                    labels.append((label_text if isinstance(label_text, str) else None, node.type, node.id))
                 elif attr in node.data:
                     label_text = node.data[attr]
-                    if label_text and isinstance(label_text, str):
-                        labels.append((label_text, node.type, node.id))
+                    labels.append((label_text if isinstance(label_text, str) else None, node.type, node.id))
     
     if profile.include_edges:
         for edge in ir.edges:
@@ -158,48 +190,47 @@ def _extract_labels(ir: IR, profile: LexicalProfile) -> List[Tuple[str, str, str
                 # Check if attribute exists on edge object (e.g., type)
                 if hasattr(edge, attr):
                     label_text = getattr(edge, attr)
-                    if label_text and isinstance(label_text, str):
-                        labels.append((label_text, edge.type, edge.id))
+                    labels.append((label_text if isinstance(label_text, str) else None, edge.type, edge.id))
                 # Check if attribute exists in edge.data dict
                 elif attr in edge.data:
                     label_text = edge.data[attr]
-                    if label_text and isinstance(label_text, str):
-                        labels.append((label_text, edge.type, edge.id))
+                    labels.append((label_text if isinstance(label_text, str) else None, edge.type, edge.id))
     
     return labels
 
 
 def _detect_case_style(text: str) -> str:
     """Detect the case style of a text label."""
-    if not text:
+    normalized = text.strip()
+    if not normalized:
         return "empty"
     
     # Check for camelCase
-    if re.match(r'^[a-z][a-zA-Z0-9]*$', text) and any(c.isupper() for c in text):
+    if re.match(r'^[a-z][a-zA-Z0-9]*$', normalized) and any(c.isupper() for c in normalized):
         return "camelCase"
     
     # Check for PascalCase
-    if re.match(r'^[A-Z][a-zA-Z0-9]*$', text) and any(c.islower() for c in text):
+    if re.match(r'^[A-Z][a-zA-Z0-9]*$', normalized) and any(c.islower() for c in normalized):
         return "PascalCase"
+
+    # Check for UPPER_CASE
+    if re.match(r'^[A-Z0-9]+(?:_[A-Z0-9]+)+$', normalized):
+        return "UPPER_CASE"
     
     # Check for snake_case
-    if '_' in text and text.replace('_', '').isalnum():
+    if re.match(r'^[a-z0-9]+(?:_[a-z0-9]+)+$', normalized):
         return "snake_case"
     
     # Check for kebab-case
-    if '-' in text and text.replace('-', '').isalnum():
+    if re.match(r'^[a-z0-9]+(?:-[a-z0-9]+)+$', normalized):
         return "kebab-case"
     
-    # Check for UPPER_CASE
-    if text.isupper() and '_' in text:
-        return "UPPER_CASE"
-    
     # Check for lowercase
-    if text.islower():
+    if normalized.islower():
         return "lowercase"
     
     # Check for UPPERCASE (no underscores)
-    if text.isupper() and text.isalpha():
+    if normalized.isupper() and normalized.isalpha():
         return "UPPERCASE"
     
     # Mixed or other
@@ -237,6 +268,45 @@ def compute_lexical_measures(
         Tuple of (dataset_measures, per_model_measures)
     """
     tokenizer = build_tokenizer(lexical_profile.tokenizer)
+
+    # Build language detector (Lingua) once for the whole dataset.
+    # We explicitly exclude Latin and Esperanto to reduce false positives.
+    detector = None
+    try:
+        from lingua import Language, LanguageDetectorBuilder  # type: ignore
+
+        detector = (
+            LanguageDetectorBuilder.from_all_languages_without(Language.LATIN, Language.ESPERANTO)
+            .build()
+        )
+    except Exception:
+        detector = None
+
+    def _lang_to_code(lang_obj: object) -> Optional[str]:
+        """Convert Lingua Language enum to an ISO 639-1 lowercase code if possible."""
+        if lang_obj is None:
+            return None
+        # Try ISO 639-1
+        iso1 = getattr(lang_obj, "iso_code_639_1", None)
+        if iso1 is not None:
+            name = getattr(iso1, "name", None)
+            if name:
+                return str(name).lower()
+            s = str(iso1)
+            if s:
+                return s.lower()
+        # Fallback to ISO 639-3 if needed
+        iso3 = getattr(lang_obj, "iso_code_639_3", None)
+        if iso3 is not None:
+            name = getattr(iso3, "name", None)
+            if name:
+                return str(name).lower()
+            s = str(iso3)
+            if s:
+                return s.lower()
+        # Last resort: the enum name (e.g. "ENGLISH")
+        n = getattr(lang_obj, "name", None)
+        return str(n).lower() if n else None
     
     # Per-model accumulators
     per_model_d2m1: Dict[str, D2M1LabelPresencePerModel] = {}
@@ -244,11 +314,13 @@ def compute_lexical_measures(
     per_model_d2m3: Dict[str, D2M3NamingConventionPerModel] = {}
     per_model_d2m4: Dict[str, D2M4SingleMultiWordPerModel] = {}
     per_model_d2m5: Dict[str, D2M5LexicalDiversityPerModel] = {}
+    per_model_d2m6: Dict[str, D2M6LanguageUsagePerModel] = {}
     
     # Dataset-level accumulators
     dataset_label_eligible_count = 0
     dataset_label_present_count = 0
     label_missing_by_type: Dict[str, int] = {}
+    dataset_language_counts: Counter[str] = Counter()
     
     # For D2.M2: collect medians per model
     label_length_chars_medians: List[float] = []
@@ -268,11 +340,28 @@ def compute_lexical_measures(
     # For D2.M5: aggregate tokens across all models
     all_tokens: List[str] = []
     all_stopword_tokens = 0
+    all_raw_token_count = 0
     label_occurrence_counts: Counter[str] = Counter()
     
     # Process each IR model
     for ir in ir_models:
         labels = _extract_labels(ir, lexical_profile)
+
+        # D2.M6: Language Usage (per-model)
+        merged_text = " ".join(
+            label_text.strip()
+            for label_text, _, _ in labels
+            if isinstance(label_text, str) and label_text.strip()
+        ).strip()
+        detected_code = "unknown"
+        if detector is not None and merged_text:
+            try:
+                lang = detector.detect_language_of(merged_text)
+                detected_code = _lang_to_code(lang) or "unknown"
+            except Exception:
+                detected_code = "unknown"
+        per_model_d2m6[ir.id] = D2M6LanguageUsagePerModel(language=detected_code)
+        dataset_language_counts[detected_code] += 1
         
         # D2.M1: Label Presence
         eligible_count = len(labels)
@@ -385,6 +474,7 @@ def compute_lexical_measures(
         single_word_count = 0
         multi_word_count = 0
         
+        total_present_labels = len(present_labels)
         for label_text, _ in present_labels:
             tokens = tokenizer.tokenize(label_text)
             if len(tokens) == 1:
@@ -392,9 +482,8 @@ def compute_lexical_measures(
             elif len(tokens) > 1:
                 multi_word_count += 1
         
-        total_labels = single_word_count + multi_word_count
-        single_word_share = single_word_count / total_labels if total_labels > 0 else 0.0
-        multi_word_share = multi_word_count / total_labels if total_labels > 0 else 0.0
+        single_word_share = single_word_count / total_present_labels if total_present_labels > 0 else 0.0
+        multi_word_share = multi_word_count / total_present_labels if total_present_labels > 0 else 0.0
         
         per_model_d2m4[ir.id] = D2M4SingleMultiWordPerModel(
             single_word_label_count=single_word_count,
@@ -420,11 +509,26 @@ def compute_lexical_measures(
         
         # Count stopwords (if tokenizer has them)
         stopword_count = 0
+        raw_token_count = total_tokens
         if hasattr(tokenizer, '_stopwords') and tokenizer._stopwords:
-            stopword_count = sum(1 for t in model_tokens if t in tokenizer._stopwords)
+            if hasattr(tokenizer, "tokenize_with_filters"):
+                raw_tokens = []
+                for label_text, _ in present_labels:
+                    raw_tokens.extend(
+                        tokenizer.tokenize_with_filters(
+                            label_text,
+                            filter_stopwords=False,
+                            filter_noise=True,
+                        )
+                    )
+                raw_token_count = len(raw_tokens)
+                stopword_count = sum(1 for t in raw_tokens if t.lower() in tokenizer._stopwords)
+            else:
+                stopword_count = sum(1 for t in model_tokens if t.lower() in tokenizer._stopwords)
             all_stopword_tokens += stopword_count
+        all_raw_token_count += raw_token_count
         
-        stopword_share = stopword_count / total_tokens if total_tokens > 0 else 0.0
+        stopword_share = stopword_count / raw_token_count if raw_token_count > 0 else 0.0
         
         per_model_d2m5[ir.id] = D2M5LexicalDiversityPerModel(
             total_tokens=total_tokens,
@@ -475,7 +579,12 @@ def compute_lexical_measures(
         dataset_case_style_share=dataset_case_style_share,
     )
     
-    dataset_share_single_word = total_single_word_labels / (total_single_word_labels + total_multi_word_labels) if (total_single_word_labels + total_multi_word_labels) > 0 else 0.0
+    total_present_labels_dataset = dataset_label_present_count
+    dataset_share_single_word = (
+        total_single_word_labels / total_present_labels_dataset
+        if total_present_labels_dataset > 0
+        else 0.0
+    )
     
     d2m4_dataset = D2M4SingleMultiWordDataset(
         total_single_word_labels=total_single_word_labels,
@@ -487,7 +596,7 @@ def compute_lexical_measures(
     vocab_size = len(set(all_tokens))
     total_tokens = len(all_tokens)
     ttr = vocab_size / total_tokens if total_tokens > 0 else 0.0
-    stopword_share = all_stopword_tokens / total_tokens if total_tokens > 0 else 0.0
+    stopword_share = all_stopword_tokens / all_raw_token_count if all_raw_token_count > 0 else 0.0
     top_labels = label_occurrence_counts.most_common(50)
     top_tokens = Counter(all_tokens).most_common(50)
     
@@ -500,6 +609,8 @@ def compute_lexical_measures(
         top_labels=top_labels,
         top_tokens=top_tokens,
     )
+
+    d2m6_dataset = D2M6LanguageUsageDataset(language_counts=dict(dataset_language_counts))
     
     dataset_measures = LexicalMeasuresDataset(
         d2_m1_label_presence=d2m1_dataset,
@@ -507,6 +618,7 @@ def compute_lexical_measures(
         d2_m3_naming_convention=d2m3_dataset,
         d2_m4_single_multi_word=d2m4_dataset,
         d2_m5_lexical_diversity=d2m5_dataset,
+        d2_m6_language_usage=d2m6_dataset,
     )
     
     per_model_measures = LexicalMeasuresPerModel(
@@ -515,6 +627,7 @@ def compute_lexical_measures(
         d2_m3_naming_convention=per_model_d2m3,
         d2_m4_single_multi_word=per_model_d2m4,
         d2_m5_lexical_diversity=per_model_d2m5,
+        d2_m6_language_usage=per_model_d2m6,
     )
     
     return dataset_measures, per_model_measures

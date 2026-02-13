@@ -3,13 +3,13 @@
   "version": "1.0",
   "output_path": "./out",
   "scan": {
-    "dataset_path": "./data/ecore-models",
-    "include": ["*.ecore"],
-    "exclude": [],
+    "dataset_path": "./data/archimate-archi-example",
+    "include": ["*.archimate", "*.xml"],
+    "exclude": ["**/tmp/**"],
     "size_limit_mb": 10
   },
   "parse": {
-    "parser_language": "Ecore"
+    "parser_language": "ArchiMate-Archi"
   },
   "measure": {
     "parse": {

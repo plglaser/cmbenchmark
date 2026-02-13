@@ -27,6 +27,7 @@ env/
 .coverage
 htmlcov/
 out/
+out_backup/
 output/
 .DS_Store
 

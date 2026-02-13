@@ -193,6 +193,10 @@ export interface ReportResponse {
     stopwordShare: number;
   }>;
 
+  languageUsage?: any | null;
+  languageUsageData: Array<{ language: string; count: number; share: number }>;
+  languageUsagePieData: Array<{ name: string; value: number; share: number }>;
+
   constructPresence?: any | null;
   constructCatalog: Record<string, any>;
   constructDimensionScore?: number | null;

@@ -171,6 +171,18 @@ class DerivedLexicalDiversityTopItem(BaseModel):
     stopwordShare: float
 
 
+class DerivedLanguageUsageItem(BaseModel):
+    language: str
+    count: int
+    share: float
+
+
+class DerivedLanguageUsagePieItem(BaseModel):
+    name: str
+    value: int
+    share: float
+
+
 class DerivedConstructPresenceChartData(BaseModel):
     observed: int
     missing: int
@@ -323,6 +335,7 @@ class DerivedReportResponse(BaseModel):
     namingConvention: Optional[Dict[str, Any]] = None
     singleMultiWord: Optional[Dict[str, Any]] = None
     lexicalDiversity: Optional[Dict[str, Any]] = None
+    languageUsage: Optional[Dict[str, Any]] = None
     constructPresence: Optional[Dict[str, Any]] = None
     constructFrequency: Optional[Dict[str, Any]] = None
     constructDimensionScore: Optional[float] = None
@@ -361,6 +374,8 @@ class DerivedReportResponse(BaseModel):
     singleWordShareHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
 
     lexicalDiversityTop10: List[DerivedLexicalDiversityTopItem] = Field(default_factory=list)
+    languageUsageData: List[DerivedLanguageUsageItem] = Field(default_factory=list)
+    languageUsagePieData: List[DerivedLanguageUsagePieItem] = Field(default_factory=list)
 
     constructCatalog: Dict[str, Any] = Field(default_factory=dict)
     constructPresenceChartData: Optional[DerivedConstructPresenceChartData] = None

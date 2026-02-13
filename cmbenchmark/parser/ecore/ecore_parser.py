@@ -115,28 +115,45 @@ class EcoreParser(BaseParser):
             if not resource.contents:
                 raise CannotParseError("Ecore file appears to be empty")
 
-            mm_root = self._detect_root_package(resource.contents)
+            mm_roots = self._detect_root_packages(resource.contents)
 
-            if mm_root.nsURI:
-                rset.metamodel_registry[mm_root.nsURI] = mm_root
+            # Register all root packages (best-effort) so cross-resource resolution can work
+            for pkg in mm_roots:
+                if pkg.nsURI:
+                    rset.metamodel_registry[pkg.nsURI] = pkg
 
         except Exception as e:
             if isinstance(e, CannotParseError):
                 raise
             raise CannotParseError(f"Failed to load Ecore model: {e}")
 
+        primary_root = mm_roots[0]
+        root_packages_meta = [
+            {"name": pkg.name or "", "nsURI": pkg.nsURI or "", "nsPrefix": pkg.nsPrefix or ""}
+            for pkg in mm_roots
+        ]
         ir = IR(
             id=_generate_id("model"),
             language=self.language,
             data={
-                "nsURI": mm_root.nsURI or "",
-                "nsPrefix": mm_root.nsPrefix or "",
                 "path": str(path.absolute()),
+                "rootPackages": root_packages_meta,
+                "rootPackageCount": len(mm_roots),
+                "hasMultipleRootPackages": len(mm_roots) > 1,
             },
         )
         self._add_model_level_annotations(resource.contents, ir.data)
 
-        all_eobjects = [mm_root] + list(mm_root.eAllContents())
+        # Collect all EObjects across all root packages (stable order, de-duplicated)
+        all_eobjects: List[EObject] = []
+        seen: set = set()
+        for root in mm_roots:
+            for obj in [root] + list(root.eAllContents()):
+                if obj in seen:
+                    continue
+                seen.add(obj)
+                all_eobjects.append(obj)
+
         node_eobjects: List[Union[EObject, ExternalDataTypeRef]] = self._filter_node_eobjects(
             all_eobjects
         )
@@ -145,7 +162,7 @@ class EcoreParser(BaseParser):
         eobject_to_id = self._build_eobject_index(node_eobjects)
 
         for eobj in node_eobjects:
-            node = self._build_node(eobj, eobject_to_id, root_pkg=mm_root)
+            node = self._build_node(eobj, eobject_to_id, root_pkgs=mm_roots)
             if node is not None:
                 ir.nodes.append(node)
 
@@ -153,24 +170,17 @@ class EcoreParser(BaseParser):
 
         return ir, self._stats()
 
-    def _detect_root_package(self, contents: Iterable[Any]) -> EPackage:
+    def _detect_root_packages(self, contents: Iterable[Any]) -> List[EPackage]:
         """
         Root detection:
         - Scan resource.contents for EPackage objects.
         - 0 packages: hard parse error
-        - 1 package: use it
-        - >1 package: use the 1st, warn/skip the rest
+        - >=1 package: parse all of them (multi-root Ecore resources are common)
         """
         packages = [obj for obj in contents if isinstance(obj, EPackage)]
         if len(packages) == 0:
             raise CannotParseError("No EPackage found in resource")
-        if len(packages) > 1:
-            for extra in packages[1:]:
-                self.skip_with_warning(
-                    WarningType.MULTIPLE_ROOT_PACKAGES,
-                    f"Multiple root EPackages found; skipping extra package: {getattr(extra, 'name', '')}",
-                )
-        return packages[0]
+        return packages
 
     def _add_model_level_annotations(self, contents: Iterable[Any], model_data: Dict[str, Any]) -> None:
         """
@@ -267,7 +277,7 @@ class EcoreParser(BaseParser):
         return list(node_eobjects) + extra
 
     def _build_eobject_index(
-        self, eobjects: Iterable[Union[EObject, ExternalDataTypeRef]]
+        self, eobjects: Iterable[Union[EObject, ExternalDataTypeRef, ExternalClassRef]]
     ) -> Dict[Any, str]:
         eobject_to_id: Dict[Any, str] = {}
         for index, obj in enumerate(eobjects, start=1):
@@ -287,7 +297,10 @@ class EcoreParser(BaseParser):
         return eobject_to_id
 
     def _build_node(
-        self, obj: Union[EObject, ExternalDataTypeRef], eobject_to_id: Dict[Any, str], root_pkg: EPackage
+        self,
+        obj: Union[EObject, ExternalDataTypeRef, ExternalClassRef],
+        eobject_to_id: Dict[Any, str],
+        root_pkgs: List[EPackage],
     ) -> Optional[Node]:
         node_id = eobject_to_id.get(obj)
         if not node_id:
@@ -334,7 +347,7 @@ class EcoreParser(BaseParser):
         elif isinstance(obj, EEnum):
             pass
         elif isinstance(obj, EDataType):
-            self._fill_datatype_data(obj, data, root_pkg=root_pkg)
+            self._fill_datatype_data(obj, data, root_pkgs=root_pkgs)
         elif isinstance(obj, EEnumLiteral):
             pass
         elif isinstance(obj, EAttribute):
@@ -529,25 +542,26 @@ class EcoreParser(BaseParser):
                 stack.extend(list(ann.eAnnotations))
 
     def _fill_datatype_data(
-        self, dtype: EDataType, data: Dict[str, Any], root_pkg: EPackage
+        self, dtype: EDataType, data: Dict[str, Any], root_pkgs: List[EPackage]
     ) -> None:
         """
         Minimal but informative EDataType payload, with internal/external classification.
         """
         pkg = getattr(dtype, "ePackage", None)
-        internal = bool(pkg) and self._is_package_within_root(pkg, root_pkg)
+        internal = bool(pkg) and self._is_package_within_any_root(pkg, root_pkgs)
         data["external"] = not internal
         if not internal:
             data["nsURI"] = (pkg.nsURI if pkg is not None and pkg.nsURI else "http://www.eclipse.org/emf/2002/Ecore")
             data["packageName"] = (pkg.name if pkg is not None and pkg.name else "ecore")
 
-    def _is_package_within_root(self, pkg: EPackage, root_pkg: EPackage) -> bool:
+    def _is_package_within_any_root(self, pkg: EPackage, root_pkgs: Iterable[EPackage]) -> bool:
         """
-        Returns True iff pkg is root_pkg or a (nested) subpackage of root_pkg.
+        Returns True iff pkg is within any of the root packages (including the roots themselves).
         """
+        root_set = set(root_pkgs)
         current: Optional[EPackage] = pkg
         while current is not None:
-            if current is root_pkg:
+            if current in root_set:
                 return True
             current = getattr(current, "eSuperPackage", None)
         return False

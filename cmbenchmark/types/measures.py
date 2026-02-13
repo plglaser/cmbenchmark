@@ -198,6 +198,13 @@ class D2M5LexicalDiversityDataset:
     top_tokens: List[Tuple[str, int]] = field(default_factory=list)
 
 
+# ---------- D2.M6 — Language Usage (dataset-level) ----------
+@dataclass
+class D2M6LanguageUsageDataset:
+    """Dataset-level D2.M6 language usage measure."""
+    language_counts: Dict[str, int] = field(default_factory=dict)  # e.g. {"en": 10, "de": 3, "unknown": 1}
+
+
 # ---------- D2.M1 per-model ----------
 @dataclass
 class D2M1LabelPresencePerModel:
@@ -255,6 +262,12 @@ class D2M5LexicalDiversityPerModel:
 
 
 @dataclass
+class D2M6LanguageUsagePerModel:
+    """Per-model D2.M6 language usage measure."""
+    language: Optional[str] = None  # ISO 639-1 lowercase if available (e.g., "en"), else "unknown"
+
+
+@dataclass
 class LexicalMeasuresDataset:
     """Dataset-level lexical measures."""
     d2_m1_label_presence: D2M1LabelPresenceDataset
@@ -262,6 +275,7 @@ class LexicalMeasuresDataset:
     d2_m3_naming_convention: D2M3NamingConventionDataset
     d2_m4_single_multi_word: D2M4SingleMultiWordDataset
     d2_m5_lexical_diversity: D2M5LexicalDiversityDataset
+    d2_m6_language_usage: D2M6LanguageUsageDataset = field(default_factory=D2M6LanguageUsageDataset)
 
 
 # ========== D3 Construct Coverage Measures ==========
@@ -448,6 +462,7 @@ class LexicalMeasuresPerModel:
     d2_m3_naming_convention: Dict[str, D2M3NamingConventionPerModel] = field(default_factory=dict)
     d2_m4_single_multi_word: Dict[str, D2M4SingleMultiWordPerModel] = field(default_factory=dict)
     d2_m5_lexical_diversity: Dict[str, D2M5LexicalDiversityPerModel] = field(default_factory=dict)
+    d2_m6_language_usage: Dict[str, D2M6LanguageUsagePerModel] = field(default_factory=dict)
 
 
 @dataclass
@@ -512,6 +527,7 @@ class MeasureResultDataset:
             d2_m3_data = lexical_data.get("d2_m3_naming_convention", {})
             d2_m4_data = lexical_data.get("d2_m4_single_multi_word", {})
             d2_m5_data = lexical_data.get("d2_m5_lexical_diversity", {})
+            d2_m6_data = lexical_data.get("d2_m6_language_usage", {}) or {}
 
             if isinstance(d2_m1_data, dict):
                 if "score" not in d2_m1_data and "label_completeness_index" in d2_m1_data:
@@ -544,6 +560,7 @@ class MeasureResultDataset:
                 d2_m3_naming_convention=D2M3NamingConventionDataset(**d2_m3_data),
                 d2_m4_single_multi_word=D2M4SingleMultiWordDataset(**d2_m4_data),
                 d2_m5_lexical_diversity=D2M5LexicalDiversityDataset(**d2_m5_data),
+                d2_m6_language_usage=D2M6LanguageUsageDataset(**d2_m6_data),
             )
         
         # Convert construct measures if present
@@ -681,6 +698,7 @@ class MeasureResultPerModel:
                 d2_m3_naming_convention=_to_lexical_per_model_dict("d2_m3_naming_convention", D2M3NamingConventionPerModel),
                 d2_m4_single_multi_word=_to_lexical_per_model_dict("d2_m4_single_multi_word", D2M4SingleMultiWordPerModel),
                 d2_m5_lexical_diversity=_to_lexical_per_model_dict("d2_m5_lexical_diversity", D2M5LexicalDiversityPerModel),
+                d2_m6_language_usage=_to_lexical_per_model_dict("d2_m6_language_usage", D2M6LanguageUsagePerModel),
             )
         
         # Convert construct measures if present
