@@ -125,7 +125,14 @@ def _run_parse_from_scan(profile: BenchmarkProfile, dataset_info_path: str, out:
 
     parse_config = profile.parse
     with step("Parsing models..."):
-        ir_info = parse_from_scan(dataset_info_path, str(output_dir), parse_config.parser_language)
+        ir_info = parse_from_scan(
+            dataset_info_path,
+            str(output_dir),
+            parse_config.parser_language,
+            ecore_enable_scoped_uri_mappings=getattr(
+                parse_config, "ecore_enable_scoped_uri_mappings", None
+            ),
+        )
 
     # Display results
     totals = ir_info.totals

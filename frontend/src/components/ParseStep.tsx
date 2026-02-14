@@ -337,6 +337,12 @@ export function ParseStep({ onParseComplete, profile }: ParseStepProps) {
               <ConfigCard title="Parser Configuration" open={configOpen} onOpenChange={setConfigOpen}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <ReadonlyField label="Parser Language" value={profile.parse?.parser_language} />
+                  {profile.parse?.parser_language === 'Ecore' && (
+                    <ReadonlyField
+                      label="Resolve External Ecore Refs"
+                      value={profile.parse?.ecore_enable_scoped_uri_mappings === false ? 'Disabled' : 'Enabled'}
+                    />
+                  )}
                 </div>
               </ConfigCard>
             </div>

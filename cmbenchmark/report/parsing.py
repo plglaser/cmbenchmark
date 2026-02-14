@@ -42,6 +42,54 @@ def build_parsing_report(
         d1_m2 = {}
     skip_ratios = [v.get("skip_ratio") for v in d1_m2.values() if isinstance(v, Mapping)]
     skip_ratio_histogram = create_histogram_data(skip_ratios)
+    total_models_evaluated = len(d1_m2)
+    models_with_skips = sum(
+        1
+        for data in d1_m2.values()
+        if isinstance(data, Mapping) and int(data.get("elements_skipped", 0) or 0) > 0
+    )
+    if isinstance(parse_elements_skips, Mapping):
+        models_with_skips = int(parse_elements_skips.get("n_models_with_skips", models_with_skips) or 0)
+    models_without_skips = max(0, total_models_evaluated - models_with_skips)
+    models_with_skips_share = (
+        float(parse_elements_skips.get("share_models_with_skips", 0) or 0)
+        if isinstance(parse_elements_skips, Mapping)
+        else (models_with_skips / total_models_evaluated if total_models_evaluated > 0 else 0.0)
+    )
+
+    total_elements_loaded = (
+        int(parse_elements_skips.get("total_elements_loaded", 0) or 0)
+        if isinstance(parse_elements_skips, Mapping)
+        else 0
+    )
+    total_elements_skipped = (
+        int(parse_elements_skips.get("total_elements_skipped", 0) or 0)
+        if isinstance(parse_elements_skips, Mapping)
+        else 0
+    )
+    total_elements_processed = total_elements_loaded + total_elements_skipped
+    dataset_skip_ratio = (
+        float(parse_elements_skips.get("dataset_skip_ratio", 0) or 0)
+        if isinstance(parse_elements_skips, Mapping)
+        else 0.0
+    )
+    dataset_load_ratio = max(0.0, min(1.0, 1.0 - dataset_skip_ratio))
+    skip_ratio_stats = parse_elements_skips.get("skip_ratio_stats", {}) if isinstance(parse_elements_skips, Mapping) else {}
+    if not isinstance(skip_ratio_stats, Mapping):
+        skip_ratio_stats = {}
+    parse_elements_skips_summary = {
+        "totalModelsEvaluated": total_models_evaluated,
+        "modelsWithSkips": models_with_skips,
+        "modelsWithoutSkips": models_without_skips,
+        "modelsWithSkipsShare": models_with_skips_share,
+        "totalElementsLoaded": total_elements_loaded,
+        "totalElementsSkipped": total_elements_skipped,
+        "totalElementsProcessed": total_elements_processed,
+        "datasetSkipRatio": dataset_skip_ratio,
+        "datasetLoadRatio": dataset_load_ratio,
+        "avgSkipRatio": float(skip_ratio_stats.get("mean", 0) or 0),
+        "medianSkipRatio": float(skip_ratio_stats.get("median", 0) or 0),
+    }
     skip_ratio_top10 = (
         sorted(
             [
@@ -173,6 +221,7 @@ def build_parsing_report(
     return {
         "parseStatus": parse_status,
         "parseElementsSkips": parse_elements_skips,
+        "parseElementsSkipsSummary": parse_elements_skips_summary,
         "parseWarnings": parse_warnings,
         "parsingDimensionScore": parsing_dimension_score,
         "parseStatusChartData": parse_status_chart_data,
@@ -187,4 +236,3 @@ def build_parsing_report(
         "warningsChartData": warnings_chart_data,
         "modelsWithWarnings": models_with_warnings,
     }
-

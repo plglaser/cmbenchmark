@@ -13,6 +13,8 @@ dependencies = [
     "rich>=13.0.0",
     "jinja2>=3.1.0",
     "plotly>=5.17.0",
+    "pyecore>=0.15.2",
+    "pydantic>=2.0.0",
 ]
 
 [project.scripts]
@@ -21,4 +23,3 @@ cmbenchmark = "cmbenchmark.cli:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["cmbenchmark*"]
-

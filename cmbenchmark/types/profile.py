@@ -72,6 +72,9 @@ class ScanConfig(StrictBaseModel):
 class ParseConfig(StrictBaseModel):
     """Configuration for the parse stage."""
     parser_language: str
+    # Ecore-only performance knob: when False, skip the expensive scoped URI mapping step
+    # that attempts to resolve relative external "*.ecore#..." references.
+    ecore_enable_scoped_uri_mappings: bool = True
 
 
 class MeasureConfig(StrictBaseModel):

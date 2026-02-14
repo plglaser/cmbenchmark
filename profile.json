@@ -6,7 +6,7 @@
     "dataset_path": "./data/archimate-archi-models",
     "include": ["*.archimate", "*.xml"],
     "exclude": ["**/tmp/**"],
-    "size_limit_mb": 10
+    "size_limit_mb": 100
   },
   "parse": {
     "parser_language": "ArchiMate-Archi"

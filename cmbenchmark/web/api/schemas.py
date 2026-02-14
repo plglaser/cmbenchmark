@@ -96,6 +96,20 @@ class DerivedSkipRatioTopItem(BaseModel):
     relpath: str
 
 
+class DerivedParseElementsSkipsSummary(BaseModel):
+    totalModelsEvaluated: int
+    modelsWithSkips: int
+    modelsWithoutSkips: int
+    modelsWithSkipsShare: float
+    totalElementsLoaded: int
+    totalElementsSkipped: int
+    totalElementsProcessed: int
+    datasetSkipRatio: float
+    datasetLoadRatio: float
+    avgSkipRatio: float
+    medianSkipRatio: float
+
+
 class DerivedParseTimeScatterItem(BaseModel):
     fileSize: int
     parseTime: int
@@ -346,6 +360,7 @@ class DerivedReportResponse(BaseModel):
 
     # Derived chart/table payloads
     parseStatusChartData: List[DerivedParseStatusChartItem] = Field(default_factory=list)
+    parseElementsSkipsSummary: Optional[DerivedParseElementsSkipsSummary] = None
     skipRatioHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
     skipRatioTop10: List[DerivedSkipRatioTopItem] = Field(default_factory=list)
     parseTimeHistogram: List[DerivedHistogramBin] = Field(default_factory=list)
@@ -426,4 +441,3 @@ class ErrorResponse(BaseModel):
     """Error response schema."""
     error: str
     detail: Optional[str] = None
-

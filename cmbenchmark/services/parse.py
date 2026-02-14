@@ -6,7 +6,7 @@ import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from cmbenchmark.types.dataset import DatasetInfo, IRInfo
 from cmbenchmark.types.parsing import ModelParseDiagnostics
 from cmbenchmark.types.enums import WarningType, ParseStatus
@@ -55,6 +55,7 @@ def parse_from_scan(
     dataset_info_path: str,
     output_dir: str,
     parser_language: str,
+    ecore_enable_scoped_uri_mappings: Optional[bool] = None,
 ) -> IRInfo:
     """
     Parse models from dataset_info.json and produce IR files.
@@ -100,6 +101,13 @@ def parse_from_scan(
         raise ValueError(f"Parser not found for language: {parser_language}")
 
     parser = parser_class()
+    if hasattr(parser, "set_dataset_root"):
+        parser.set_dataset_root(dataset_root)
+    if (
+        ecore_enable_scoped_uri_mappings is not None
+        and hasattr(parser, "set_enable_scoped_uri_mappings")
+    ):
+        parser.set_enable_scoped_uri_mappings(ecore_enable_scoped_uri_mappings)
     parsed_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
     # Initialize tracking structures
@@ -114,7 +122,11 @@ def parse_from_scan(
     model_diagnostics: Dict[str, ModelParseDiagnostics] = {}  # ir_id -> diagnostics
 
     # Stage 2: Process each candidate file
+    counter = 0
     for relpath in dataset_info.candidates:
+        counter += 1
+        if counter % 100 == 0:
+            print(f"Processing file {counter} of {len(dataset_info.candidates)}")
         file_path = dataset_root / relpath
         if not file_path.exists():
             continue
@@ -218,6 +230,11 @@ def parse_from_scan(
         parameters={
             "from_scan": str(dataset_info_path),
             "parser_language": parser_language,
+            **(
+                {"ecore_enable_scoped_uri_mappings": ecore_enable_scoped_uri_mappings}
+                if ecore_enable_scoped_uri_mappings is not None
+                else {}
+            ),
         },
         totals=totals,
         index=index,
@@ -230,4 +247,3 @@ def parse_from_scan(
         json.dump(ir_info.to_dict(), f, indent=2)
 
     return ir_info
-

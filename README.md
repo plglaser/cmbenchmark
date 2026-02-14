@@ -12,6 +12,15 @@ A Python-based benchmarking tool for assessing datasets of conceptual models (e.
 pip install -e .
 ```
 
+## Development
+
+Use the project virtualenv so commands are reproducible across sessions:
+
+```bash
+.venv/bin/python -m pip install -e .
+.venv/bin/python -m pytest -q
+```
+
 ## Usage
 
 ## Docker
@@ -72,4 +81,3 @@ Default output layout in `/out/`:
 ├── report.json
 └── report.html
 ```
-

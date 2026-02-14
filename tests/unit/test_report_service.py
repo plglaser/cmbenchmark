@@ -23,6 +23,14 @@ def test_build_report_data_top10_and_relpath_mapping():
     measures = {
         "parsing": {
             "d1_m1_parse_status": {"n_success": 1, "share_success": 1.0, "n_partial": 0, "share_partial": 0.0, "n_failed": 0, "share_failed": 0.0},
+            "d1_m2_elements_loaded_skipped": {
+                "total_elements_loaded": 20,
+                "total_elements_skipped": 10,
+                "dataset_skip_ratio": 10 / 30,
+                "skip_ratio_stats": {"mean": 0.5, "median": 0.5},
+                "n_models_with_skips": 2,
+                "share_models_with_skips": 1.0,
+            },
             "d1_m5_warnings": {"total_warnings_by_type": {"x": 2}},
         },
         "lexical": {
@@ -67,7 +75,11 @@ def test_build_report_data_top10_and_relpath_mapping():
     derived = build_report_data(measures, measures_per_model, ir_info)
     assert derived["skipRatioTop10"][0]["modelId"] == "m1"
     assert derived["skipRatioTop10"][0]["relpath"] == "rel/m1.json"
+    assert derived["parseElementsSkipsSummary"]["totalElementsLoaded"] == 20
+    assert derived["parseElementsSkipsSummary"]["totalElementsSkipped"] == 10
+    assert derived["parseElementsSkipsSummary"]["totalElementsProcessed"] == 30
+    assert derived["parseElementsSkipsSummary"]["modelsWithSkips"] == 2
+    assert derived["parseElementsSkipsSummary"]["totalModelsEvaluated"] == 2
     assert len(derived["skipRatioTop10"]) <= 10
     assert derived["parseStatusChartData"][0]["name"] == "Success"
     assert derived["labelMissingTop10"][0]["missingCount"] == 3
-

@@ -54,6 +54,7 @@ export interface ScanConfig {
 
 export interface ParseConfig {
   parser_language: string;
+  ecore_enable_scoped_uri_mappings?: boolean;
 }
 
 export interface MeasureConfig {

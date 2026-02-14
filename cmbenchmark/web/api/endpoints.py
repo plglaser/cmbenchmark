@@ -133,6 +133,9 @@ async def parse(request: ParseRequest):
             dataset_info_path=str(dataset_info_path),
             output_dir=profile.output_path,
             parser_language=profile.parse.parser_language,
+            ecore_enable_scoped_uri_mappings=getattr(
+                profile.parse, "ecore_enable_scoped_uri_mappings", None
+            ),
         )
         
         # Convert ModelParseDiagnostics to response schema
@@ -252,4 +255,3 @@ async def report(request: ReportRequest):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-

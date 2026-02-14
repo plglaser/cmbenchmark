@@ -3,7 +3,7 @@
   "version": "1.0",
   "output_path": "./out",
   "scan": {
-    "dataset_path": "./data/ecore-models",
+    "dataset_path": "./data/ecore-example",
     "include": ["*.ecore"],
     "exclude": [],
     "size_limit_mb": 10
@@ -19,7 +19,7 @@
     "lexical": {
       "enabled": true,
       "include_nodes": true,
-      "include_edges": true,
+      "include_edges": false,
       "label_attributes": ["name"],
       "enable_d2_m1": true,
       "enable_d2_m2": true,

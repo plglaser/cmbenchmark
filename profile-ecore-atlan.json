@@ -9,7 +9,8 @@
       "size_limit_mb": 100
     },
     "parse": {
-      "parser_language": "Ecore"
+      "parser_language": "Ecore",
+      "ecore_enable_scoped_uri_mappings": false
     },
     "measure": {
       "parse": {
@@ -18,7 +19,7 @@
       "lexical": {
         "enabled": true,
         "include_nodes": true,
-        "include_edges": false,
+        "include_edges": true,
         "label_attributes": ["name"],
         "enable_d2_m1": true,
         "enable_d2_m2": true,

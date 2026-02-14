@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
-from cmbenchmark.report.utils import _get
+from cmbenchmark.report.utils import _get, create_histogram_data, create_share_histogram_data
 from cmbenchmark.report.parsing import build_parsing_report
 from cmbenchmark.report.lexical import build_lexical_report
 from cmbenchmark.report.constructs import build_constructs_report

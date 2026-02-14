@@ -61,6 +61,7 @@ export interface ParseResponse {
   parameters: {
     from_scan: string;
     parser_language: string;
+    ecore_enable_scoped_uri_mappings?: boolean;
     output_dir?: string;
   };
   totals: {
@@ -125,6 +126,19 @@ export interface ReportResponse {
   // `useReportData()` hook output). The frontend should render this directly.
   parseStatus?: any | null;
   parseElementsSkips?: any | null;
+  parseElementsSkipsSummary?: {
+    totalModelsEvaluated: number;
+    modelsWithSkips: number;
+    modelsWithoutSkips: number;
+    modelsWithSkipsShare: number;
+    totalElementsLoaded: number;
+    totalElementsSkipped: number;
+    totalElementsProcessed: number;
+    datasetSkipRatio: number;
+    datasetLoadRatio: number;
+    avgSkipRatio: number;
+    medianSkipRatio: number;
+  } | null;
   parseWarnings?: any | null;
   parsingDimensionScore?: number | null;
   parseStatusChartData: Array<{ name: string; value: number; share: number }>;

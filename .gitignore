@@ -31,6 +31,8 @@ out_backup/
 output/
 .DS_Store
 
+out-*
+
 
 data/
 !fronted/src/data/
