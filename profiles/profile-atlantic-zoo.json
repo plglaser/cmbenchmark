@@ -19,7 +19,7 @@
       "lexical": {
         "enabled": true,
         "include_nodes": true,
-        "include_edges": true,
+        "include_edges": false,
         "label_attributes": ["name"],
         "enable_d2_m1": true,
         "enable_d2_m2": true,
