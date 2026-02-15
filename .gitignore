@@ -31,10 +31,13 @@ out_backup/
 output/
 .DS_Store
 
+data/*
+!data/.gitkeep
+
 out-*
 
 
-data/
+cmbenchmark/data/
 !fronted/src/data/
 
 # Web UI build artifacts

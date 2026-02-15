@@ -1,9 +1,9 @@
 {
-  "name": "EAModelSet_Benchmark_01",
+  "name": "EcoreModelSet_Benchmark_01",
   "version": "1.0",
-  "output_path": "./out",
+  "output_path": "../out/modelset",
   "scan": {
-    "dataset_path": "./data/ecore-models",
+    "dataset_path": "../data/modelset",
     "include": ["*.ecore"],
     "exclude": [],
     "size_limit_mb": 10

@@ -1,10 +1,10 @@
 {
   "name": "EAModelSet_Benchmark_01",
   "version": "1.0",
-  "output_path": "./out",
+  "output_path": "../out/eamodelset",
   "scan": {
-    "dataset_path": "./data/archimate-archi-models",
-    "include": ["*.archimate", "*.xml"],
+    "dataset_path": "../data/eamodelset",
+    "include": ["*.archimate"],
     "exclude": ["**/tmp/**"],
     "size_limit_mb": 100
   },

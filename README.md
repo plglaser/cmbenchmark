@@ -1,29 +1,18 @@
 # cmbenchmark
 
-A Python-based benchmarking tool for assessing datasets of conceptual models (e.g., UML, ArchiMate, BPMN, Ecore).
+A Python-based benchmarking tool for assessing datasets of conceptual models (e.g., UML, ArchiMate, Ecore).
 
-## Requirements
+The CLI is **profile-driven**: a single JSON file describes where the dataset lives, which parser to use, which measures to compute, and where outputs should be written.
 
-- Node.js
-
-## Installation
-
-```bash
-pip install -e .
-```
-
-## Development
-
-Use the project virtualenv so commands are reproducible across sessions:
-
-```bash
-.venv/bin/python -m pip install -e .
-.venv/bin/python -m pytest -q
-```
+Pipeline stages: `scan → parse → measure → report`
 
 ## Usage
 
-## Docker
+### Set Up
+
+A benchmark requires a **dataset** and a **benchmark profile** (JSON). Place the dataset in the `data/` directory (e.g., `data/eamodelset/`) and configure (or reuse) a benchmark profile (see `profiles/`). Make sure the `dataset_path` in the profile matches the path of your dataset (e.g. `../data/eamodelset/`).
+
+### Docker
 
 ```bash
 docker build -t cmbenchmark .
@@ -33,51 +22,90 @@ docker run --rm -p 8000:8000 \
   cmbenchmark
 ```
 
-You can then access the Web UI at `http://0.0.0.0:8000`. 
+You can then access the Web UI at [`localhost:8000`](localhost:8000) and upload a profile.
 
-### Web UI
+
+### Web UI (without Docker)
 
 ```bash
 cmbenchmark web
 ```
 
-You can then access the Web UI at `http://localhost:8000`. 
+Open `http://localhost:8000`.
 
-### Individual Commands
+### Pipeline commands (without Docker)
 
 ```bash
-# Scan dataset directory
-cmbenchmark scan <dataset-path>
+# All commands take a required profile JSON
+cmbenchmark scan --profile profile.json
+cmbenchmark parse --profile profile.json
+cmbenchmark measure --profile profile.json
+cmbenchmark report --profile profile.json
 
-# Parse and normalize models into IR
-cmbenchmark parse <dataset-path> [--out <outdir>]
-
-# Compute measures on IR models
-cmbenchmark measure <ir-path> [--out <outdir>]
-
-# Generate report
-cmbenchmark report <ir-path> <measure-path> [--out <outdir>]
+# Or run everything in one command
+cmbenchmark run --profile profile.json
 ```
 
-### Full Pipeline
+## Profiles
 
-```bash
-# Run full pipeline (scan → parse → measure → report)
-cmbenchmark run <dataset-path> [--out <outdir>]
+Profiles are JSON files (see `profiles/`) loaded via `--profile`.
+
+Important behavior:
+- `scan.dataset_path` and `output_path` are resolved **relative to the profile file location** (unless they are absolute paths).
+- `parse.parser_language` selects a parser. Currently available languages: `Ecore`, `ArchiMate-Archi`. `UML (XMI)` is work in progress.
+
+Minimal profile shape:
+
+```json
+{
+  "name": "MyBenchmark",
+  "version": "1.0",
+  "output_path": "../out/mybenchmark",
+  "scan": {
+    "dataset_path": "../data/my-dataset",
+    "include": ["**/*.ecore"],
+    "exclude": ["**/tmp/**"],
+    "size_limit_mb": 100
+  },
+  "parse": {
+    "parser_language": "Ecore",
+    "ecore_enable_scoped_uri_mappings": false
+  },
+  "measure": {},
+  "report": {}
+}
 ```
 
 ## Output Structure
 
-Default output layout in `/out/`:
+Output layout inside `output_path/`:
 
 ```
-/out/
+/out-or-your-output-path/
 ├── dataset_info.json
 ├── ir_info.json
 ├── ir/
 │   ├── model1.json
 │   └── ...
-├── measure.json
 ├── report.json
-└── report.html
+├── measures.json
+└── measures_per_model.json
+```
+
+## Development
+
+Use the project virtualenv so commands are reproducible across sessions:
+
+```bash
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install deps
+pip install -r requirements.txt
+pip install -e .
+
+
+# Init tests
+pytest -q tests/unit
 ```
