@@ -22,7 +22,6 @@ from cmbenchmark.parser.archimate import ArchiMateXMLParser  # noqa: F401
 from cmbenchmark.parser.ecore import EcoreParser  # noqa: F401
 
 import uvicorn
-from cmbenchmark.web.main import app as fastapi_app
 
 app = typer.Typer(help="CMBenchmark - A benchmarking tool for conceptual models")
 console = Console()
@@ -344,7 +343,9 @@ def web(
         error(f"Frontend build incomplete: index.html not found in {static_dir}")
         raise typer.Exit(1)
     
-    # Start FastAPI server
+    # Start FastAPI server (import app after build so main.py sees static_dir)
+    from cmbenchmark.web.main import app as fastapi_app
+
     info(f"Starting backend server on http://{host}:{port}")
     success("Web UI is ready!")
     console.print(f"  Open your browser at: http://{host}:{port}")
