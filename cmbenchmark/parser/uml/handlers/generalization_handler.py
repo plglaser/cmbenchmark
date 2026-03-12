@@ -3,11 +3,10 @@
 from typing import Set
 import xml.etree.ElementTree as ET
 
+from cmbenchmark.types.enums import WarningType
 from cmbenchmark.types.ir import Edge
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
-from cmbenchmark.parser.uml.xmi_utils import (
-    xmi_id
-)
+from cmbenchmark.parser.uml.xmi_utils import xmi_id
 
 
 class GeneralizationHandler(ElementHandler):
@@ -18,10 +17,10 @@ class GeneralizationHandler(ElementHandler):
         return "uml:Generalization"
 
     def get_handled_attributes(self) -> Set[str]:
-        return {"general", "specific", "name"}
+        return {"name", "general", "specific"}
 
     def get_handled_children(self) -> Set[str]:
-        return set()  # Generalizations typically don't have handled children
+        return {"general"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create Generalization edge."""
@@ -29,25 +28,37 @@ class GeneralizationHandler(ElementHandler):
         handled_children = self.get_handled_children()
 
         gen_id = xmi_id(elem)
-        if not gen_id:
-            return
 
         specific_id = elem.attrib.get("specific")
-        general_id = elem.attrib.get("general")
+        if not specific_id:
+            parent = ctx.parent_map.get(elem)
+            if parent is not None:
+                specific_id = xmi_id(parent)
+
+        general_id = self.resolve_reference(elem, "general", "general")
 
         if not specific_id or not general_id:
+            gen_label = gen_id or "<no-id>"
+            ctx.skip_with_warning(
+                WarningType.MISSING_EDGE_ENDPOINT,
+                f"uml:Generalization edge {gen_label} is missing specific/general "
+                f"(specific={specific_id}, general={general_id})",
+            )
             return
 
-        data: dict = {}
+        edge_id = gen_id or f"{specific_id}__generalization__{general_id}"
+
+        data: dict = {
+            "general": general_id,
+            "specific": specific_id,
+        }
         name = elem.attrib.get("name")
         if name:
             data["name"] = name
-        data["general"] = general_id
-        data["specific"] = specific_id
 
         ctx.add_edge(
             Edge(
-                id=gen_id,
+                id=edge_id,
                 sourceId=specific_id,
                 targetId=general_id,
                 type="Generalization",
@@ -55,7 +66,5 @@ class GeneralizationHandler(ElementHandler):
             )
         )
 
-        # Log unhandled attributes and children
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
-

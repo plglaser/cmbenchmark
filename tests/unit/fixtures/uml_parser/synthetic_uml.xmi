@@ -1,0 +1,74 @@
+<xmi:XMI
+  xmi:version="2.1"
+  xmlns:xmi="http://schema.omg.org/spec/XMI/2.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML">
+  <uml:Model xmi:id="model1" name="SyntheticModel" visibility="public">
+    <packageImport xmi:id="pi1" importingNamespace="model1">
+      <importedPackage href="http://www.omg.org/spec/UML/20131001/PrimitiveTypes.xmi#/"/>
+    </packageImport>
+
+    <packagedElement xsi:type="uml:Package" xmi:id="pkg1" name="Domain" visibility="private">
+      <packagedElement xsi:type="uml:Class" xmi:id="c1" name="Person" visibility="public" isAbstract="false">
+        <ownedAttribute xmi:id="attr1" name="age" type="d1" visibility="private" isReadOnly="true">
+          <lowerValue xsi:type="uml:LiteralInteger" xmi:id="lv1" value="0"/>
+          <upperValue xsi:type="uml:LiteralUnlimitedNatural" xmi:id="uv1" value="1"/>
+          <defaultValue xsi:type="uml:LiteralInteger" xmi:id="dv1" value="18"/>
+        </ownedAttribute>
+        <ownedOperation xmi:id="op1" name="getAge" visibility="public" isStatic="false">
+          <ownedParameter xmi:id="p1" name="result" direction="return" isUnique="true" type="d1"/>
+        </ownedOperation>
+      </packagedElement>
+
+      <packagedElement xsi:type="uml:Class" xmi:id="c2" name="Employee" visibility="public" isAbstract="false">
+        <generalization xmi:id="gen1" specific="c2" general="c1"/>
+        <interfaceRealization
+          xmi:id="ir1"
+          client="c2"
+          implementingClassifier="c2"
+          supplier="i1"
+          contract="i1"/>
+      </packagedElement>
+
+      <packagedElement xsi:type="uml:Interface" xmi:id="i1" name="Named" isAbstract="true">
+        <ownedOperation xmi:id="iop1" name="getName" visibility="public"/>
+      </packagedElement>
+
+      <packagedElement xsi:type="uml:Enumeration" xmi:id="e1" name="Status">
+        <ownedLiteral xmi:id="el1" name="ACTIVE"/>
+        <ownedLiteral xmi:id="el2" name="INACTIVE"/>
+      </packagedElement>
+
+      <packagedElement xsi:type="uml:DataType" xmi:id="d1" name="AgeType" visibility="public" isAbstract="false"/>
+
+      <packagedElement xsi:type="uml:UseCase" xmi:id="uc1" name="ManageAccount" visibility="public">
+        <extensionPoint xmi:id="ep1" name="PaymentPoint" useCase="uc1" visibility="private" isLeaf="false"/>
+        <include xmi:id="inc1" includingCase="uc1" addition="uc2"/>
+      </packagedElement>
+      <packagedElement xsi:type="uml:UseCase" xmi:id="uc2" name="ValidateAccount"/>
+      <packagedElement xsi:type="uml:UseCase" xmi:id="uc3" name="PayFine">
+        <extend xmi:id="ext1" extension="uc3" extendedCase="uc1" extensionLocation="ep1"/>
+      </packagedElement>
+    </packagedElement>
+
+    <packagedElement xsi:type="uml:Actor" xmi:id="a1" name="User" visibility="public" isAbstract="false"/>
+
+    <packagedElement xsi:type="uml:Association" xmi:id="assoc1" name="Person_Employee" memberEnd="ae1 ae2" navigableOwnedEnd="ae1 ae2">
+      <ownedEnd xmi:id="ae1" name="person" type="c1" aggregation="composite" visibility="public">
+        <lowerValue xsi:type="uml:LiteralInteger" xmi:id="al1" value="1"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" xmi:id="au1" value="1"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="ae2" name="employee" type="c2">
+        <lowerValue xsi:type="uml:LiteralInteger" xmi:id="al2" value="0"/>
+        <upperValue xsi:type="uml:LiteralUnlimitedNatural" xmi:id="au2" value="*"/>
+      </ownedEnd>
+    </packagedElement>
+
+    <packagedElement xsi:type="uml:Dependency" xmi:id="dep1" client="c1" supplier="i1"/>
+    <packagedElement xsi:type="uml:Usage" xmi:id="use1" client="c2" supplier="d1"/>
+
+    <packagedElement xsi:type="uml:Component" xmi:id="comp1" name="AlarmSystem" visibility="public" isLeaf="false">
+      <ownedUseCase xmi:id="uc_comp" name="SoundAlarm"/>
+    </packagedElement>
+  </uml:Model>
+</xmi:XMI>

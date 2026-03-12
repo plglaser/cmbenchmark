@@ -3,11 +3,7 @@
 from typing import Any, Dict, Set
 import xml.etree.ElementTree as ET
 
-from cmbenchmark.types.ir import Node
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
-from cmbenchmark.parser.uml.xmi_utils import (
-    xmi_id
-)
 
 
 class ActorHandler(ElementHandler):
@@ -18,26 +14,37 @@ class ActorHandler(ElementHandler):
         return "uml:Actor"
 
     def get_handled_attributes(self) -> Set[str]:
-        return {"name"}
+        return {"name", "visibility", "isAbstract", "isLeaf", "href"}
 
     def get_handled_children(self) -> Set[str]:
-        return set()
+        return {"ownedComment"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create Actor node."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
 
-        actor_id = xmi_id(elem)
+        actor_id = self.require_xmi_id(ctx, elem, role="Node")
         if not actor_id:
             return
 
-        name = elem.attrib.get("name", "")
-        data: Dict[str, Any] = {}
+        name = self.read_name(elem)
+        data: Dict[str, Any] = self.collect_attributes(
+            elem,
+            scalar_attrs=("visibility", "href"),
+            boolean_attrs=("isAbstract", "isLeaf"),
+        )
+        doc = self.extract_documentation(elem)
+        if doc:
+            data["documentation"] = doc
 
-        ctx.add_node(Node(id=actor_id, type="Actor", name=name, data=data))
+        self.upsert_node(
+            ctx,
+            node_id=actor_id,
+            node_type="Actor",
+            name=name,
+            data=data,
+        )
 
-        # Log unhandled attributes and children
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
-

@@ -1,23 +1,21 @@
-"""Handler for uml:Class elements."""
+"""Handler for uml:AssociationClass elements."""
+
+from __future__ import annotations
 
 from typing import Any, Dict, List, Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
-from cmbenchmark.parser.uml.xmi_utils import (
-    xsi_type,
-    is_tool_extension,
-    read_multiplicity,
-)
+from cmbenchmark.parser.uml.xmi_utils import xsi_type, is_tool_extension, read_multiplicity
 
 
-class ClassHandler(ElementHandler):
-    """Handler for uml:Class elements."""
+class AssociationClassHandler(ElementHandler):
+    """Map AssociationClass concepts to IR nodes with class-like payload."""
 
     @property
     def element_type(self) -> str:
-        return "uml:Class"
+        return "uml:AssociationClass"
 
     def get_handled_attributes(self) -> Set[str]:
         return {
@@ -25,29 +23,26 @@ class ClassHandler(ElementHandler):
             "visibility",
             "isAbstract",
             "isLeaf",
-            "href",
-            "templateParameter",
-            "owningTemplateParameter",
+            "memberEnd",
+            "navigableOwnedEnd",
         }
 
     def get_handled_children(self) -> Set[str]:
-        return {"ownedAttribute", "ownedOperation", "ownedComment"}
+        return {"ownedAttribute", "ownedOperation", "ownedComment", "ownedEnd"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
-        """Create Class node with attributes and operations."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
 
-        class_id = self.require_xmi_id(ctx, elem, role="Node")
-        if not class_id:
+        assoc_class_id = self.require_xmi_id(ctx, elem, role="Node")
+        if not assoc_class_id:
             return
 
-        name = self.read_name(elem)
         data: Dict[str, Any] = self.collect_attributes(
             elem,
-            scalar_attrs=("visibility", "href", "owningTemplateParameter"),
+            scalar_attrs=("visibility",),
             boolean_attrs=("isAbstract", "isLeaf"),
-            list_attrs=("templateParameter",),
+            list_attrs=("memberEnd", "navigableOwnedEnd"),
         )
 
         doc = self.extract_documentation(elem)
@@ -64,32 +59,30 @@ class ClassHandler(ElementHandler):
 
         self.upsert_node(
             ctx,
-            node_id=class_id,
-            node_type="Class",
-            name=name,
+            node_id=assoc_class_id,
+            node_type="AssociationClass",
+            name=self.read_name(elem),
             data=data,
         )
 
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
 
-    def _parse_owned_attributes(self, ctx, class_elem: ET.Element) -> List[Dict[str, Any]]:
-        """Parse ownedAttribute elements (excluding association ends)."""
+    def _parse_owned_attributes(self, ctx, owner_elem: ET.Element) -> List[Dict[str, Any]]:
+        """Parse class-owned attributes and skip association-end style attributes."""
         out: List[Dict[str, Any]] = []
-        for attr in class_elem.findall("./ownedAttribute"):
+        for attr in owner_elem.findall("./ownedAttribute"):
             if is_tool_extension(attr):
                 continue
 
-            # Class-owned association ends are represented by association references.
             if "association" in attr.attrib or "owningAssociation" in attr.attrib:
                 continue
 
-            attr_id = self.require_xmi_id(ctx, attr, role="Class ownedAttribute")
+            attr_id = self.require_xmi_id(ctx, attr, role="AssociationClass ownedAttribute")
             if not attr_id:
                 continue
 
             item: Dict[str, Any] = {"id": attr_id}
-
             attr_name = self.read_name(attr)
             if attr_name:
                 item["name"] = attr_name

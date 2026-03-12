@@ -14,6 +14,7 @@ _LANGUAGE_TO_PROFILE = {
     "ArchiMate-Archi": "archimate_constructs.json",
     "ArchiMate-XML": "archimate_constructs.json",
     "Ecore": "ecore_constructs.json",
+    "UML": "uml_constructs.json",
 }
 
 

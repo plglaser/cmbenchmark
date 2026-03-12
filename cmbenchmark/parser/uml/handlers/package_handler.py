@@ -1,11 +1,9 @@
 """Handler for uml:Package elements."""
 
-from typing import Optional, Set
+from typing import Set
 import xml.etree.ElementTree as ET
 
-from cmbenchmark.types.ir import Node, Edge
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
-from cmbenchmark.parser.uml.xmi_utils import xmi_id
 
 
 class PackageHandler(ElementHandler):
@@ -16,36 +14,32 @@ class PackageHandler(ElementHandler):
         return "uml:Package"
 
     def get_handled_attributes(self) -> Set[str]:
-        return {"name"}
+        return {"name", "visibility"}
 
     def get_handled_children(self) -> Set[str]:
-        return {"packagedElement", "ownedComment"}
+        return {"ownedComment"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
-        """Create Package node and containment edges."""
+        """Create Package node."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
 
-        pkg_id = xmi_id(elem)
+        pkg_id = self.require_xmi_id(ctx, elem, role="Node")
         if not pkg_id:
             return
 
-        pkg_name = elem.attrib.get("name", "")
+        pkg_name = self.read_name(elem)
+        data = self.collect_attributes(elem, scalar_attrs=("visibility",))
+        doc = self.extract_documentation(elem)
+        if doc:
+            data["documentation"] = doc
+        self.upsert_node(
+            ctx,
+            node_id=pkg_id,
+            node_type="Package",
+            name=pkg_name,
+            data=data,
+        )
 
-        # Create package node if not already exists
-        if pkg_id not in ctx.nodes_by_id:
-            data = {}
-
-            # Extract documentation
-            doc = self.extract_documentation(elem)
-            if doc:
-                data["documentation"] = doc
-
-            ctx.add_node(Node(id=pkg_id, type="Package", name=pkg_name, data=data))
-
-        # Create containment edge from parent package (handled in parser's _create_containment_edges)
-
-        # Log unhandled attributes and children
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
-

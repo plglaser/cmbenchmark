@@ -40,6 +40,9 @@ out-*
 cmbenchmark/data/
 !fronted/src/data/
 
+figures/*
+scripts/
+
 # Web UI build artifacts
 cmbenchmark/web/static/*
 !cmbenchmark/web/static/.gitkeep

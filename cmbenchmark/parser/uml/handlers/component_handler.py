@@ -1,4 +1,4 @@
-"""Handler for uml:DataType elements."""
+"""Handler for uml:Component elements."""
 
 from typing import Any, Dict, Set
 import xml.etree.ElementTree as ET
@@ -6,33 +6,32 @@ import xml.etree.ElementTree as ET
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
 
 
-class DataTypeHandler(ElementHandler):
-    """Handler for uml:DataType elements."""
+class ComponentHandler(ElementHandler):
+    """Handler for uml:Component elements."""
 
     @property
     def element_type(self) -> str:
-        return "uml:DataType"
+        return "uml:Component"
 
     def get_handled_attributes(self) -> Set[str]:
-        return {"name", "visibility", "isAbstract", "href"}
+        return {"name", "visibility", "isAbstract", "isLeaf"}
 
     def get_handled_children(self) -> Set[str]:
         return {"ownedComment"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
-        """Create DataType node."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
 
-        data_type_id = self.require_xmi_id(ctx, elem, role="Node")
-        if not data_type_id:
+        component_id = self.require_xmi_id(ctx, elem, role="Node")
+        if not component_id:
             return
 
         name = self.read_name(elem)
         data: Dict[str, Any] = self.collect_attributes(
             elem,
-            scalar_attrs=("visibility", "href"),
-            boolean_attrs=("isAbstract",),
+            scalar_attrs=("visibility",),
+            boolean_attrs=("isAbstract", "isLeaf"),
         )
 
         doc = self.extract_documentation(elem)
@@ -41,8 +40,8 @@ class DataTypeHandler(ElementHandler):
 
         self.upsert_node(
             ctx,
-            node_id=data_type_id,
-            node_type="DataType",
+            node_id=component_id,
+            node_type="Component",
             name=name,
             data=data,
         )

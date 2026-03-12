@@ -4,23 +4,26 @@ from typing import Any, Dict, List, Optional, Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.ir import Edge
+from cmbenchmark.types.enums import WarningType
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
 from cmbenchmark.parser.uml.xmi_utils import (
     xmi_id,
+    xsi_type,
     is_tool_extension,
     read_multiplicity,
 )
 
 
 class AssociationHandler(ElementHandler):
-    """Handler for uml:Association elements.
-    
-    This handler can be extended for other association types (e.g., from UseCase diagrams).
-    """
+    """Handler for uml:Association elements."""
+
+    def __init__(self, element_type: str = "uml:Association", edge_type: str = "Association"):
+        self._element_type = element_type
+        self._edge_type = edge_type
 
     @property
     def element_type(self) -> str:
-        return "uml:Association"
+        return self._element_type
 
     def get_handled_attributes(self) -> Set[str]:
         return {"name", "memberEnd", "navigableOwnedEnd"}
@@ -29,84 +32,93 @@ class AssociationHandler(ElementHandler):
         return {"ownedEnd"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
-        """Create Association edge from ownedEnd elements."""
+        """Create Association edge from owned/member ends."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
 
-        assoc_id = xmi_id(elem)
+        assoc_id = self.require_xmi_id(ctx, elem, role="Edge")
         if not assoc_id:
             return
 
-        # Parse association ends
-        ends = []
+        owned_ends: Dict[str, Dict[str, Any]] = {}
         for end in elem.findall("./ownedEnd"):
             if is_tool_extension(end):
                 continue
-            end_data = self._parse_association_end(ctx, end, elem)
+            end_data = self._parse_association_end(ctx, end)
             if end_data:
-                ends.append(end_data)
+                owned_ends[end_data["id"]] = end_data
+
+        ends: List[Dict[str, Any]] = []
+        member_end_ids = self.split_ref_list(elem.attrib.get("memberEnd"))
+        if member_end_ids:
+            for end_id in member_end_ids:
+                parsed = owned_ends.get(end_id)
+                if not parsed:
+                    ref_elem = ctx.elem(end_id)
+                    if ref_elem is not None:
+                        parsed = self._parse_association_end(ctx, ref_elem, fallback_id=end_id)
+                if parsed:
+                    ends.append(parsed)
+        else:
+            ends = list(owned_ends.values())
 
         if len(ends) < 2:
-            # Print incomplete association
-            print(f"[UNHANDLED ELEMENT] Association {assoc_id} has fewer than 2 ends")
+            message = (
+                f"Association {assoc_id} has fewer than 2 resolved ends "
+                f"(resolved={len(ends)}, memberEnd={len(member_end_ids)}, ownedEnd={len(owned_ends)})"
+            )
+            ctx.skip_with_warning(WarningType.MISSING_EDGE_ENDPOINT, message)
             return
 
         end1, end2 = ends[0], ends[1]
 
-        # Determine source and target (use first end as source, second as target)
-        # This can be overridden in subclasses for different association types
         source_id = end1["typeId"]
         target_id = end2["typeId"]
 
-        # Build edge data
         data: Dict[str, Any] = {
-            "end1": {
-                "id": end1["id"],
-                "name": end1.get("name"),
-                "lower": end1.get("lower"),
-                "upper": end1.get("upper"),
-            },
-            "end2": {
-                "id": end2["id"],
-                "name": end2.get("name"),
-                "lower": end2.get("lower"),
-                "upper": end2.get("upper"),
-            },
+            "end1": self._clean_end_data(end1),
+            "end2": self._clean_end_data(end2),
         }
 
-        # Remove None values
-        for end_key in ["end1", "end2"]:
-            data[end_key] = {k: v for k, v in data[end_key].items() if v is not None}
-
-        assoc_name = elem.attrib.get("name")
+        assoc_name = self.read_name(elem)
         if assoc_name:
             data["name"] = assoc_name
 
-        # Create edge
         ctx.add_edge(
             Edge(
                 id=assoc_id,
                 sourceId=source_id,
                 targetId=target_id,
-                type="Association",
+                type=self._edge_type,
                 data=data,
             )
         )
 
-        # Log unhandled attributes and children
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
 
     def _parse_association_end(
-        self, ctx, end: ET.Element, assoc: ET.Element
+        self, ctx, end: ET.Element, fallback_id: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
         """Parse an association end and return its data."""
-        end_id = xmi_id(end)
+        end_id = xmi_id(end) or fallback_id
         if not end_id:
+            end_type = xsi_type(end) or "ownedEnd"
+            ctx.warn(
+                WarningType.MISSING_ATTRIBUTE,
+                f"Association end {end_type} is missing xmi:id and fallback id.",
+            )
             return None
 
         type_id = end.attrib.get("type")
         if not type_id:
+            type_id = self.resolve_property_type(ctx, end)
+        if not type_id:
+            end_type = xsi_type(end) or "ownedEnd"
+            ctx.warn(
+                WarningType.INVALID_TYPE_REFERENCE,
+                f"Association end {end_id} ({end_type}) has no resolvable type reference.",
+            )
             return None
 
         end_data: Dict[str, Any] = {
@@ -114,19 +126,32 @@ class AssociationHandler(ElementHandler):
             "typeId": type_id,
         }
 
-        # Name
-        name = end.attrib.get("name")
+        name = self.read_name(end)
         if name:
             end_data["name"] = name
 
-        # Multiplicity
         mult = read_multiplicity(end)
         end_data.update(mult)
 
-        # Aggregation
+        end_data.update(self.collect_attributes(end, scalar_attrs=("visibility",)))
+
         aggregation = end.attrib.get("aggregation")
         if aggregation and aggregation != "none":
             end_data["aggregation"] = aggregation
 
+        end_data.update(
+            self.collect_attributes(
+                end,
+                boolean_attrs=("isUnique", "isOrdered", "isReadOnly", "isDerived", "isStatic", "isID", "isLeaf"),
+            )
+        )
+
         return end_data
 
+    def _clean_end_data(self, end_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Drop internal parsing fields from end data payload."""
+        return {
+            key: value
+            for key, value in end_data.items()
+            if key not in {"typeId"} and value is not None
+        }

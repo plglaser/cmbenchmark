@@ -1,6 +1,6 @@
 """Handler for uml:Model elements."""
 
-from typing import Any, Dict, Set
+from typing import Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
@@ -22,7 +22,7 @@ class ModelHandler(ElementHandler):
         return {"name", "visibility"}
 
     def get_handled_children(self) -> Set[str]:
-        return {"packageImport", "ownedComment", "packagedElement"}
+        return {"packageImport"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Extract model metadata and store in IR data."""
@@ -30,45 +30,37 @@ class ModelHandler(ElementHandler):
         handled_children = self.get_handled_children()
 
         model_id = xmi_id(elem) or "model"
-        model_name = elem.attrib.get("name", "")
+        model_name = self.read_name(elem)
 
-        # Extract XMI version and UML namespace from root
         root = ctx.root
         xmi_version = root.attrib.get(f"{{{XMI_NS}}}version")
-        
-        # Extract UML namespace from xmlns:uml attribute
-        uml_ns = None
-        for ns, uri in root.attrib.items():
-            if ns.startswith("xmlns:uml"):
-                uml_ns = uri
-                break
 
-        # Collect package imports
         imports = []
         for pi in elem.findall("./packageImport"):
             if is_tool_extension(pi):
                 continue
-            imported = pi.find("./importedPackage")
-            if imported is not None and "href" in imported.attrib:
-                imports.append(imported.attrib["href"])
 
-        # Update IR data
-        ctx.ir.data.update({
-            "modelId": model_id,
-            "name": model_name,
-        })
-        
-        # Visibility
-        if "visibility" in elem.attrib:
-            ctx.ir.data["visibility"] = elem.attrib["visibility"]
+            imported = pi.attrib.get("importedPackage")
+            if imported:
+                imports.append(imported)
+                continue
+
+            imported_elem = pi.find("./importedPackage")
+            if imported_elem is not None and "href" in imported_elem.attrib:
+                imports.append(imported_elem.attrib["href"])
+
+        ctx.ir.data.update(
+            {
+                "modelId": model_id,
+                "name": model_name,
+            }
+        )
+
+        ctx.ir.data.update(self.collect_attributes(elem, scalar_attrs=("visibility",)))
         if xmi_version:
             ctx.ir.data["xmi_version"] = xmi_version
-        if uml_ns:
-            ctx.ir.data["uml_namespace"] = uml_ns
         if imports:
             ctx.ir.data["imports"] = imports
 
-        # Log unhandled attributes and children
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
-

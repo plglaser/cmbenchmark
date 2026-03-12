@@ -10,6 +10,7 @@ XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"
 UML_NS = "http://www.eclipse.org/uml2/5.0.0/UML"
 
 XMI_ID = f"{{{XMI_NS}}}id"
+XMI_TYPE = f"{{{XMI_NS}}}type"
 XSI_TYPE = f"{{{XSI_NS}}}type"
 
 
@@ -24,8 +25,8 @@ def xmi_id(elem: ET.Element) -> Optional[str]:
 
 
 def xsi_type(elem: ET.Element) -> Optional[str]:
-    """Extract xsi:type attribute from element (e.g., 'uml:Class', 'uml:Association')."""
-    return elem.attrib.get(XSI_TYPE)
+    """Extract type attribute from element (prefer xsi:type, fallback to xmi:type)."""
+    return elem.attrib.get(XSI_TYPE) or elem.attrib.get(XMI_TYPE)
 
 
 def is_tool_extension(elem: ET.Element) -> bool:
@@ -95,4 +96,3 @@ def parse_boolean(value: Optional[str]) -> Optional[bool]:
     if not value:
         return None
     return value.lower() in ("true", "1", "yes")
-

@@ -1,0 +1,595 @@
+{
+  "language": "UML",
+  "constructs": [
+    {
+      "id": "uml:Activity",
+      "kind": "node_type",
+      "match_type": "Activity",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'Activity'."
+    },
+    {
+      "id": "uml:ActivityFinalNode",
+      "kind": "node_type",
+      "match_type": "ActivityFinalNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'ActivityFinalNode'."
+    },
+    {
+      "id": "uml:ActivityPartition",
+      "kind": "node_type",
+      "match_type": "ActivityPartition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'ActivityPartition'."
+    },
+    {
+      "id": "uml:Actor",
+      "kind": "node_type",
+      "match_type": "Actor",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'Actor'."
+    },
+    {
+      "id": "uml:Artifact",
+      "kind": "node_type",
+      "match_type": "Artifact",
+      "match_data_equals": {},
+      "meta": {
+        "group": "deployment"
+      },
+      "description": "UML metamodel element 'Artifact'."
+    },
+    {
+      "id": "uml:AssociationClass",
+      "kind": "node_type",
+      "match_type": "AssociationClass",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'AssociationClass'."
+    },
+    {
+      "id": "uml:BehaviorExecutionSpecification",
+      "kind": "node_type",
+      "match_type": "BehaviorExecutionSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel element 'BehaviorExecutionSpecification'."
+    },
+    {
+      "id": "uml:Class",
+      "kind": "node_type",
+      "match_type": "Class",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'Class'."
+    },
+    {
+      "id": "uml:Collaboration",
+      "kind": "node_type",
+      "match_type": "Collaboration",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel element 'Collaboration'."
+    },
+    {
+      "id": "uml:CombinedFragment",
+      "kind": "node_type",
+      "match_type": "CombinedFragment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel element 'CombinedFragment'."
+    },
+    {
+      "id": "uml:Component",
+      "kind": "node_type",
+      "match_type": "Component",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'Component'."
+    },
+    {
+      "id": "uml:DataType",
+      "kind": "node_type",
+      "match_type": "DataType",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'DataType'."
+    },
+    {
+      "id": "uml:DecisionNode",
+      "kind": "node_type",
+      "match_type": "DecisionNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'DecisionNode'."
+    },
+    {
+      "id": "uml:Device",
+      "kind": "node_type",
+      "match_type": "Device",
+      "match_data_equals": {},
+      "meta": {
+        "group": "deployment"
+      },
+      "description": "UML metamodel element 'Device'."
+    },
+    {
+      "id": "uml:Enumeration",
+      "kind": "node_type",
+      "match_type": "Enumeration",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'Enumeration'."
+    },
+    {
+      "id": "uml:EnumerationLiteral",
+      "kind": "node_type",
+      "match_type": "EnumerationLiteral",
+      "match_data_equals": {},
+      "meta": {
+        "group": "value"
+      },
+      "description": "UML metamodel element 'EnumerationLiteral'."
+    },
+    {
+      "id": "uml:ExecutionEnvironment",
+      "kind": "node_type",
+      "match_type": "ExecutionEnvironment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "deployment"
+      },
+      "description": "UML metamodel element 'ExecutionEnvironment'."
+    },
+    {
+      "id": "uml:ExecutionOccurrenceSpecification",
+      "kind": "node_type",
+      "match_type": "ExecutionOccurrenceSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel element 'ExecutionOccurrenceSpecification'."
+    },
+    {
+      "id": "uml:Expression",
+      "kind": "node_type",
+      "match_type": "Expression",
+      "match_data_equals": {},
+      "meta": {
+        "group": "value"
+      },
+      "description": "UML metamodel element 'Expression'."
+    },
+    {
+      "id": "uml:FlowFinalNode",
+      "kind": "node_type",
+      "match_type": "FlowFinalNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'FlowFinalNode'."
+    },
+    {
+      "id": "uml:ForkNode",
+      "kind": "node_type",
+      "match_type": "ForkNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'ForkNode'."
+    },
+    {
+      "id": "uml:InitialNode",
+      "kind": "node_type",
+      "match_type": "InitialNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'InitialNode'."
+    },
+    {
+      "id": "uml:InstanceSpecification",
+      "kind": "node_type",
+      "match_type": "InstanceSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "instance"
+      },
+      "description": "UML metamodel element 'InstanceSpecification'."
+    },
+    {
+      "id": "uml:InstanceValue",
+      "kind": "node_type",
+      "match_type": "InstanceValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "value"
+      },
+      "description": "UML metamodel element 'InstanceValue'."
+    },
+    {
+      "id": "uml:Interaction",
+      "kind": "node_type",
+      "match_type": "Interaction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel element 'Interaction'."
+    },
+    {
+      "id": "uml:InteractionOperand",
+      "kind": "node_type",
+      "match_type": "InteractionOperand",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel element 'InteractionOperand'."
+    },
+    {
+      "id": "uml:Interface",
+      "kind": "node_type",
+      "match_type": "Interface",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'Interface'."
+    },
+    {
+      "id": "uml:JoinNode",
+      "kind": "node_type",
+      "match_type": "JoinNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'JoinNode'."
+    },
+    {
+      "id": "uml:Lifeline",
+      "kind": "node_type",
+      "match_type": "Lifeline",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel element 'Lifeline'."
+    },
+    {
+      "id": "uml:LiteralBoolean",
+      "kind": "node_type",
+      "match_type": "LiteralBoolean",
+      "match_data_equals": {},
+      "meta": {
+        "group": "value"
+      },
+      "description": "UML metamodel element 'LiteralBoolean'."
+    },
+    {
+      "id": "uml:LiteralInteger",
+      "kind": "node_type",
+      "match_type": "LiteralInteger",
+      "match_data_equals": {},
+      "meta": {
+        "group": "value"
+      },
+      "description": "UML metamodel element 'LiteralInteger'."
+    },
+    {
+      "id": "uml:LiteralReal",
+      "kind": "node_type",
+      "match_type": "LiteralReal",
+      "match_data_equals": {},
+      "meta": {
+        "group": "value"
+      },
+      "description": "UML metamodel element 'LiteralReal'."
+    },
+    {
+      "id": "uml:LiteralString",
+      "kind": "node_type",
+      "match_type": "LiteralString",
+      "match_data_equals": {},
+      "meta": {
+        "group": "value"
+      },
+      "description": "UML metamodel element 'LiteralString'."
+    },
+    {
+      "id": "uml:LiteralUnlimitedNatural",
+      "kind": "node_type",
+      "match_type": "LiteralUnlimitedNatural",
+      "match_data_equals": {},
+      "meta": {
+        "group": "value"
+      },
+      "description": "UML metamodel element 'LiteralUnlimitedNatural'."
+    },
+    {
+      "id": "uml:MergeNode",
+      "kind": "node_type",
+      "match_type": "MergeNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'MergeNode'."
+    },
+    {
+      "id": "uml:MessageOccurrenceSpecification",
+      "kind": "node_type",
+      "match_type": "MessageOccurrenceSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel element 'MessageOccurrenceSpecification'."
+    },
+    {
+      "id": "uml:Node",
+      "kind": "node_type",
+      "match_type": "Node",
+      "match_data_equals": {},
+      "meta": {
+        "group": "deployment"
+      },
+      "description": "UML metamodel element 'Node'."
+    },
+    {
+      "id": "uml:OpaqueAction",
+      "kind": "node_type",
+      "match_type": "OpaqueAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'OpaqueAction'."
+    },
+    {
+      "id": "uml:Package",
+      "kind": "node_type",
+      "match_type": "Package",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'Package'."
+    },
+    {
+      "id": "uml:PrimitiveType",
+      "kind": "node_type",
+      "match_type": "PrimitiveType",
+      "match_data_equals": {},
+      "meta": {
+        "group": "value"
+      },
+      "description": "UML metamodel element 'PrimitiveType'."
+    },
+    {
+      "id": "uml:Pseudostate",
+      "kind": "node_type",
+      "match_type": "Pseudostate",
+      "match_data_equals": {},
+      "meta": {
+        "group": "state"
+      },
+      "description": "UML metamodel element 'Pseudostate'."
+    },
+    {
+      "id": "uml:Region",
+      "kind": "node_type",
+      "match_type": "Region",
+      "match_data_equals": {},
+      "meta": {
+        "group": "state"
+      },
+      "description": "UML metamodel element 'Region'."
+    },
+    {
+      "id": "uml:State",
+      "kind": "node_type",
+      "match_type": "State",
+      "match_data_equals": {},
+      "meta": {
+        "group": "state"
+      },
+      "description": "UML metamodel element 'State'."
+    },
+    {
+      "id": "uml:StateMachine",
+      "kind": "node_type",
+      "match_type": "StateMachine",
+      "match_data_equals": {},
+      "meta": {
+        "group": "state"
+      },
+      "description": "UML metamodel element 'StateMachine'."
+    },
+    {
+      "id": "uml:UseCase",
+      "kind": "node_type",
+      "match_type": "UseCase",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'UseCase'."
+    },
+    {
+      "id": "uml:Association",
+      "kind": "edge_type",
+      "match_type": "Association",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'Association'."
+    },
+    {
+      "id": "uml:CommunicationPath",
+      "kind": "edge_type",
+      "match_type": "CommunicationPath",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'CommunicationPath'."
+    },
+    {
+      "id": "uml:ControlFlow",
+      "kind": "edge_type",
+      "match_type": "ControlFlow",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'ControlFlow'."
+    },
+    {
+      "id": "uml:Dependency",
+      "kind": "edge_type",
+      "match_type": "Dependency",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'Dependency'."
+    },
+    {
+      "id": "uml:Extend",
+      "kind": "edge_type",
+      "match_type": "extends",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'extends'."
+    },
+    {
+      "id": "uml:Generalization",
+      "kind": "edge_type",
+      "match_type": "Generalization",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'Generalization'."
+    },
+    {
+      "id": "uml:Include",
+      "kind": "edge_type",
+      "match_type": "includes",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'includes'."
+    },
+    {
+      "id": "uml:InformationFlow",
+      "kind": "edge_type",
+      "match_type": "InformationFlow",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'InformationFlow'."
+    },
+    {
+      "id": "uml:InterfaceRealization",
+      "kind": "edge_type",
+      "match_type": "InterfaceRealization",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'InterfaceRealization'."
+    },
+    {
+      "id": "uml:Message",
+      "kind": "edge_type",
+      "match_type": "Message",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'Message'."
+    },
+    {
+      "id": "uml:ObjectFlow",
+      "kind": "edge_type",
+      "match_type": "ObjectFlow",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'ObjectFlow'."
+    },
+    {
+      "id": "uml:Transition",
+      "kind": "edge_type",
+      "match_type": "Transition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'Transition'."
+    },
+    {
+      "id": "uml:Usage",
+      "kind": "edge_type",
+      "match_type": "Usage",
+      "match_data_equals": {},
+      "meta": {
+        "group": "relation"
+      },
+      "description": "UML relationship 'Usage'."
+    },
+    {
+      "id": "uml:Contains",
+      "kind": "edge_type",
+      "match_type": "contains",
+      "match_data_equals": {},
+      "meta": {
+        "group": "containment"
+      },
+      "description": "Synthetic containment edge between UML containers and elements."
+    }
+  ]
+}
