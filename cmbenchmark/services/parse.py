@@ -68,7 +68,8 @@ def parse_from_scan(
     Args:
         dataset_info_path: Path to dataset_info.json from scan stage
         output_dir: Path to output directory
-        parser_language: Language name of the parser to use (e.g., "UML", "BPMN", "ArchiMate")
+        parser_language: Language name of the parser to use
+            (e.g., "UML", "UML-custom1", "BPMN", "ArchiMate")
 
     Returns:
         IRInfo object

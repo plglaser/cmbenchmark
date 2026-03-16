@@ -1,6 +1,5 @@
 """Handler for uml:Package elements."""
 
-from typing import Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
@@ -12,12 +11,6 @@ class PackageHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:Package"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "visibility"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"ownedComment"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create Package node."""

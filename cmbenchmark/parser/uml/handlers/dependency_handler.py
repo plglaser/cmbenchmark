@@ -1,6 +1,6 @@
 """Handlers for uml:Dependency-like elements."""
 
-from typing import List, Set
+from typing import List
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
@@ -18,12 +18,6 @@ class DependencyHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return self._element_type
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "client", "supplier"}
-
-    def get_handled_children(self) -> Set[str]:
-        return set()
 
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()

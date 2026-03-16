@@ -17,7 +17,12 @@ from cmbenchmark.parser.uml.xmi_utils import (
     find_model,
     localname,
 )
-from cmbenchmark.parser.uml.metamodel import TAG_TO_CONCEPT, CONTAINMENT_CHILD_TAGS
+from cmbenchmark.parser.uml.metamodel import (
+    TAG_TO_CONCEPT,
+    CONTAINMENT_CHILD_TAGS,
+    SUPPORTED_UML_CONCEPTS,
+    UMLHandlerSpec,
+)
 from cmbenchmark.parser.uml.handlers import (
     ElementHandler,
     ModelHandler,
@@ -42,6 +47,26 @@ from cmbenchmark.parser.uml.handlers import (
 )
 
 IGNORED_UNHANDLED_ELEMENTS: set[str] = set()
+
+CUSTOM_HANDLER_REGISTRY = {
+    "ModelHandler": ModelHandler,
+    "PackageHandler": PackageHandler,
+    "ClassHandler": ClassHandler,
+    "InterfaceHandler": InterfaceHandler,
+    "EnumerationHandler": EnumerationHandler,
+    "DataTypeHandler": DataTypeHandler,
+    "ComponentHandler": ComponentHandler,
+    "UseCaseHandler": UseCaseHandler,
+    "ActorHandler": ActorHandler,
+    "AssociationClassHandler": AssociationClassHandler,
+    "AssociationHandler": AssociationHandler,
+    "GeneralizationHandler": GeneralizationHandler,
+    "InterfaceRealizationHandler": InterfaceRealizationHandler,
+    "DependencyHandler": DependencyHandler,
+    "IncludeHandler": IncludeHandler,
+    "ExtendHandler": ExtendHandler,
+    "InformationFlowHandler": InformationFlowHandler,
+}
 
 
 @dataclass(frozen=True)
@@ -123,268 +148,68 @@ class UMLXMIParser(BaseParser):
         self.handlers = handlers or self._get_default_handlers()
 
     def _get_default_handlers(self) -> List[ElementHandler]:
-        """Get default set of element handlers."""
-        return [
-            ModelHandler(),
-            PackageHandler(),
-            ClassHandler(),
-            InterfaceHandler(),
-            EnumerationHandler(),
-            DataTypeHandler(),
-            ComponentHandler(),
-            UseCaseHandler(),
-            ActorHandler(),
-            SimpleNodeHandler(
-                element_type="uml:Activity",
-                node_type="Activity",
-                scalar_attrs=("visibility",),
-                boolean_attrs=("isReadOnly", "isSingleExecution"),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:StateMachine",
-                node_type="StateMachine",
-                scalar_attrs=("visibility",),
-                boolean_attrs=("isReentrant",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:Interaction",
-                node_type="Interaction",
-                scalar_attrs=("visibility",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:InstanceSpecification",
-                node_type="InstanceSpecification",
-                scalar_attrs=("visibility",),
-                list_attrs=("classifier",),
-                rename_map={"classifier": "classifierRefs"},
-            ),
-            AssociationClassHandler(),
-            SimpleNodeHandler(
-                element_type="uml:Device",
-                node_type="Device",
-                scalar_attrs=("visibility",),
-                boolean_attrs=("isLeaf",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:Node",
-                node_type="Node",
-                scalar_attrs=("visibility",),
-                boolean_attrs=("isLeaf",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:Artifact",
-                node_type="Artifact",
-                scalar_attrs=("visibility", "fileName"),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:ExecutionEnvironment",
-                node_type="ExecutionEnvironment",
-                scalar_attrs=("visibility",),
-                boolean_attrs=("isLeaf",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:PrimitiveType",
-                node_type="PrimitiveType",
-                scalar_attrs=("visibility",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:EnumerationLiteral",
-                node_type="EnumerationLiteral",
-                scalar_attrs=("visibility",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:OpaqueAction",
-                node_type="OpaqueAction",
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:InitialNode",
-                node_type="InitialNode",
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:ActivityFinalNode",
-                node_type="ActivityFinalNode",
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:FlowFinalNode",
-                node_type="FlowFinalNode",
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:DecisionNode",
-                node_type="DecisionNode",
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:MergeNode",
-                node_type="MergeNode",
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:JoinNode",
-                node_type="JoinNode",
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:ForkNode",
-                node_type="ForkNode",
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:ActivityPartition",
-                node_type="ActivityPartition",
-                list_attrs=("node",),
-                rename_map={"node": "nodeRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:MessageOccurrenceSpecification",
-                node_type="MessageOccurrenceSpecification",
-                scalar_attrs=("enclosingInteraction",),
-                list_attrs=("covered",),
-                rename_map={"covered": "coveredRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:ExecutionOccurrenceSpecification",
-                node_type="ExecutionOccurrenceSpecification",
-                scalar_attrs=("enclosingInteraction",),
-                list_attrs=("covered",),
-                rename_map={"covered": "coveredRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:BehaviorExecutionSpecification",
-                node_type="BehaviorExecutionSpecification",
-                scalar_attrs=("enclosingInteraction", "start", "finish"),
-                list_attrs=("covered",),
-                rename_map={"covered": "coveredRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:Collaboration",
-                node_type="Collaboration",
-                scalar_attrs=("visibility",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:State",
-                node_type="State",
-                scalar_attrs=("visibility", "container"),
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:Pseudostate",
-                node_type="Pseudostate",
-                scalar_attrs=("visibility", "container", "kind"),
-                list_attrs=("incoming", "outgoing"),
-                rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:Region",
-                node_type="Region",
-                scalar_attrs=("visibility", "stateMachine", "state"),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:Lifeline",
-                node_type="Lifeline",
-                scalar_attrs=("visibility", "represents", "decomposedAs"),
-                list_attrs=("coveredBy",),
-                rename_map={"coveredBy": "coveredByRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:CombinedFragment",
-                node_type="CombinedFragment",
-                scalar_attrs=("visibility", "interactionOperator", "enclosingInteraction"),
-                list_attrs=("covered",),
-                rename_map={"covered": "coveredRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:InteractionOperand",
-                node_type="InteractionOperand",
-                scalar_attrs=("visibility", "enclosingInteraction", "guard"),
-                list_attrs=("covered",),
-                rename_map={"covered": "coveredRefs"},
-            ),
-            SimpleNodeHandler(
-                element_type="uml:InstanceValue",
-                node_type="InstanceValue",
-                scalar_attrs=("instance",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:Expression",
-                node_type="Expression",
-                scalar_attrs=("symbol",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:LiteralBoolean",
-                node_type="LiteralBoolean",
-                scalar_attrs=("value",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:LiteralInteger",
-                node_type="LiteralInteger",
-                scalar_attrs=("value",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:LiteralReal",
-                node_type="LiteralReal",
-                scalar_attrs=("value",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:LiteralString",
-                node_type="LiteralString",
-                scalar_attrs=("value",),
-            ),
-            SimpleNodeHandler(
-                element_type="uml:LiteralUnlimitedNatural",
-                node_type="LiteralUnlimitedNatural",
-                scalar_attrs=("value",),
-            ),
-            AssociationHandler(),
-            AssociationHandler("uml:CommunicationPath", "CommunicationPath"),
-            DirectedEdgeHandler(
-                element_type="uml:ControlFlow",
-                edge_type="ControlFlow",
-                source_attr="source",
-                target_attr="target",
-                scalar_attrs=("activity",),
-            ),
-            DirectedEdgeHandler(
-                element_type="uml:ObjectFlow",
-                edge_type="ObjectFlow",
-                source_attr="source",
-                target_attr="target",
-                scalar_attrs=("activity",),
-            ),
-            DirectedEdgeHandler(
-                element_type="uml:Transition",
-                edge_type="Transition",
-                source_attr="source",
-                target_attr="target",
-                scalar_attrs=("container", "kind"),
-            ),
-            DirectedEdgeHandler(
-                element_type="uml:Message",
-                edge_type="Message",
-                source_attr="sendEvent",
-                target_attr="receiveEvent",
-                scalar_attrs=("messageSort", "messageKind", "connector"),
-            ),
-            GeneralizationHandler(),
-            InterfaceRealizationHandler(),
-            IncludeHandler(),
-            ExtendHandler(),
-            DependencyHandler("uml:Dependency", "Dependency"),
-            DependencyHandler("uml:Usage", "Usage"),
-            InformationFlowHandler(),
-        ]
+        """Build default handlers from executable metamodel specs."""
+        handlers: List[ElementHandler] = []
+        for concept_id, concept in SUPPORTED_UML_CONCEPTS.items():
+            handler_spec = concept.handler
+            if handler_spec is None:
+                raise ValueError(f"Concept '{concept_id}' has no runtime handler specification.")
+            handlers.append(self._build_handler_from_spec(concept_id, handler_spec))
+        return handlers
+
+    def _build_handler_from_spec(
+        self,
+        concept_id: str,
+        handler_spec: UMLHandlerSpec,
+    ) -> ElementHandler:
+        """Instantiate a runtime handler from metamodel metadata."""
+        if handler_spec.kind == "simple_node":
+            if not handler_spec.node_type:
+                raise ValueError(f"Simple-node concept '{concept_id}' is missing node_type.")
+            return SimpleNodeHandler(
+                element_type=concept_id,
+                node_type=handler_spec.node_type,
+                scalar_attrs=handler_spec.scalar_attrs,
+                boolean_attrs=handler_spec.boolean_attrs,
+                list_attrs=handler_spec.list_attrs,
+                rename_map=handler_spec.rename_map,
+            )
+
+        if handler_spec.kind == "directed_edge":
+            if not handler_spec.edge_type or not handler_spec.source_attr or not handler_spec.target_attr:
+                raise ValueError(
+                    f"Directed-edge concept '{concept_id}' is missing edge_type/source_attr/target_attr."
+                )
+            return DirectedEdgeHandler(
+                element_type=concept_id,
+                edge_type=handler_spec.edge_type,
+                source_attr=handler_spec.source_attr,
+                target_attr=handler_spec.target_attr,
+                source_child_tag=handler_spec.source_child_tag,
+                target_child_tag=handler_spec.target_child_tag,
+                scalar_attrs=handler_spec.scalar_attrs,
+                list_attrs=handler_spec.list_attrs,
+                rename_map=handler_spec.rename_map,
+                include_name=handler_spec.include_name,
+            )
+
+        if handler_spec.kind == "custom":
+            if not handler_spec.handler_name:
+                raise ValueError(f"Custom concept '{concept_id}' is missing handler_name.")
+            handler_class = CUSTOM_HANDLER_REGISTRY.get(handler_spec.handler_name)
+            if handler_class is None:
+                raise ValueError(
+                    f"Custom handler '{handler_spec.handler_name}' for concept '{concept_id}' is not registered."
+                )
+            handler = handler_class(**dict(handler_spec.custom_kwargs))
+            if handler.element_type != concept_id:
+                raise ValueError(
+                    f"Custom handler '{handler_spec.handler_name}' resolved element_type "
+                    f"'{handler.element_type}', expected '{concept_id}'."
+                )
+            return handler
+
+        raise ValueError(f"Unsupported handler kind '{handler_spec.kind}' for concept '{concept_id}'.")
 
     def parse(self, filepath: str) -> Tuple[IR, ParserRunStats]:
         """Parse a UML XMI file into IR."""
@@ -411,6 +236,12 @@ class UMLXMIParser(BaseParser):
         for e in ctx.root.iter():
             _id = xmi_id(e)
             if _id:
+                if _id in ctx.id_index:
+                    ctx.warn(
+                        WarningType.DUPLICATE_ID,
+                        f"Duplicate xmi:id '{_id}' encountered in XML; keeping first element in lookup index.",
+                    )
+                    continue
                 ctx.id_index[_id] = e
 
         for parent in ctx.root.iter():
@@ -436,7 +267,15 @@ class UMLXMIParser(BaseParser):
 
     def _parse_elements(self, ctx: ParseContext, model: ET.Element) -> None:
         """Parse all model descendants using registered handlers."""
-        ctx.handler_map = {h.element_type: h for h in self.handlers}
+        ctx.handler_map = {}
+        for handler in self.handlers:
+            handler_key = handler.element_type
+            if handler_key in ctx.handler_map:
+                raise ValueError(
+                    f"Duplicate handler registration for '{handler_key}' "
+                    f"({type(ctx.handler_map[handler_key]).__name__} and {type(handler).__name__})."
+                )
+            ctx.handler_map[handler_key] = handler
         ctx.tag_handler_map = dict(TAG_TO_CONCEPT)
 
         if "uml:Model" not in ctx.handler_map:

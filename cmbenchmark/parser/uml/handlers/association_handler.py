@@ -1,6 +1,6 @@
 """Handler for uml:Association elements."""
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.ir import Edge
@@ -24,12 +24,6 @@ class AssociationHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return self._element_type
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "memberEnd", "navigableOwnedEnd"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"ownedEnd"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create Association edge from owned/member ends."""
@@ -79,6 +73,9 @@ class AssociationHandler(ElementHandler):
             "end1": self._clean_end_data(end1),
             "end2": self._clean_end_data(end2),
         }
+        navigable_owned_end = self.split_ref_list(elem.attrib.get("navigableOwnedEnd"))
+        if navigable_owned_end:
+            data["navigableOwnedEnd"] = navigable_owned_end
 
         assoc_name = self.read_name(elem)
         if assoc_name:

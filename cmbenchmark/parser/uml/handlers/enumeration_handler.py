@@ -1,11 +1,11 @@
 """Handler for uml:Enumeration elements."""
 
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.ir import Node
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
-from cmbenchmark.parser.uml.xmi_utils import xmi_id, is_tool_extension
+from cmbenchmark.parser.uml.xmi_utils import is_tool_extension
 
 
 class EnumerationHandler(ElementHandler):
@@ -14,12 +14,6 @@ class EnumerationHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:Enumeration"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "visibility", "href"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"ownedLiteral", "ownedComment"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create Enumeration node with literals."""

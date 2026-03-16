@@ -6,8 +6,30 @@ Each concept declares the attributes and children that are intentionally handled
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Dict, FrozenSet, Mapping
+from dataclasses import dataclass, field, replace
+from typing import Dict, FrozenSet, Literal, Mapping, Optional, Tuple
+
+HandlerKind = Literal["custom", "simple_node", "directed_edge"]
+
+
+@dataclass(frozen=True)
+class UMLHandlerSpec:
+    """Runtime parsing specification for a UML concept."""
+
+    kind: HandlerKind
+    handler_name: Optional[str] = None
+    node_type: Optional[str] = None
+    edge_type: Optional[str] = None
+    scalar_attrs: Tuple[str, ...] = ()
+    boolean_attrs: Tuple[str, ...] = ()
+    list_attrs: Tuple[str, ...] = ()
+    rename_map: Mapping[str, str] = field(default_factory=dict)
+    source_attr: Optional[str] = None
+    target_attr: Optional[str] = None
+    source_child_tag: Optional[str] = None
+    target_child_tag: Optional[str] = None
+    include_name: bool = True
+    custom_kwargs: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -18,6 +40,7 @@ class UMLConceptSpec:
     allowed_attributes: FrozenSet[str]
     allowed_children: FrozenSet[str]
     produces: str
+    handler: Optional[UMLHandlerSpec] = None
 
 
 SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
@@ -434,6 +457,310 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
         allowed_children=frozenset({"extendedCase", "extensionLocation"}),
         produces="Edge(type=extends)",
     ),
+}
+
+
+def _custom_handler_spec(handler_name: str, **kwargs: str) -> UMLHandlerSpec:
+    return UMLHandlerSpec(kind="custom", handler_name=handler_name, custom_kwargs=kwargs)
+
+
+def _simple_node_handler_spec(
+    *,
+    node_type: str,
+    scalar_attrs: Tuple[str, ...] = (),
+    boolean_attrs: Tuple[str, ...] = (),
+    list_attrs: Tuple[str, ...] = (),
+    rename_map: Optional[Mapping[str, str]] = None,
+) -> UMLHandlerSpec:
+    return UMLHandlerSpec(
+        kind="simple_node",
+        node_type=node_type,
+        scalar_attrs=scalar_attrs,
+        boolean_attrs=boolean_attrs,
+        list_attrs=list_attrs,
+        rename_map=rename_map or {},
+    )
+
+
+def _directed_edge_handler_spec(
+    *,
+    edge_type: str,
+    source_attr: str,
+    target_attr: str,
+    source_child_tag: Optional[str] = None,
+    target_child_tag: Optional[str] = None,
+    scalar_attrs: Tuple[str, ...] = (),
+    list_attrs: Tuple[str, ...] = (),
+    rename_map: Optional[Mapping[str, str]] = None,
+    include_name: bool = True,
+) -> UMLHandlerSpec:
+    return UMLHandlerSpec(
+        kind="directed_edge",
+        edge_type=edge_type,
+        source_attr=source_attr,
+        target_attr=target_attr,
+        source_child_tag=source_child_tag,
+        target_child_tag=target_child_tag,
+        scalar_attrs=scalar_attrs,
+        list_attrs=list_attrs,
+        rename_map=rename_map or {},
+        include_name=include_name,
+    )
+
+
+CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
+    "uml:Model": _custom_handler_spec("ModelHandler"),
+    "uml:Package": _custom_handler_spec("PackageHandler"),
+    "uml:Class": _custom_handler_spec("ClassHandler"),
+    "uml:Interface": _custom_handler_spec("InterfaceHandler"),
+    "uml:Enumeration": _custom_handler_spec("EnumerationHandler"),
+    "uml:DataType": _custom_handler_spec("DataTypeHandler"),
+    "uml:Component": _custom_handler_spec("ComponentHandler"),
+    "uml:UseCase": _custom_handler_spec("UseCaseHandler"),
+    "uml:Actor": _custom_handler_spec("ActorHandler"),
+    "uml:Activity": _simple_node_handler_spec(
+        node_type="Activity",
+        scalar_attrs=("visibility",),
+        boolean_attrs=("isReadOnly", "isSingleExecution"),
+    ),
+    "uml:StateMachine": _simple_node_handler_spec(
+        node_type="StateMachine",
+        scalar_attrs=("visibility",),
+        boolean_attrs=("isReentrant",),
+    ),
+    "uml:Interaction": _simple_node_handler_spec(
+        node_type="Interaction",
+        scalar_attrs=("visibility",),
+    ),
+    "uml:InstanceSpecification": _simple_node_handler_spec(
+        node_type="InstanceSpecification",
+        scalar_attrs=("visibility",),
+        list_attrs=("classifier",),
+        rename_map={"classifier": "classifierRefs"},
+    ),
+    "uml:AssociationClass": _custom_handler_spec("AssociationClassHandler"),
+    "uml:CommunicationPath": _custom_handler_spec(
+        "AssociationHandler",
+        element_type="uml:CommunicationPath",
+        edge_type="CommunicationPath",
+    ),
+    "uml:Device": _simple_node_handler_spec(
+        node_type="Device",
+        scalar_attrs=("visibility",),
+        boolean_attrs=("isLeaf",),
+    ),
+    "uml:Node": _simple_node_handler_spec(
+        node_type="Node",
+        scalar_attrs=("visibility",),
+        boolean_attrs=("isLeaf",),
+    ),
+    "uml:Artifact": _simple_node_handler_spec(
+        node_type="Artifact",
+        scalar_attrs=("visibility", "fileName"),
+    ),
+    "uml:InformationFlow": _custom_handler_spec("InformationFlowHandler"),
+    "uml:ExecutionEnvironment": _simple_node_handler_spec(
+        node_type="ExecutionEnvironment",
+        scalar_attrs=("visibility",),
+        boolean_attrs=("isLeaf",),
+    ),
+    "uml:OpaqueAction": _simple_node_handler_spec(
+        node_type="OpaqueAction",
+        scalar_attrs=("visibility",),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:InitialNode": _simple_node_handler_spec(
+        node_type="InitialNode",
+        scalar_attrs=("visibility",),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:ActivityFinalNode": _simple_node_handler_spec(
+        node_type="ActivityFinalNode",
+        scalar_attrs=("visibility",),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:FlowFinalNode": _simple_node_handler_spec(
+        node_type="FlowFinalNode",
+        scalar_attrs=("visibility",),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:DecisionNode": _simple_node_handler_spec(
+        node_type="DecisionNode",
+        scalar_attrs=("visibility",),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:MergeNode": _simple_node_handler_spec(
+        node_type="MergeNode",
+        scalar_attrs=("visibility",),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:JoinNode": _simple_node_handler_spec(
+        node_type="JoinNode",
+        scalar_attrs=("visibility",),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:ForkNode": _simple_node_handler_spec(
+        node_type="ForkNode",
+        scalar_attrs=("visibility",),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:ActivityPartition": _simple_node_handler_spec(
+        node_type="ActivityPartition",
+        scalar_attrs=("visibility",),
+        list_attrs=("node",),
+        rename_map={"node": "nodeRefs"},
+    ),
+    "uml:MessageOccurrenceSpecification": _simple_node_handler_spec(
+        node_type="MessageOccurrenceSpecification",
+        scalar_attrs=("enclosingInteraction",),
+        list_attrs=("covered",),
+        rename_map={"covered": "coveredRefs"},
+    ),
+    "uml:ExecutionOccurrenceSpecification": _simple_node_handler_spec(
+        node_type="ExecutionOccurrenceSpecification",
+        scalar_attrs=("enclosingInteraction",),
+        list_attrs=("covered",),
+        rename_map={"covered": "coveredRefs"},
+    ),
+    "uml:BehaviorExecutionSpecification": _simple_node_handler_spec(
+        node_type="BehaviorExecutionSpecification",
+        scalar_attrs=("enclosingInteraction", "start", "finish"),
+        list_attrs=("covered",),
+        rename_map={"covered": "coveredRefs"},
+    ),
+    "uml:Collaboration": _simple_node_handler_spec(
+        node_type="Collaboration",
+        scalar_attrs=("visibility",),
+    ),
+    "uml:State": _simple_node_handler_spec(
+        node_type="State",
+        scalar_attrs=("visibility", "container"),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:Pseudostate": _simple_node_handler_spec(
+        node_type="Pseudostate",
+        scalar_attrs=("visibility", "container", "kind"),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
+    "uml:Region": _simple_node_handler_spec(
+        node_type="Region",
+        scalar_attrs=("visibility", "stateMachine", "state"),
+    ),
+    "uml:Lifeline": _simple_node_handler_spec(
+        node_type="Lifeline",
+        scalar_attrs=("visibility", "represents", "decomposedAs"),
+        list_attrs=("coveredBy",),
+        rename_map={"coveredBy": "coveredByRefs"},
+    ),
+    "uml:CombinedFragment": _simple_node_handler_spec(
+        node_type="CombinedFragment",
+        scalar_attrs=("visibility", "interactionOperator", "enclosingInteraction"),
+        list_attrs=("covered",),
+        rename_map={"covered": "coveredRefs"},
+    ),
+    "uml:InteractionOperand": _simple_node_handler_spec(
+        node_type="InteractionOperand",
+        scalar_attrs=("visibility", "enclosingInteraction", "guard"),
+        list_attrs=("covered",),
+        rename_map={"covered": "coveredRefs"},
+    ),
+    "uml:InstanceValue": _simple_node_handler_spec(
+        node_type="InstanceValue",
+        scalar_attrs=("visibility", "instance"),
+    ),
+    "uml:Expression": _simple_node_handler_spec(
+        node_type="Expression",
+        scalar_attrs=("visibility", "symbol"),
+    ),
+    "uml:LiteralBoolean": _simple_node_handler_spec(
+        node_type="LiteralBoolean",
+        scalar_attrs=("visibility", "value"),
+    ),
+    "uml:LiteralInteger": _simple_node_handler_spec(
+        node_type="LiteralInteger",
+        scalar_attrs=("visibility", "value"),
+    ),
+    "uml:LiteralReal": _simple_node_handler_spec(
+        node_type="LiteralReal",
+        scalar_attrs=("visibility", "value"),
+    ),
+    "uml:LiteralString": _simple_node_handler_spec(
+        node_type="LiteralString",
+        scalar_attrs=("visibility", "value"),
+    ),
+    "uml:LiteralUnlimitedNatural": _simple_node_handler_spec(
+        node_type="LiteralUnlimitedNatural",
+        scalar_attrs=("visibility", "value"),
+    ),
+    "uml:PrimitiveType": _simple_node_handler_spec(
+        node_type="PrimitiveType",
+        scalar_attrs=("visibility", "href"),
+    ),
+    "uml:EnumerationLiteral": _simple_node_handler_spec(
+        node_type="EnumerationLiteral",
+        scalar_attrs=("visibility",),
+    ),
+    "uml:Association": _custom_handler_spec("AssociationHandler"),
+    "uml:ControlFlow": _directed_edge_handler_spec(
+        edge_type="ControlFlow",
+        source_attr="source",
+        target_attr="target",
+        scalar_attrs=("activity",),
+    ),
+    "uml:ObjectFlow": _directed_edge_handler_spec(
+        edge_type="ObjectFlow",
+        source_attr="source",
+        target_attr="target",
+        scalar_attrs=("activity",),
+    ),
+    "uml:Transition": _directed_edge_handler_spec(
+        edge_type="Transition",
+        source_attr="source",
+        target_attr="target",
+        scalar_attrs=("container", "kind"),
+    ),
+    "uml:Message": _directed_edge_handler_spec(
+        edge_type="Message",
+        source_attr="sendEvent",
+        target_attr="receiveEvent",
+        scalar_attrs=("messageSort", "messageKind", "connector"),
+    ),
+    "uml:Generalization": _custom_handler_spec("GeneralizationHandler"),
+    "uml:InterfaceRealization": _custom_handler_spec("InterfaceRealizationHandler"),
+    "uml:Dependency": _custom_handler_spec(
+        "DependencyHandler",
+        element_type="uml:Dependency",
+        edge_type="Dependency",
+    ),
+    "uml:Usage": _custom_handler_spec(
+        "DependencyHandler",
+        element_type="uml:Usage",
+        edge_type="Usage",
+    ),
+    "uml:Include": _custom_handler_spec("IncludeHandler"),
+    "uml:Extend": _custom_handler_spec("ExtendHandler"),
+}
+
+_missing_handler_specs = sorted(set(SUPPORTED_UML_CONCEPTS) - set(CONCEPT_HANDLER_SPECS))
+_extra_handler_specs = sorted(set(CONCEPT_HANDLER_SPECS) - set(SUPPORTED_UML_CONCEPTS))
+if _missing_handler_specs or _extra_handler_specs:
+    raise ValueError(
+        f"UML handler spec mismatch (missing={_missing_handler_specs}, extra={_extra_handler_specs})"
+    )
+
+SUPPORTED_UML_CONCEPTS = {
+    concept_id: replace(spec, handler=CONCEPT_HANDLER_SPECS[concept_id])
+    for concept_id, spec in SUPPORTED_UML_CONCEPTS.items()
 }
 
 

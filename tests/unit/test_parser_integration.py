@@ -10,17 +10,37 @@ from cmbenchmark.types.ir import IR
 
 
 FIXTURE_XMI = Path(__file__).resolve().parent / "fixtures" / "uml_parser" / "synthetic_uml.xmi"
+CUSTOM1_FIXTURE_CONTENT = """
+class_attributes = {
+    "Team": [],
+    "Player": ["name:string", "position:enumeration"]
+}
+associations = [{
+    "class1": "team",
+    "class2": "PLAYER",
+    "cardinality_class1": "",
+    "cardinality_class2": "*",
+    "name": "",
+    "role_class1": "",
+    "role_class2": "players"
+}]
+enums = {
+    "Position": ["Forward"]
+}
+"""
 
 
 def test_parser_registry_contains_all_builtin_parsers() -> None:
     parser_languages = {parser_cls.language for parser_cls in get_all_parsers()}
 
     assert "UML" in parser_languages
+    assert "UML-custom1" in parser_languages
     assert "Ecore" in parser_languages
     assert "ArchiMate-Archi" in parser_languages
     assert "ArchiMate-XML" in parser_languages
 
     assert get_parser("UML") is not None
+    assert get_parser("UML-custom1") is not None
     assert get_parser("Ecore") is not None
 
 
@@ -66,3 +86,47 @@ def test_construct_catalog_contains_uml_profile() -> None:
     assert constructs is not None
     assert "uml:Class" in constructs
     assert "uml:Association" in constructs
+
+
+def test_construct_catalog_contains_uml_custom1_profile() -> None:
+    path = get_construct_profile_path("UML-custom1")
+    assert path is not None
+
+    constructs = load_construct_defs("UML-custom1")
+    assert constructs is not None
+    assert "uml:Class" in constructs
+    assert "uml:Association" in constructs
+
+
+def test_parse_service_pipeline_with_uml_custom1(tmp_path: Path) -> None:
+    dataset_root = tmp_path / "dataset"
+    output_dir = tmp_path / "out"
+    dataset_root.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    model_path = dataset_root / "model_custom1"
+    model_path.write_text(CUSTOM1_FIXTURE_CONTENT, encoding="utf-8")
+
+    dataset_info = scan_dataset(str(dataset_root), include=["*"], exclude=["*.cdm"])
+    dataset_info_path = output_dir / "dataset_info.json"
+    with open(dataset_info_path, "w", encoding="utf-8") as f:
+        json.dump(dataset_info.to_dict(), f, indent=2)
+
+    ir_info = parse_from_scan(
+        dataset_info_path=str(dataset_info_path),
+        output_dir=str(output_dir),
+        parser_language="UML-custom1",
+    )
+
+    assert ir_info.totals["candidates_in"] == 1
+    assert ir_info.totals["parsed_success"] + ir_info.totals["parsed_warning"] == 1
+    assert ir_info.totals["parsed_failure"] == 0
+    assert len(ir_info.index) == 1
+
+    ir_id = next(iter(ir_info.index.keys()))
+    ir_file = output_dir / "ir" / f"{ir_id}.json"
+    assert ir_file.exists()
+
+    ir = IR.load(str(ir_file))
+    assert ir.language == "UML-custom1"
+    assert any(node.type == "Class" for node in ir.nodes)

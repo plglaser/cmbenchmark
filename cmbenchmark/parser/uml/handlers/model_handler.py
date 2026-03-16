@@ -1,6 +1,5 @@
 """Handler for uml:Model elements."""
 
-from typing import Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
@@ -17,12 +16,6 @@ class ModelHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:Model"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "visibility"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"packageImport"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Extract model metadata and store in IR data."""

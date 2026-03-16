@@ -1,6 +1,6 @@
 """Handler for uml:Interface elements."""
 
-from typing import Any, Dict, Set
+from typing import Any, Dict
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
@@ -12,12 +12,6 @@ class InterfaceHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:Interface"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "visibility", "isAbstract", "href"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"ownedOperation", "ownedComment"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create Interface node with operations."""

@@ -1,6 +1,5 @@
 """Handler for uml:Generalization elements."""
 
-from typing import Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
@@ -15,12 +14,6 @@ class GeneralizationHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:Generalization"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "general", "specific"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"general"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create Generalization edge."""

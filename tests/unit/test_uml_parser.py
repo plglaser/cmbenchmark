@@ -24,6 +24,226 @@ def _edges_by_id(ir):
     return {edge.id: edge for edge in ir.edges}
 
 
+_BOOLEAN_ATTRS = {
+    "isAbstract",
+    "isLeaf",
+    "isReadOnly",
+    "isSingleExecution",
+    "isReentrant",
+    "isStatic",
+    "isQuery",
+    "isUnique",
+    "isOrdered",
+    "isDerived",
+    "isID",
+}
+
+_ATTR_DEFAULT_A = {
+    "name": "NameA",
+    "visibility": "public",
+    "href": "http://example.com/PrimitiveTypes.xmi#//Integer",
+    "templateParameter": "tp1",
+    "owningTemplateParameter": "otp1",
+    "memberEnd": "{id}_end1 {id}_end2",
+    "navigableOwnedEnd": "{id}_end1",
+    "informationSource": "c_src",
+    "informationTarget": "c_tgt",
+    "classifier": "c_src",
+    "incoming": "flow1",
+    "outgoing": "flow2",
+    "node": "n1",
+    "covered": "lifeline1",
+    "coveredBy": "mos1",
+    "enclosingInteraction": "int1",
+    "start": "mos1",
+    "finish": "mos2",
+    "container": "region1",
+    "stateMachine": "sm1",
+    "state": "state1",
+    "kind": "external",
+    "interactionOperator": "alt",
+    "represents": "part1",
+    "decomposedAs": "int1",
+    "symbol": "+",
+    "value": "1",
+    "fileName": "artifact-a.bin",
+    "source": "c_src",
+    "target": "c_tgt",
+    "activity": "act1",
+    "sendEvent": "mos1",
+    "receiveEvent": "mos2",
+    "messageSort": "synchCall",
+    "messageKind": "complete",
+    "connector": "conn1",
+    "general": "c_tgt",
+    "specific": "c_src",
+    "client": "c_src",
+    "supplier": "c_tgt",
+    "implementingClassifier": "c_src",
+    "contract": "i_contract",
+    "includingCase": "uc_src",
+    "addition": "uc_tgt",
+    "extension": "uc_src",
+    "extendedCase": "uc_tgt",
+    "extensionLocation": "ep1",
+    "instance": "inst1",
+}
+
+_ATTR_DEFAULT_B = {
+    "name": "NameB",
+    "visibility": "private",
+    "href": "http://example.com/PrimitiveTypes.xmi#//Boolean",
+    "templateParameter": "tp2",
+    "owningTemplateParameter": "otp2",
+    "memberEnd": "{id}_end2 {id}_end1",
+    "navigableOwnedEnd": "{id}_end2",
+    "informationSource": "c_alt",
+    "informationTarget": "c_alt_tgt",
+    "classifier": "c_alt",
+    "incoming": "flow9",
+    "outgoing": "flow8",
+    "node": "n2",
+    "covered": "lifeline2",
+    "coveredBy": "mos2",
+    "enclosingInteraction": "int2",
+    "start": "mos2",
+    "finish": "mos3",
+    "container": "region2",
+    "stateMachine": "sm2",
+    "state": "state2",
+    "kind": "local",
+    "interactionOperator": "loop",
+    "represents": "part2",
+    "decomposedAs": "int2",
+    "symbol": "-",
+    "value": "2",
+    "fileName": "artifact-b.bin",
+    "source": "c_alt",
+    "target": "c_alt_tgt",
+    "activity": "act2",
+    "sendEvent": "mos2",
+    "receiveEvent": "mos3",
+    "messageSort": "asynchCall",
+    "messageKind": "lost",
+    "connector": "conn2",
+    "general": "c_alt_tgt",
+    "specific": "c_alt",
+    "client": "c_alt",
+    "supplier": "c_alt_tgt",
+    "implementingClassifier": "c_alt",
+    "contract": "i_contract_alt",
+    "includingCase": "uc_alt",
+    "addition": "uc_alt_tgt",
+    "extension": "uc_alt",
+    "extendedCase": "uc_alt_tgt",
+    "extensionLocation": "ep2",
+    "instance": "inst2",
+}
+
+_CONTRACT_BASELINE_ELEMENTS = """
+    <packagedElement xsi:type="uml:Class" xmi:id="c_src" name="Source"/>
+    <packagedElement xsi:type="uml:Class" xmi:id="c_tgt" name="Target"/>
+    <packagedElement xsi:type="uml:Class" xmi:id="c_alt" name="AltSource"/>
+    <packagedElement xsi:type="uml:Class" xmi:id="c_alt_tgt" name="AltTarget"/>
+    <packagedElement xsi:type="uml:Interface" xmi:id="i_contract" name="IContract"/>
+    <packagedElement xsi:type="uml:Interface" xmi:id="i_contract_alt" name="IContractAlt"/>
+    <packagedElement xsi:type="uml:UseCase" xmi:id="uc_src" name="UseCaseSource"/>
+    <packagedElement xsi:type="uml:UseCase" xmi:id="uc_tgt" name="UseCaseTarget"/>
+    <packagedElement xsi:type="uml:UseCase" xmi:id="uc_alt" name="UseCaseAltSource"/>
+    <packagedElement xsi:type="uml:UseCase" xmi:id="uc_alt_tgt" name="UseCaseAltTarget"/>
+"""
+
+
+def _contract_attr_value(attr_name: str, elem_id: str, variant: str) -> str:
+    if attr_name in _BOOLEAN_ATTRS:
+        return "true" if variant == "a" else "false"
+    table = _ATTR_DEFAULT_A if variant == "a" else _ATTR_DEFAULT_B
+    value = table.get(attr_name, f"{attr_name}_{variant}")
+    return value.format(id=elem_id)
+
+
+def _attrs_to_xml(attrs: dict[str, str]) -> str:
+    return " ".join(f'{name}="{value}"' for name, value in attrs.items())
+
+
+def _concept_contract_element(concept_id: str, elem_id: str, attrs: dict[str, str]) -> str:
+    concept_attrs = {"xmi:id": elem_id, **attrs}
+    if concept_id in {"uml:Association", "uml:CommunicationPath"}:
+        return (
+            f'<packagedElement xsi:type="{concept_id}" {_attrs_to_xml(concept_attrs)}>'
+            f'<ownedEnd xmi:id="{elem_id}_end1" name="end1" type="c_src">'
+            '<lowerValue value="0"/><upperValue value="1"/>'
+            "</ownedEnd>"
+            f'<ownedEnd xmi:id="{elem_id}_end2" name="end2" type="c_tgt">'
+            '<lowerValue value="0"/><upperValue value="*"/>'
+            "</ownedEnd>"
+            "</packagedElement>"
+        )
+    return f'<packagedElement xsi:type="{concept_id}" {_attrs_to_xml(concept_attrs)}/>'
+
+
+def _concept_contract_xmi(concept_id: str, elem_id: str, attrs: dict[str, str]) -> str:
+    if concept_id == "uml:Model":
+        model_open = f'<uml:Model {_attrs_to_xml({"xmi:id": elem_id, **attrs})}>'
+        concept_body = ""
+    else:
+        model_open = '<uml:Model xmi:id="m1" name="ContractModel">'
+        concept_body = _concept_contract_element(concept_id, elem_id, attrs)
+
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<xmi:XMI xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" '
+        'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+        'xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML">\n'
+        f"{model_open}\n"
+        f"{_CONTRACT_BASELINE_ELEMENTS}\n"
+        f"{concept_body}\n"
+        "</uml:Model>\n"
+        "</xmi:XMI>\n"
+    )
+
+
+def _concept_artifact(ir, concept_id: str, elem_id: str):
+    concept = SUPPORTED_UML_CONCEPTS[concept_id]
+    if concept_id == "uml:Model":
+        return {
+            "id": ir.id,
+            "data": dict(ir.data),
+        }
+
+    if concept.produces.startswith("Node("):
+        node = _nodes_by_id(ir).get(elem_id)
+        if node is None:
+            return None
+        return {
+            "id": node.id,
+            "type": node.type,
+            "name": node.name,
+            "data": dict(node.data),
+        }
+
+    if concept.produces.startswith("Edge("):
+        edge = _edges_by_id(ir).get(elem_id)
+        if edge is None:
+            return None
+        return {
+            "id": edge.id,
+            "type": edge.type,
+            "sourceId": edge.sourceId,
+            "targetId": edge.targetId,
+            "data": dict(edge.data),
+        }
+
+    return None
+
+
+def _parse_contract_case(tmp_path: Path, filename: str, xmi: str):
+    path = tmp_path / filename
+    path.write_text(xmi, encoding="utf-8")
+    parser = UMLXMIParser()
+    return parser.parse(str(path))
+
+
 @pytest.fixture
 def synthetic_uml_ir():
     return _parse_file(FIXTURE_DIR / "synthetic_uml.xmi")
@@ -752,3 +972,47 @@ def test_interaction_and_state_machine_concepts_are_mapped(tmp_path) -> None:
     assert edges["t2"].type == "Transition"
     assert edges["t2"].sourceId == "s1"
     assert edges["t2"].targetId == "s2"
+
+
+@pytest.mark.parametrize("concept_id", sorted(SUPPORTED_UML_CONCEPTS))
+def test_allowed_attributes_change_parsed_artifact(tmp_path, concept_id: str) -> None:
+    concept = SUPPORTED_UML_CONCEPTS[concept_id]
+    allowed_attrs = sorted(concept.allowed_attributes)
+
+    if not allowed_attrs:
+        return
+
+    elem_id = f"elem_{concept_id.split(':', 1)[1].lower()}"
+    base_attrs = {
+        attr_name: _contract_attr_value(attr_name, elem_id, "a")
+        for attr_name in allowed_attrs
+    }
+
+    base_xmi = _concept_contract_xmi(concept_id, elem_id, base_attrs)
+    base_ir, _ = _parse_contract_case(tmp_path, f"{elem_id}_base.xmi", base_xmi)
+    base_artifact = _concept_artifact(base_ir, concept_id, elem_id)
+    assert base_artifact is not None, f"Baseline artifact missing for {concept_id}"
+
+    unchanged_attrs = []
+    for attr_name in allowed_attrs:
+        mutated_attrs = dict(base_attrs)
+        mutated_attrs[attr_name] = _contract_attr_value(attr_name, elem_id, "b")
+
+        mutated_xmi = _concept_contract_xmi(concept_id, elem_id, mutated_attrs)
+        mutated_ir, _ = _parse_contract_case(
+            tmp_path,
+            f"{elem_id}_{attr_name}.xmi",
+            mutated_xmi,
+        )
+        mutated_artifact = _concept_artifact(mutated_ir, concept_id, elem_id)
+        assert mutated_artifact is not None, (
+            f"Artifact missing for {concept_id} when mutating attribute '{attr_name}'"
+        )
+
+        if mutated_artifact == base_artifact:
+            unchanged_attrs.append(attr_name)
+
+    assert not unchanged_attrs, (
+        f"{concept_id} has allowed attributes that do not affect parsed artifact: "
+        f"{unchanged_attrs}"
+    )

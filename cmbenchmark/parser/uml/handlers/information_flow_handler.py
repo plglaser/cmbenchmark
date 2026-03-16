@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
@@ -16,12 +15,6 @@ class InformationFlowHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:InformationFlow"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "informationSource", "informationTarget"}
-
-    def get_handled_children(self) -> Set[str]:
-        return set()
 
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()

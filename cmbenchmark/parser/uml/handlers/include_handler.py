@@ -1,6 +1,5 @@
 """Handler for include relationships in Use Cases."""
 
-from typing import Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
@@ -15,12 +14,6 @@ class IncludeHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:Include"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"includingCase", "addition"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"addition"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()

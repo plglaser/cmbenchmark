@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
 from cmbenchmark.types.ir import Node
+from cmbenchmark.parser.uml.metamodel import SUPPORTED_UML_CONCEPTS
 from cmbenchmark.parser.uml.xmi_utils import (
     xmi_id,
     xsi_type,
@@ -32,11 +33,17 @@ class ElementHandler(ABC):
 
     def get_handled_attributes(self) -> Set[str]:
         """Return set of attribute names this handler processes."""
-        return set()
+        concept = SUPPORTED_UML_CONCEPTS.get(self.element_type)
+        if concept is None:
+            return set()
+        return set(concept.allowed_attributes)
 
     def get_handled_children(self) -> Set[str]:
         """Return set of child element tags this handler processes."""
-        return set()
+        concept = SUPPORTED_UML_CONCEPTS.get(self.element_type)
+        if concept is None:
+            return set()
+        return set(concept.allowed_children)
 
     def log_unhandled_attributes(self, ctx, elem: ET.Element, handled: Set[str]) -> None:
         """Log unhandled attributes for an element."""

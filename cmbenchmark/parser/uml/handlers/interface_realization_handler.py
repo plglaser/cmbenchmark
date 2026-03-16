@@ -1,6 +1,5 @@
 """Handler for interfaceRealization elements."""
 
-from typing import Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
@@ -15,12 +14,6 @@ class InterfaceRealizationHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:InterfaceRealization"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "client", "supplier", "implementingClassifier", "contract"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"supplier", "contract"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()

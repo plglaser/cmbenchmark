@@ -1,6 +1,6 @@
 """Handler for uml:Class elements."""
 
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
@@ -18,20 +18,6 @@ class ClassHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:Class"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {
-            "name",
-            "visibility",
-            "isAbstract",
-            "isLeaf",
-            "href",
-            "templateParameter",
-            "owningTemplateParameter",
-        }
-
-    def get_handled_children(self) -> Set[str]:
-        return {"ownedAttribute", "ownedOperation", "ownedComment"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create Class node with attributes and operations."""

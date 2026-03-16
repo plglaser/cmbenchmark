@@ -1,6 +1,6 @@
 """Handler for extend relationships in Use Cases."""
 
-from typing import Any, Dict, Set
+from typing import Any, Dict
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
@@ -15,12 +15,6 @@ class ExtendHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:Extend"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"extension", "extendedCase", "extensionLocation"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"extendedCase", "extensionLocation"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()

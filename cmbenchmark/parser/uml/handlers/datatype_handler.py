@@ -1,6 +1,6 @@
 """Handler for uml:DataType elements."""
 
-from typing import Any, Dict, Set
+from typing import Any, Dict
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
@@ -12,12 +12,6 @@ class DataTypeHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:DataType"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "visibility", "isAbstract", "href"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"ownedComment"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create DataType node."""

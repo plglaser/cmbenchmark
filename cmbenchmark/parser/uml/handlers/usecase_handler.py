@@ -1,6 +1,6 @@
 """Handler for uml:UseCase elements."""
 
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
@@ -15,12 +15,6 @@ class UseCaseHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:UseCase"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {"name", "visibility", "isAbstract", "isLeaf", "href"}
-
-    def get_handled_children(self) -> Set[str]:
-        return {"extensionPoint", "ownedComment"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         """Create UseCase node; include/extend are handled by dedicated handlers."""

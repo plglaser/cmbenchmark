@@ -582,6 +582,16 @@
       "description": "UML relationship 'Usage'."
     },
     {
+      "id": "uml:Composition",
+      "kind": "edge_type",
+      "match_type": "Composition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "containment"
+      },
+      "description": "Composition containment relationship."
+    },
+    {
       "id": "uml:Contains",
       "kind": "edge_type",
       "match_type": "contains",

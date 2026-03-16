@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
@@ -16,19 +16,6 @@ class AssociationClassHandler(ElementHandler):
     @property
     def element_type(self) -> str:
         return "uml:AssociationClass"
-
-    def get_handled_attributes(self) -> Set[str]:
-        return {
-            "name",
-            "visibility",
-            "isAbstract",
-            "isLeaf",
-            "memberEnd",
-            "navigableOwnedEnd",
-        }
-
-    def get_handled_children(self) -> Set[str]:
-        return {"ownedAttribute", "ownedOperation", "ownedComment", "ownedEnd"}
 
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()
