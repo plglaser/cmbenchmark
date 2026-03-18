@@ -173,6 +173,9 @@ class UMLXMIParser(BaseParser):
                 boolean_attrs=handler_spec.boolean_attrs,
                 list_attrs=handler_spec.list_attrs,
                 rename_map=handler_spec.rename_map,
+                child_ref_tags=handler_spec.child_ref_tags,
+                child_ref_rename_map=handler_spec.child_ref_rename_map,
+                handled_children=handler_spec.handled_children,
                 skip_href_without_id=handler_spec.skip_href_without_id,
             )
 
@@ -191,6 +194,9 @@ class UMLXMIParser(BaseParser):
                 scalar_attrs=handler_spec.scalar_attrs,
                 list_attrs=handler_spec.list_attrs,
                 rename_map=handler_spec.rename_map,
+                child_ref_tags=handler_spec.child_ref_tags,
+                child_ref_rename_map=handler_spec.child_ref_rename_map,
+                handled_children=handler_spec.handled_children,
                 include_name=handler_spec.include_name,
             )
 

@@ -25,6 +25,9 @@ class DirectedEdgeHandler(ElementHandler):
         scalar_attrs: Sequence[str] = (),
         list_attrs: Sequence[str] = (),
         rename_map: Optional[Mapping[str, str]] = None,
+        child_ref_tags: Sequence[str] = (),
+        child_ref_rename_map: Optional[Mapping[str, str]] = None,
+        handled_children: Sequence[str] = (),
         include_name: bool = True,
     ):
         self._element_type = element_type
@@ -36,6 +39,9 @@ class DirectedEdgeHandler(ElementHandler):
         self._scalar_attrs = tuple(scalar_attrs)
         self._list_attrs = tuple(list_attrs)
         self._rename_map = dict(rename_map or {})
+        self._child_ref_tags = tuple(child_ref_tags)
+        self._child_ref_rename_map = dict(child_ref_rename_map or {})
+        self._handled_children = tuple(handled_children)
         self._include_name = include_name
 
     @property
@@ -52,7 +58,12 @@ class DirectedEdgeHandler(ElementHandler):
         } - {""}
 
     def get_handled_children(self) -> Set[str]:
-        return {self._source_child_tag, self._target_child_tag}
+        return {
+            self._source_child_tag,
+            self._target_child_tag,
+            *self._child_ref_tags,
+            *self._handled_children,
+        }
 
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()
@@ -86,6 +97,14 @@ class DirectedEdgeHandler(ElementHandler):
             name = self.read_name(elem)
             if name:
                 edge_data["name"] = name
+
+        edge_data.update(
+            self.collect_child_refs(
+                elem,
+                child_tags=self._child_ref_tags,
+                rename_map=self._child_ref_rename_map,
+            )
+        )
 
         edge_index = 0
         for source_id in source_refs:

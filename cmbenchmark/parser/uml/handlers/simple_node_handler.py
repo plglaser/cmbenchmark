@@ -21,6 +21,9 @@ class SimpleNodeHandler(ElementHandler):
         boolean_attrs: Sequence[str] = (),
         list_attrs: Sequence[str] = (),
         rename_map: Optional[Mapping[str, str]] = None,
+        child_ref_tags: Sequence[str] = (),
+        child_ref_rename_map: Optional[Mapping[str, str]] = None,
+        handled_children: Sequence[str] = (),
         include_documentation: bool = True,
         log_unhandled: bool = True,
         skip_href_without_id: bool = False,
@@ -31,6 +34,9 @@ class SimpleNodeHandler(ElementHandler):
         self._boolean_attrs = tuple(boolean_attrs)
         self._list_attrs = tuple(list_attrs)
         self._rename_map = dict(rename_map or {})
+        self._child_ref_tags = tuple(child_ref_tags)
+        self._child_ref_rename_map = dict(child_ref_rename_map or {})
+        self._handled_children = tuple(handled_children)
         self._include_documentation = include_documentation
         self._log_unhandled = log_unhandled
         self._skip_href_without_id = skip_href_without_id
@@ -48,7 +54,8 @@ class SimpleNodeHandler(ElementHandler):
         }
 
     def get_handled_children(self) -> Set[str]:
-        handled = set()
+        handled = set(self._child_ref_tags)
+        handled.update(self._handled_children)
         if self._include_documentation:
             handled.add("ownedComment")
         return handled
@@ -78,6 +85,14 @@ class SimpleNodeHandler(ElementHandler):
             doc = self.extract_documentation(elem)
             if doc:
                 data["documentation"] = doc
+
+        data.update(
+            self.collect_child_refs(
+                elem,
+                child_tags=self._child_ref_tags,
+                rename_map=self._child_ref_rename_map,
+            )
+        )
 
         self.upsert_node(
             ctx,

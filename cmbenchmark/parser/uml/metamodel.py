@@ -24,6 +24,9 @@ class UMLHandlerSpec:
     boolean_attrs: Tuple[str, ...] = ()
     list_attrs: Tuple[str, ...] = ()
     rename_map: Mapping[str, str] = field(default_factory=dict)
+    child_ref_tags: Tuple[str, ...] = ()
+    child_ref_rename_map: Mapping[str, str] = field(default_factory=dict)
+    handled_children: Tuple[str, ...] = ()
     source_attr: Optional[str] = None
     target_attr: Optional[str] = None
     source_child_tag: Optional[str] = None
@@ -43,6 +46,9 @@ class UMLParseContract:
     boolean_attrs: Tuple[str, ...] = ()
     list_attrs: Tuple[str, ...] = ()
     rename_map: Mapping[str, str] = field(default_factory=dict)
+    child_ref_tags: Tuple[str, ...] = ()
+    child_ref_rename_map: Mapping[str, str] = field(default_factory=dict)
+    handled_children: Tuple[str, ...] = ()
     source_attr: Optional[str] = None
     target_attr: Optional[str] = None
     source_child_tag: Optional[str] = None
@@ -198,7 +204,7 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     ),
     "uml:Interaction": UMLConceptSpec(
         concept_id="uml:Interaction",
-        allowed_attributes=frozenset({"name", "visibility"}),
+        allowed_attributes=frozenset({"name", "visibility", "isLeaf"}),
         allowed_children=frozenset({"ownedComment", "lifeline", "message", "fragment", "nestedClassifier"}),
         produces="Node(type=Interaction)",
     ),
@@ -310,13 +316,13 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     ),
     "uml:InitialNode": UMLConceptSpec(
         concept_id="uml:InitialNode",
-        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing"}),
+        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing", "inPartition"}),
         allowed_children=frozenset({"ownedComment"}),
         produces="Node(type=InitialNode)",
     ),
     "uml:ActivityFinalNode": UMLConceptSpec(
         concept_id="uml:ActivityFinalNode",
-        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing"}),
+        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing", "inPartition"}),
         allowed_children=frozenset({"ownedComment"}),
         produces="Node(type=ActivityFinalNode)",
     ),
@@ -328,25 +334,25 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     ),
     "uml:DecisionNode": UMLConceptSpec(
         concept_id="uml:DecisionNode",
-        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing"}),
+        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing", "inPartition"}),
         allowed_children=frozenset({"ownedComment"}),
         produces="Node(type=DecisionNode)",
     ),
     "uml:MergeNode": UMLConceptSpec(
         concept_id="uml:MergeNode",
-        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing"}),
+        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing", "inPartition"}),
         allowed_children=frozenset({"ownedComment"}),
         produces="Node(type=MergeNode)",
     ),
     "uml:JoinNode": UMLConceptSpec(
         concept_id="uml:JoinNode",
-        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing"}),
+        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing", "inPartition"}),
         allowed_children=frozenset({"ownedComment"}),
         produces="Node(type=JoinNode)",
     ),
     "uml:ForkNode": UMLConceptSpec(
         concept_id="uml:ForkNode",
-        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing"}),
+        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing", "inPartition"}),
         allowed_children=frozenset({"ownedComment"}),
         produces="Node(type=ForkNode)",
     ),
@@ -358,7 +364,7 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     ),
     "uml:MessageOccurrenceSpecification": UMLConceptSpec(
         concept_id="uml:MessageOccurrenceSpecification",
-        allowed_attributes=frozenset({"name", "covered", "enclosingInteraction"}),
+        allowed_attributes=frozenset({"name", "covered", "enclosingInteraction", "message", "toAfter"}),
         allowed_children=frozenset({"ownedComment"}),
         produces="Node(type=MessageOccurrenceSpecification)",
     ),
@@ -383,7 +389,7 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     "uml:State": UMLConceptSpec(
         concept_id="uml:State",
         allowed_attributes=frozenset({"name", "visibility", "container", "incoming", "outgoing"}),
-        allowed_children=frozenset({"ownedComment", "region", "entry", "exit", "doActivity"}),
+        allowed_children=frozenset({"ownedComment", "region", "entry", "exit", "doActivity", "connectionPoint"}),
         produces="Node(type=State)",
     ),
     "uml:FinalState": UMLConceptSpec(
@@ -406,7 +412,7 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     ),
     "uml:Lifeline": UMLConceptSpec(
         concept_id="uml:Lifeline",
-        allowed_attributes=frozenset({"name", "visibility", "represents", "decomposedAs", "coveredBy"}),
+        allowed_attributes=frozenset({"name", "visibility", "interaction", "represents", "decomposedAs", "coveredBy"}),
         allowed_children=frozenset({"ownedComment", "selector"}),
         produces="Node(type=Lifeline)",
     ),
@@ -419,7 +425,7 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     "uml:InteractionOperand": UMLConceptSpec(
         concept_id="uml:InteractionOperand",
         allowed_attributes=frozenset({"name", "visibility", "covered", "enclosingInteraction", "guard"}),
-        allowed_children=frozenset({"ownedComment", "fragment"}),
+        allowed_children=frozenset({"ownedComment", "fragment", "guard"}),
         produces="Node(type=InteractionOperand)",
     ),
     "uml:InstanceValue": UMLConceptSpec(
@@ -484,7 +490,7 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     ),
     "uml:ControlFlow": UMLConceptSpec(
         concept_id="uml:ControlFlow",
-        allowed_attributes=frozenset({"name", "source", "target", "activity"}),
+        allowed_attributes=frozenset({"name", "source", "target", "activity", "visibility"}),
         allowed_children=frozenset({"guard"}),
         produces="Edge(type=ControlFlow)",
     ),
@@ -496,13 +502,15 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     ),
     "uml:Transition": UMLConceptSpec(
         concept_id="uml:Transition",
-        allowed_attributes=frozenset({"name", "source", "target", "container", "kind"}),
-        allowed_children=frozenset({"guard", "trigger", "effect"}),
+        allowed_attributes=frozenset({"name", "source", "target", "container", "kind", "guard"}),
+        allowed_children=frozenset({"guard", "trigger", "effect", "ownedRule"}),
         produces="Edge(type=Transition)",
     ),
     "uml:Message": UMLConceptSpec(
         concept_id="uml:Message",
-        allowed_attributes=frozenset({"name", "sendEvent", "receiveEvent", "messageSort", "messageKind", "connector"}),
+        allowed_attributes=frozenset(
+            {"name", "sendEvent", "receiveEvent", "interaction", "messageSort", "messageKind", "connector", "visibility", "signature"}
+        ),
         allowed_children=frozenset({"ownedComment", "argument"}),
         produces="Edge(type=Message)",
     ),
@@ -556,6 +564,9 @@ def _simple_node_handler_spec(
     boolean_attrs: Tuple[str, ...] = (),
     list_attrs: Tuple[str, ...] = (),
     rename_map: Optional[Mapping[str, str]] = None,
+    child_ref_tags: Tuple[str, ...] = (),
+    child_ref_rename_map: Optional[Mapping[str, str]] = None,
+    handled_children: Tuple[str, ...] = (),
     skip_href_without_id: bool = False,
 ) -> UMLHandlerSpec:
     return UMLHandlerSpec(
@@ -565,6 +576,9 @@ def _simple_node_handler_spec(
         boolean_attrs=boolean_attrs,
         list_attrs=list_attrs,
         rename_map=rename_map or {},
+        child_ref_tags=child_ref_tags,
+        child_ref_rename_map=child_ref_rename_map or {},
+        handled_children=handled_children,
         skip_href_without_id=skip_href_without_id,
     )
 
@@ -579,6 +593,9 @@ def _directed_edge_handler_spec(
     scalar_attrs: Tuple[str, ...] = (),
     list_attrs: Tuple[str, ...] = (),
     rename_map: Optional[Mapping[str, str]] = None,
+    child_ref_tags: Tuple[str, ...] = (),
+    child_ref_rename_map: Optional[Mapping[str, str]] = None,
+    handled_children: Tuple[str, ...] = (),
     include_name: bool = True,
 ) -> UMLHandlerSpec:
     return UMLHandlerSpec(
@@ -591,6 +608,9 @@ def _directed_edge_handler_spec(
         scalar_attrs=scalar_attrs,
         list_attrs=list_attrs,
         rename_map=rename_map or {},
+        child_ref_tags=child_ref_tags,
+        child_ref_rename_map=child_ref_rename_map or {},
+        handled_children=handled_children,
         include_name=include_name,
     )
 
@@ -602,6 +622,9 @@ def _node_parse_contract(
     boolean_attrs: Tuple[str, ...] = (),
     list_attrs: Tuple[str, ...] = (),
     rename_map: Optional[Mapping[str, str]] = None,
+    child_ref_tags: Tuple[str, ...] = (),
+    child_ref_rename_map: Optional[Mapping[str, str]] = None,
+    handled_children: Tuple[str, ...] = (),
     include_documentation: bool = True,
 ) -> UMLParseContract:
     return UMLParseContract(
@@ -610,6 +633,9 @@ def _node_parse_contract(
         boolean_attrs=boolean_attrs,
         list_attrs=list_attrs,
         rename_map=rename_map or {},
+        child_ref_tags=child_ref_tags,
+        child_ref_rename_map=child_ref_rename_map or {},
+        handled_children=handled_children,
         include_documentation=include_documentation,
         include_name=True,
     )
@@ -625,6 +651,9 @@ def _edge_parse_contract(
     scalar_attrs: Tuple[str, ...] = (),
     list_attrs: Tuple[str, ...] = (),
     rename_map: Optional[Mapping[str, str]] = None,
+    child_ref_tags: Tuple[str, ...] = (),
+    child_ref_rename_map: Optional[Mapping[str, str]] = None,
+    handled_children: Tuple[str, ...] = (),
     include_name: bool = True,
 ) -> UMLParseContract:
     return UMLParseContract(
@@ -636,6 +665,9 @@ def _edge_parse_contract(
         scalar_attrs=scalar_attrs,
         list_attrs=list_attrs,
         rename_map=rename_map or {},
+        child_ref_tags=child_ref_tags,
+        child_ref_rename_map=child_ref_rename_map or {},
+        handled_children=handled_children,
         include_documentation=False,
         include_name=include_name,
     )
@@ -651,6 +683,9 @@ def _parse_contract_from_handler_spec(handler_spec: UMLHandlerSpec) -> Optional[
             boolean_attrs=handler_spec.boolean_attrs,
             list_attrs=handler_spec.list_attrs,
             rename_map=handler_spec.rename_map,
+            child_ref_tags=handler_spec.child_ref_tags,
+            child_ref_rename_map=handler_spec.child_ref_rename_map,
+            handled_children=handler_spec.handled_children,
         )
 
     if handler_spec.kind == "directed_edge":
@@ -665,6 +700,9 @@ def _parse_contract_from_handler_spec(handler_spec: UMLHandlerSpec) -> Optional[
             scalar_attrs=handler_spec.scalar_attrs,
             list_attrs=handler_spec.list_attrs,
             rename_map=handler_spec.rename_map,
+            child_ref_tags=handler_spec.child_ref_tags,
+            child_ref_rename_map=handler_spec.child_ref_rename_map,
+            handled_children=handler_spec.handled_children,
             include_name=handler_spec.include_name,
         )
 
@@ -716,12 +754,14 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
     "uml:Interaction": _simple_node_handler_spec(
         node_type="Interaction",
         scalar_attrs=("visibility",),
+        boolean_attrs=("isLeaf",),
     ),
     "uml:InstanceSpecification": _simple_node_handler_spec(
         node_type="InstanceSpecification",
         scalar_attrs=("visibility",),
         list_attrs=("classifier",),
         rename_map={"classifier": "classifierRefs"},
+        child_ref_tags=("slot",),
     ),
     "uml:AssociationClass": _custom_handler_spec("AssociationClassHandler"),
     "uml:CommunicationPath": _custom_handler_spec(
@@ -798,14 +838,14 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
     "uml:InitialNode": _simple_node_handler_spec(
         node_type="InitialNode",
         scalar_attrs=("visibility",),
-        list_attrs=("incoming", "outgoing"),
-        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
     ),
     "uml:ActivityFinalNode": _simple_node_handler_spec(
         node_type="ActivityFinalNode",
         scalar_attrs=("visibility",),
-        list_attrs=("incoming", "outgoing"),
-        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
     ),
     "uml:FlowFinalNode": _simple_node_handler_spec(
         node_type="FlowFinalNode",
@@ -816,36 +856,37 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
     "uml:DecisionNode": _simple_node_handler_spec(
         node_type="DecisionNode",
         scalar_attrs=("visibility",),
-        list_attrs=("incoming", "outgoing"),
-        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
     ),
     "uml:MergeNode": _simple_node_handler_spec(
         node_type="MergeNode",
         scalar_attrs=("visibility",),
-        list_attrs=("incoming", "outgoing"),
-        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
     ),
     "uml:JoinNode": _simple_node_handler_spec(
         node_type="JoinNode",
         scalar_attrs=("visibility",),
-        list_attrs=("incoming", "outgoing"),
-        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
     ),
     "uml:ForkNode": _simple_node_handler_spec(
         node_type="ForkNode",
         scalar_attrs=("visibility",),
-        list_attrs=("incoming", "outgoing"),
-        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
     ),
     "uml:ActivityPartition": _simple_node_handler_spec(
         node_type="ActivityPartition",
         scalar_attrs=("visibility",),
         list_attrs=("node",),
         rename_map={"node": "nodeRefs"},
+        child_ref_tags=("subpartition",),
     ),
     "uml:MessageOccurrenceSpecification": _simple_node_handler_spec(
         node_type="MessageOccurrenceSpecification",
-        scalar_attrs=("enclosingInteraction",),
+        scalar_attrs=("enclosingInteraction", "message", "toAfter"),
         list_attrs=("covered",),
         rename_map={"covered": "coveredRefs"},
     ),
@@ -860,16 +901,19 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
         scalar_attrs=("enclosingInteraction", "start", "finish"),
         list_attrs=("covered",),
         rename_map={"covered": "coveredRefs"},
+        child_ref_tags=("generalOrdering",),
     ),
     "uml:Collaboration": _simple_node_handler_spec(
         node_type="Collaboration",
         scalar_attrs=("visibility",),
+        child_ref_tags=("ownedAttribute",),
     ),
     "uml:State": _simple_node_handler_spec(
         node_type="State",
         scalar_attrs=("visibility", "container"),
         list_attrs=("incoming", "outgoing"),
         rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+        child_ref_tags=("connectionPoint",),
     ),
     "uml:FinalState": _simple_node_handler_spec(
         node_type="FinalState",
@@ -889,7 +933,7 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
     ),
     "uml:Lifeline": _simple_node_handler_spec(
         node_type="Lifeline",
-        scalar_attrs=("visibility", "represents", "decomposedAs"),
+        scalar_attrs=("visibility", "interaction", "represents", "decomposedAs"),
         list_attrs=("coveredBy",),
         rename_map={"coveredBy": "coveredByRefs"},
     ),
@@ -904,6 +948,7 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
         scalar_attrs=("visibility", "enclosingInteraction", "guard"),
         list_attrs=("covered",),
         rename_map={"covered": "coveredRefs"},
+        child_ref_tags=("guard",),
     ),
     "uml:InstanceValue": _simple_node_handler_spec(
         node_type="InstanceValue",
@@ -947,7 +992,7 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
         edge_type="ControlFlow",
         source_attr="source",
         target_attr="target",
-        scalar_attrs=("activity",),
+        scalar_attrs=("activity", "visibility"),
     ),
     "uml:ObjectFlow": _directed_edge_handler_spec(
         edge_type="ObjectFlow",
@@ -959,13 +1004,14 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
         edge_type="Transition",
         source_attr="source",
         target_attr="target",
-        scalar_attrs=("container", "kind"),
+        scalar_attrs=("container", "kind", "guard"),
+        child_ref_tags=("ownedRule",),
     ),
     "uml:Message": _directed_edge_handler_spec(
         edge_type="Message",
         source_attr="sendEvent",
         target_attr="receiveEvent",
-        scalar_attrs=("messageSort", "messageKind", "connector"),
+        scalar_attrs=("interaction", "messageSort", "messageKind", "connector", "visibility", "signature"),
     ),
     "uml:Generalization": _custom_handler_spec("GeneralizationHandler"),
     "uml:InterfaceRealization": _custom_handler_spec("InterfaceRealizationHandler"),

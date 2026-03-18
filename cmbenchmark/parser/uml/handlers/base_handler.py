@@ -199,6 +199,41 @@ class ElementHandler(ABC):
             rename_map=contract.rename_map,
         )
 
+    def collect_child_refs(
+        self,
+        elem: ET.Element,
+        *,
+        child_tags: Iterable[str] = (),
+        rename_map: Optional[Mapping[str, str]] = None,
+    ) -> Dict[str, List[str]]:
+        """Collect xmi:id references from selected direct child tags."""
+        tags = tuple(dict.fromkeys(child_tags))
+        if not tags:
+            return {}
+
+        tag_set = set(tags)
+        rename_map = rename_map or {}
+        refs_by_tag: Dict[str, List[str]] = {tag: [] for tag in tags}
+
+        for child in elem:
+            if is_tool_extension(child):
+                continue
+            child_tag = localname(child.tag)
+            if child_tag not in tag_set:
+                continue
+            child_id = xmi_id(child)
+            if child_id:
+                refs_by_tag[child_tag].append(child_id)
+
+        out: Dict[str, List[str]] = {}
+        for tag in tags:
+            refs = refs_by_tag.get(tag) or []
+            if not refs:
+                continue
+            key = rename_map.get(tag, f"{tag}Refs")
+            out[key] = refs
+        return out
+
     def upsert_node(
         self,
         ctx,
