@@ -373,13 +373,17 @@ def test_handler_association_edge(synthetic_uml_ir) -> None:
     edges = _edges_by_id(synthetic_uml_ir)
 
     assoc = edges["assoc1"]
-    assert assoc.type == "Association"
+    assert assoc.type == "Composition"
     assert assoc.sourceId == "c1"
     assert assoc.targetId == "c2"
     assert assoc.data["name"] == "Person_Employee"
     assert assoc.data["end1"]["aggregation"] == "composite"
     assert assoc.data["end1"]["upper"] == "1"
     assert assoc.data["end2"]["upper"] == "*"
+    assert assoc.data["associationId"] == "assoc1"
+    assert assoc.data["wholeEndId"] == "ae1"
+    assert assoc.data["partEndId"] == "ae2"
+    assert "assoc1__composition" not in edges
 
 
 def test_handler_generalization_edge(synthetic_uml_ir) -> None:
@@ -1000,6 +1004,100 @@ def test_interaction_and_state_machine_concepts_are_mapped(tmp_path) -> None:
     assert edges["t2"].type == "Transition"
     assert edges["t2"].sourceId == "s1"
     assert edges["t2"].targetId == "s2"
+
+
+def test_recently_unhandled_attributes_and_children_are_parsed(tmp_path) -> None:
+    xmi = """<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:xmi="http://schema.omg.org/spec/XMI/2.1"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML">
+  <uml:Model xmi:id="m1" name="ModelA">
+    <packagedElement xsi:type="uml:Class" xmi:id="c1" name="ClassA"/>
+    <packagedElement xsi:type="uml:Interaction" xmi:id="in1" name="InteractionA" isLeaf="true">
+      <lifeline xmi:id="lif1" name="Client" interaction="in1"/>
+      <lifeline xmi:id="lif2" name="Server" interaction="in1"/>
+      <fragment xsi:type="uml:MessageOccurrenceSpecification" xmi:id="mos1" covered="lif1" enclosingInteraction="in1" message="msg1"/>
+      <fragment xsi:type="uml:MessageOccurrenceSpecification" xmi:id="mos2" covered="lif2" enclosingInteraction="in1" message="msg1" toAfter="mos1"/>
+      <message xmi:id="msg1" name="request" sendEvent="mos1" receiveEvent="mos2" interaction="in1" messageSort="synchCall" visibility="public" signature="sig1"/>
+      <fragment xsi:type="uml:BehaviorExecutionSpecification" xmi:id="bes1" covered="lif2" enclosingInteraction="in1" start="mos1" finish="mos2">
+        <generalOrdering xmi:id="go1" before="mos2"/>
+      </fragment>
+      <fragment xsi:type="uml:CombinedFragment" xmi:id="cf1" interactionOperator="loop" enclosingInteraction="in1">
+        <operand xmi:id="op1" name="operand1">
+          <guard xmi:id="g1" name="guard1"/>
+        </operand>
+      </fragment>
+      <nestedClassifier xsi:type="uml:Collaboration" xmi:id="col1" name="Collab1">
+        <ownedAttribute xmi:id="colAttr1" name="item" type="c1"/>
+      </nestedClassifier>
+    </packagedElement>
+    <packagedElement xsi:type="uml:InstanceSpecification" xmi:id="ins1" name="InstanceA" classifier="c1">
+      <slot xmi:id="slot1" owningInstance="ins1" definingFeature="colAttr1"/>
+    </packagedElement>
+    <packagedElement xsi:type="uml:Activity" xmi:id="act1" name="ActivityA">
+      <ownedGroup xsi:type="uml:ActivityPartition" xmi:id="p1" name="PartitionA" node="n1 n2 n3 n4 n5 n6">
+        <subpartition xmi:id="sp1" name="SubPartitionA" node="n2 n3" superPartition="p1"/>
+      </ownedGroup>
+      <ownedNode xsi:type="uml:InitialNode" xmi:id="n1" name="Start" inPartition="p1" outgoing="e1"/>
+      <ownedNode xsi:type="uml:DecisionNode" xmi:id="n2" name="Decision" inPartition="p1" incoming="e1" outgoing="e2"/>
+      <ownedNode xsi:type="uml:MergeNode" xmi:id="n3" name="Merge" inPartition="p1" incoming="e2" outgoing="e3"/>
+      <ownedNode xsi:type="uml:ForkNode" xmi:id="n4" name="Fork" inPartition="p1" incoming="e3" outgoing="e4"/>
+      <ownedNode xsi:type="uml:JoinNode" xmi:id="n5" name="Join" inPartition="p1" incoming="e4" outgoing="e5"/>
+      <ownedNode xsi:type="uml:ActivityFinalNode" xmi:id="n6" name="End" inPartition="p1" incoming="e5"/>
+      <edge xsi:type="uml:ControlFlow" xmi:id="e1" source="n1" target="n2" activity="act1" visibility="private"/>
+      <edge xsi:type="uml:ControlFlow" xmi:id="e2" source="n2" target="n3" activity="act1"/>
+      <edge xsi:type="uml:ControlFlow" xmi:id="e3" source="n3" target="n4" activity="act1"/>
+      <edge xsi:type="uml:ControlFlow" xmi:id="e4" source="n4" target="n5" activity="act1"/>
+      <edge xsi:type="uml:ControlFlow" xmi:id="e5" source="n5" target="n6" activity="act1"/>
+    </packagedElement>
+    <packagedElement xsi:type="uml:StateMachine" xmi:id="sm1" name="SM">
+      <region xmi:id="r1" stateMachine="sm1">
+        <subvertex xsi:type="uml:State" xmi:id="s1" name="State1" container="r1">
+          <connectionPoint xmi:id="cp1" name="entryPoint" state="s1"/>
+        </subvertex>
+        <subvertex xsi:type="uml:State" xmi:id="s2" name="State2" container="r1"/>
+        <transition xmi:id="t1" source="s1" target="s2" container="r1" guard="rule1">
+          <ownedRule xmi:id="rule1" context="t1"/>
+        </transition>
+      </region>
+    </packagedElement>
+  </uml:Model>
+</xmi:XMI>
+"""
+    path = tmp_path / "recently_unhandled_fields.xmi"
+    path.write_text(xmi, encoding="utf-8")
+
+    parser = UMLXMIParser()
+    ir, stats = parser.parse(str(path))
+    nodes = _nodes_by_id(ir)
+    edges = _edges_by_id(ir)
+
+    assert nodes["in1"].data["isLeaf"] is True
+    assert nodes["lif1"].data["interaction"] == "in1"
+    assert nodes["mos1"].data["message"] == "msg1"
+    assert nodes["mos2"].data["toAfter"] == "mos1"
+    assert nodes["bes1"].data["generalOrderingRefs"] == ["go1"]
+    assert nodes["op1"].data["guardRefs"] == ["g1"]
+    assert nodes["col1"].data["ownedAttributeRefs"] == ["colAttr1"]
+    assert nodes["ins1"].data["slotRefs"] == ["slot1"]
+    assert nodes["p1"].data["subpartitionRefs"] == ["sp1"]
+    assert nodes["n1"].data["inPartitionRefs"] == ["p1"]
+    assert nodes["n2"].data["inPartitionRefs"] == ["p1"]
+    assert nodes["n3"].data["inPartitionRefs"] == ["p1"]
+    assert nodes["n4"].data["inPartitionRefs"] == ["p1"]
+    assert nodes["n5"].data["inPartitionRefs"] == ["p1"]
+    assert nodes["n6"].data["inPartitionRefs"] == ["p1"]
+    assert nodes["s1"].data["connectionPointRefs"] == ["cp1"]
+
+    assert edges["msg1"].data["interaction"] == "in1"
+    assert edges["msg1"].data["visibility"] == "public"
+    assert edges["msg1"].data["signature"] == "sig1"
+    assert edges["e1"].data["visibility"] == "private"
+    assert edges["t1"].data["guard"] == "rule1"
+    assert edges["t1"].data["ownedRuleRefs"] == ["rule1"]
+
+    assert stats.warnings_by_type.get(WarningType.UNHANDLED_ATTRIBUTE, 0) == 0
+    assert stats.warnings_by_type.get(WarningType.UNHANDLED_CHILD, 0) == 0
 
 
 @pytest.mark.parametrize("concept_id", sorted(SUPPORTED_UML_CONCEPTS))

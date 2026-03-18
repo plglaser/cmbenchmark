@@ -72,26 +72,48 @@ class AssociationHandler(ElementHandler):
 
         end1, end2 = ends[0], ends[1]
 
-        source_id = end1["typeId"]
-        target_id = end2["typeId"]
-
         data: Dict[str, Any] = {
             "end1": self._clean_end_data(end1),
             "end2": self._clean_end_data(end2),
         }
         data.update(self.collect_concept_attributes(elem))
 
+        assoc_name = ""
         if contract.include_name:
             assoc_name = self.read_name(elem)
             if assoc_name:
                 data["name"] = assoc_name
+
+        source_id = end1["typeId"]
+        target_id = end2["typeId"]
+        edge_type = contract.edge_type or self._edge_type
+
+        composition_pairs = []
+        if end1.get("aggregation") == "composite":
+            composition_pairs.append((end1, end2))
+        if end2.get("aggregation") == "composite":
+            composition_pairs.append((end2, end1))
+
+        if composition_pairs:
+            whole_end, part_end = composition_pairs[0]
+            source_id = whole_end["typeId"]
+            target_id = part_end["typeId"]
+            edge_type = "Composition"
+            data["associationId"] = assoc_id
+            data["wholeEndId"] = whole_end["id"]
+            data["partEndId"] = part_end["id"]
+            if len(composition_pairs) > 1:
+                data["compositionPairs"] = [
+                    {"wholeEndId": whole["id"], "partEndId": part["id"]}
+                    for whole, part in composition_pairs
+                ]
 
         ctx.add_edge(
             Edge(
                 id=assoc_id,
                 sourceId=source_id,
                 targetId=target_id,
-                type=contract.edge_type or self._edge_type,
+                type=edge_type,
                 data=data,
             )
         )
