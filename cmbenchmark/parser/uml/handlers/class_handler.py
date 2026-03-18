@@ -23,18 +23,14 @@ class ClassHandler(ElementHandler):
         """Create Class node with attributes and operations."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         class_id = self.require_xmi_id(ctx, elem, role="Node")
         if not class_id:
             return
 
         name = self.read_name(elem)
-        data: Dict[str, Any] = self.collect_attributes(
-            elem,
-            scalar_attrs=("visibility", "href", "owningTemplateParameter"),
-            boolean_attrs=("isAbstract", "isLeaf"),
-            list_attrs=("templateParameter",),
-        )
+        data: Dict[str, Any] = self.collect_concept_attributes(elem)
 
         doc = self.extract_documentation(elem)
         if doc:
@@ -51,7 +47,7 @@ class ClassHandler(ElementHandler):
         self.upsert_node(
             ctx,
             node_id=class_id,
-            node_type="Class",
+            node_type=contract.node_type or "Class",
             name=name,
             data=data,
         )
@@ -86,7 +82,7 @@ class ClassHandler(ElementHandler):
             else:
                 resolved_type = self.resolve_property_type(ctx, attr)
                 if resolved_type:
-                    item["type"] = resolved_type
+                    self.set_resolved_type_fields(item, resolved_type)
                 else:
                     attr_type = xsi_type(attr) or "ownedAttribute"
                     ctx.warn(

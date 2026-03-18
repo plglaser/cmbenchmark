@@ -19,11 +19,17 @@ class ExtendHandler(ElementHandler):
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         extend_id = xmi_id(elem)
 
-        source_id = elem.attrib.get("extension")
-        target_id = self.resolve_reference(elem, "extendedCase", "extendedCase")
+        source_attr = contract.source_attr or "extension"
+        target_attr = contract.target_attr or "extendedCase"
+        source_child_tag = contract.source_child_tag or source_attr
+        target_child_tag = contract.target_child_tag or target_attr
+
+        source_id = self.resolve_reference(elem, source_attr, source_child_tag)
+        target_id = self.resolve_reference(elem, target_attr, target_child_tag)
         extension_location = self.resolve_reference(elem, "extensionLocation", "extensionLocation")
 
         if not source_id or not target_id:
@@ -43,6 +49,11 @@ class ExtendHandler(ElementHandler):
                 ext_point_name = ext_point_elem.attrib.get("name")
                 if ext_point_name:
                     edge_data["extensionPoint"] = ext_point_name
+            else:
+                ctx.warn(
+                    WarningType.DEFERRED_REF_UNRESOLVED,
+                    f"uml:Extend references unresolved extensionLocation '{extension_location}'.",
+                )
 
         edge_id = extend_id or f"{source_id}__extends__{target_id}"
         ctx.add_edge(
@@ -50,7 +61,7 @@ class ExtendHandler(ElementHandler):
                 id=edge_id,
                 sourceId=source_id,
                 targetId=target_id,
-                type="extends",
+                type=contract.edge_type or "extends",
                 data=edge_data,
             )
         )

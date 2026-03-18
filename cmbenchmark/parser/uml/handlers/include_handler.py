@@ -18,10 +18,16 @@ class IncludeHandler(ElementHandler):
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         include_id = xmi_id(elem)
-        source_id = elem.attrib.get("includingCase")
-        target_id = self.resolve_reference(elem, "addition", "addition")
+        source_attr = contract.source_attr or "includingCase"
+        target_attr = contract.target_attr or "addition"
+        source_child_tag = contract.source_child_tag or source_attr
+        target_child_tag = contract.target_child_tag or target_attr
+
+        source_id = self.resolve_reference(elem, source_attr, source_child_tag)
+        target_id = self.resolve_reference(elem, target_attr, target_child_tag)
 
         if not source_id or not target_id:
             include_id = xmi_id(elem) or "<no-id>"
@@ -38,7 +44,7 @@ class IncludeHandler(ElementHandler):
                 id=edge_id,
                 sourceId=source_id,
                 targetId=target_id,
-                type="includes",
+                type=contract.edge_type or "includes",
                 data={},
             )
         )

@@ -17,17 +17,14 @@ class DataTypeHandler(ElementHandler):
         """Create DataType node."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         data_type_id = self.require_xmi_id(ctx, elem, role="Node")
         if not data_type_id:
             return
 
         name = self.read_name(elem)
-        data: Dict[str, Any] = self.collect_attributes(
-            elem,
-            scalar_attrs=("visibility", "href"),
-            boolean_attrs=("isAbstract",),
-        )
+        data: Dict[str, Any] = self.collect_concept_attributes(elem)
 
         doc = self.extract_documentation(elem)
         if doc:
@@ -36,7 +33,7 @@ class DataTypeHandler(ElementHandler):
         self.upsert_node(
             ctx,
             node_id=data_type_id,
-            node_type="DataType",
+            node_type=contract.node_type or "DataType",
             name=name,
             data=data,
         )

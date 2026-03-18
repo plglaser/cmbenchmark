@@ -49,7 +49,7 @@ class ModelHandler(ElementHandler):
             }
         )
 
-        ctx.ir.data.update(self.collect_attributes(elem, scalar_attrs=("visibility",)))
+        ctx.ir.data.update(self.collect_concept_attributes(elem))
         if xmi_version:
             ctx.ir.data["xmi_version"] = xmi_version
         if imports:

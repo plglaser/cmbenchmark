@@ -17,17 +17,14 @@ class ActorHandler(ElementHandler):
         """Create Actor node."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         actor_id = self.require_xmi_id(ctx, elem, role="Node")
         if not actor_id:
             return
 
         name = self.read_name(elem)
-        data: Dict[str, Any] = self.collect_attributes(
-            elem,
-            scalar_attrs=("visibility", "href"),
-            boolean_attrs=("isAbstract", "isLeaf"),
-        )
+        data: Dict[str, Any] = self.collect_concept_attributes(elem)
         doc = self.extract_documentation(elem)
         if doc:
             data["documentation"] = doc
@@ -35,7 +32,7 @@ class ActorHandler(ElementHandler):
         self.upsert_node(
             ctx,
             node_id=actor_id,
-            node_type="Actor",
+            node_type=contract.node_type or "Actor",
             name=name,
             data=data,
         )

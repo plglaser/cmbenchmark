@@ -19,16 +19,22 @@ class GeneralizationHandler(ElementHandler):
         """Create Generalization edge."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         gen_id = xmi_id(elem)
 
-        specific_id = elem.attrib.get("specific")
+        source_attr = contract.source_attr or "specific"
+        target_attr = contract.target_attr or "general"
+        source_child_tag = contract.source_child_tag or source_attr
+        target_child_tag = contract.target_child_tag or target_attr
+
+        specific_id = self.resolve_reference(elem, source_attr, source_child_tag)
         if not specific_id:
             parent = ctx.parent_map.get(elem)
             if parent is not None:
                 specific_id = xmi_id(parent)
 
-        general_id = self.resolve_reference(elem, "general", "general")
+        general_id = self.resolve_reference(elem, target_attr, target_child_tag)
 
         if not specific_id or not general_id:
             gen_label = gen_id or "<no-id>"
@@ -45,16 +51,17 @@ class GeneralizationHandler(ElementHandler):
             "general": general_id,
             "specific": specific_id,
         }
-        name = elem.attrib.get("name")
-        if name:
-            data["name"] = name
+        if contract.include_name:
+            name = self.read_name(elem)
+            if name:
+                data["name"] = name
 
         ctx.add_edge(
             Edge(
                 id=edge_id,
                 sourceId=specific_id,
                 targetId=general_id,
-                type="Generalization",
+                type=contract.edge_type or "Generalization",
                 data=data,
             )
         )

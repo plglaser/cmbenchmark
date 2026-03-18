@@ -22,6 +22,16 @@
       "description": "UML metamodel element 'ActivityFinalNode'."
     },
     {
+      "id": "uml:ActivityParameterNode",
+      "kind": "node_type",
+      "match_type": "ActivityParameterNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'ActivityParameterNode'."
+    },
+    {
       "id": "uml:ActivityPartition",
       "kind": "node_type",
       "match_type": "ActivityPartition",
@@ -72,6 +82,26 @@
       "description": "UML metamodel element 'BehaviorExecutionSpecification'."
     },
     {
+      "id": "uml:CallBehaviorAction",
+      "kind": "node_type",
+      "match_type": "CallBehaviorAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'CallBehaviorAction'."
+    },
+    {
+      "id": "uml:CentralBufferNode",
+      "kind": "node_type",
+      "match_type": "CentralBufferNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'CentralBufferNode'."
+    },
+    {
       "id": "uml:Class",
       "kind": "node_type",
       "match_type": "Class",
@@ -80,6 +110,16 @@
         "group": "structure"
       },
       "description": "UML metamodel element 'Class'."
+    },
+    {
+      "id": "uml:ClassifierTemplateParameter",
+      "kind": "node_type",
+      "match_type": "ClassifierTemplateParameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'ClassifierTemplateParameter'."
     },
     {
       "id": "uml:Collaboration",
@@ -120,6 +160,16 @@
         "group": "structure"
       },
       "description": "UML metamodel element 'DataType'."
+    },
+    {
+      "id": "uml:DataStoreNode",
+      "kind": "node_type",
+      "match_type": "DataStoreNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'DataStoreNode'."
     },
     {
       "id": "uml:DecisionNode",
@@ -190,6 +240,16 @@
         "group": "value"
       },
       "description": "UML metamodel element 'Expression'."
+    },
+    {
+      "id": "uml:FinalState",
+      "kind": "node_type",
+      "match_type": "FinalState",
+      "match_data_equals": {},
+      "meta": {
+        "group": "state"
+      },
+      "description": "UML metamodel element 'FinalState'."
     },
     {
       "id": "uml:FlowFinalNode",
@@ -392,6 +452,16 @@
       "description": "UML metamodel element 'Package'."
     },
     {
+      "id": "uml:Port",
+      "kind": "node_type",
+      "match_type": "Port",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'Port'."
+    },
+    {
       "id": "uml:PrimitiveType",
       "kind": "node_type",
       "match_type": "PrimitiveType",
@@ -420,6 +490,26 @@
         "group": "state"
       },
       "description": "UML metamodel element 'Region'."
+    },
+    {
+      "id": "uml:RedefinableTemplateSignature",
+      "kind": "node_type",
+      "match_type": "RedefinableTemplateSignature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel element 'RedefinableTemplateSignature'."
+    },
+    {
+      "id": "uml:SendSignalAction",
+      "kind": "node_type",
+      "match_type": "SendSignalAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel element 'SendSignalAction'."
     },
     {
       "id": "uml:State",

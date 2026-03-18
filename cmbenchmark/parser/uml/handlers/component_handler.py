@@ -16,17 +16,14 @@ class ComponentHandler(ElementHandler):
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         component_id = self.require_xmi_id(ctx, elem, role="Node")
         if not component_id:
             return
 
         name = self.read_name(elem)
-        data: Dict[str, Any] = self.collect_attributes(
-            elem,
-            scalar_attrs=("visibility",),
-            boolean_attrs=("isAbstract", "isLeaf"),
-        )
+        data: Dict[str, Any] = self.collect_concept_attributes(elem)
 
         doc = self.extract_documentation(elem)
         if doc:
@@ -35,7 +32,7 @@ class ComponentHandler(ElementHandler):
         self.upsert_node(
             ctx,
             node_id=component_id,
-            node_type="Component",
+            node_type=contract.node_type or "Component",
             name=name,
             data=data,
         )

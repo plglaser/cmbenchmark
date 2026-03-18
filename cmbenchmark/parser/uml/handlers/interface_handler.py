@@ -17,17 +17,14 @@ class InterfaceHandler(ElementHandler):
         """Create Interface node with operations."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         interface_id = self.require_xmi_id(ctx, elem, role="Node")
         if not interface_id:
             return
 
         name = self.read_name(elem)
-        data: Dict[str, Any] = self.collect_attributes(
-            elem,
-            scalar_attrs=("visibility", "href"),
-            boolean_attrs=("isAbstract",),
-        )
+        data: Dict[str, Any] = self.collect_concept_attributes(elem)
 
         doc = self.extract_documentation(elem)
         if doc:
@@ -40,7 +37,7 @@ class InterfaceHandler(ElementHandler):
         self.upsert_node(
             ctx,
             node_id=interface_id,
-            node_type="Interface",
+            node_type=contract.node_type or "Interface",
             name=name,
             data=data,
         )

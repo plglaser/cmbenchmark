@@ -18,11 +18,17 @@ class InterfaceRealizationHandler(ElementHandler):
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         rel_id = xmi_id(elem)
 
-        source_id = elem.attrib.get("implementingClassifier") or elem.attrib.get("client")
-        target_id = self.resolve_reference(elem, "contract", "contract") or elem.attrib.get("supplier")
+        source_attr = contract.source_attr or "implementingClassifier"
+        target_attr = contract.target_attr or "contract"
+        source_child_tag = contract.source_child_tag or source_attr
+        target_child_tag = contract.target_child_tag or target_attr
+
+        source_id = self.resolve_reference(elem, source_attr, source_child_tag) or elem.attrib.get("client")
+        target_id = self.resolve_reference(elem, target_attr, target_child_tag) or elem.attrib.get("supplier")
 
         if not source_id or not target_id:
             rel_label = rel_id or "<no-id>"
@@ -34,22 +40,21 @@ class InterfaceRealizationHandler(ElementHandler):
             return
 
         edge_id = rel_id or f"{source_id}__realizes__{target_id}"
-        data = {
-            "client": elem.attrib.get("client"),
-            "supplier": elem.attrib.get("supplier"),
-            "implementingClassifier": elem.attrib.get("implementingClassifier"),
-            "contract": elem.attrib.get("contract"),
-        }
+        data = self.collect_concept_attributes(elem)
+        data[source_attr] = elem.attrib.get(source_attr)
+        data[target_attr] = elem.attrib.get(target_attr)
         data = {k: v for k, v in data.items() if v is not None}
-        if "name" in elem.attrib:
-            data["name"] = elem.attrib["name"]
+        if contract.include_name:
+            rel_name = self.read_name(elem)
+            if rel_name:
+                data["name"] = rel_name
 
         ctx.add_edge(
             Edge(
                 id=edge_id,
                 sourceId=source_id,
                 targetId=target_id,
-                type="InterfaceRealization",
+                type=contract.edge_type or "InterfaceRealization",
                 data=data,
             )
         )

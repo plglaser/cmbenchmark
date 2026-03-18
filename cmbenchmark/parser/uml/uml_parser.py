@@ -173,6 +173,7 @@ class UMLXMIParser(BaseParser):
                 boolean_attrs=handler_spec.boolean_attrs,
                 list_attrs=handler_spec.list_attrs,
                 rename_map=handler_spec.rename_map,
+                skip_href_without_id=handler_spec.skip_href_without_id,
             )
 
         if handler_spec.kind == "directed_edge":

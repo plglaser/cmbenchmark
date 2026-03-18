@@ -20,17 +20,13 @@ class AssociationClassHandler(ElementHandler):
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         assoc_class_id = self.require_xmi_id(ctx, elem, role="Node")
         if not assoc_class_id:
             return
 
-        data: Dict[str, Any] = self.collect_attributes(
-            elem,
-            scalar_attrs=("visibility",),
-            boolean_attrs=("isAbstract", "isLeaf"),
-            list_attrs=("memberEnd", "navigableOwnedEnd"),
-        )
+        data: Dict[str, Any] = self.collect_concept_attributes(elem)
 
         doc = self.extract_documentation(elem)
         if doc:
@@ -47,7 +43,7 @@ class AssociationClassHandler(ElementHandler):
         self.upsert_node(
             ctx,
             node_id=assoc_class_id,
-            node_type="AssociationClass",
+            node_type=contract.node_type or "AssociationClass",
             name=self.read_name(elem),
             data=data,
         )
@@ -80,7 +76,7 @@ class AssociationClassHandler(ElementHandler):
             else:
                 resolved_type = self.resolve_property_type(ctx, attr)
                 if resolved_type:
-                    item["type"] = resolved_type
+                    self.set_resolved_type_fields(item, resolved_type)
                 else:
                     attr_type = xsi_type(attr) or "ownedAttribute"
                     ctx.warn(

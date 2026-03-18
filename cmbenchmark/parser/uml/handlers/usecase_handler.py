@@ -20,17 +20,14 @@ class UseCaseHandler(ElementHandler):
         """Create UseCase node; include/extend are handled by dedicated handlers."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         usecase_id = self.require_xmi_id(ctx, elem, role="Node")
         if not usecase_id:
             return
 
         name = self.read_name(elem)
-        data: Dict[str, Any] = self.collect_attributes(
-            elem,
-            scalar_attrs=("visibility", "href"),
-            boolean_attrs=("isAbstract", "isLeaf"),
-        )
+        data: Dict[str, Any] = self.collect_concept_attributes(elem)
 
         doc = self.extract_documentation(elem)
         if doc:
@@ -43,7 +40,7 @@ class UseCaseHandler(ElementHandler):
         self.upsert_node(
             ctx,
             node_id=usecase_id,
-            node_type="UseCase",
+            node_type=contract.node_type or "UseCase",
             name=name,
             data=data,
         )

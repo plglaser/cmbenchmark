@@ -29,6 +29,7 @@ class AssociationHandler(ElementHandler):
         """Create Association edge from owned/member ends."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         assoc_id = self.require_xmi_id(ctx, elem, role="Edge")
         if not assoc_id:
@@ -51,6 +52,11 @@ class AssociationHandler(ElementHandler):
                     ref_elem = ctx.elem(end_id)
                     if ref_elem is not None:
                         parsed = self._parse_association_end(ctx, ref_elem, fallback_id=end_id)
+                    else:
+                        ctx.warn(
+                            WarningType.DEFERRED_REF_UNRESOLVED,
+                            f"Association {assoc_id} references unresolved memberEnd '{end_id}'.",
+                        )
                 if parsed:
                     ends.append(parsed)
         else:
@@ -73,20 +79,19 @@ class AssociationHandler(ElementHandler):
             "end1": self._clean_end_data(end1),
             "end2": self._clean_end_data(end2),
         }
-        navigable_owned_end = self.split_ref_list(elem.attrib.get("navigableOwnedEnd"))
-        if navigable_owned_end:
-            data["navigableOwnedEnd"] = navigable_owned_end
+        data.update(self.collect_concept_attributes(elem))
 
-        assoc_name = self.read_name(elem)
-        if assoc_name:
-            data["name"] = assoc_name
+        if contract.include_name:
+            assoc_name = self.read_name(elem)
+            if assoc_name:
+                data["name"] = assoc_name
 
         ctx.add_edge(
             Edge(
                 id=assoc_id,
                 sourceId=source_id,
                 targetId=target_id,
-                type=self._edge_type,
+                type=contract.edge_type or self._edge_type,
                 data=data,
             )
         )

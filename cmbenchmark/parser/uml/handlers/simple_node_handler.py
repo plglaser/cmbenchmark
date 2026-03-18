@@ -6,6 +6,7 @@ from typing import Dict, Mapping, Optional, Sequence, Set
 import xml.etree.ElementTree as ET
 
 from cmbenchmark.parser.uml.handlers.base_handler import ElementHandler
+from cmbenchmark.parser.uml.xmi_utils import xmi_id
 
 
 class SimpleNodeHandler(ElementHandler):
@@ -22,6 +23,7 @@ class SimpleNodeHandler(ElementHandler):
         rename_map: Optional[Mapping[str, str]] = None,
         include_documentation: bool = True,
         log_unhandled: bool = True,
+        skip_href_without_id: bool = False,
     ):
         self._element_type = element_type
         self._node_type = node_type
@@ -31,6 +33,7 @@ class SimpleNodeHandler(ElementHandler):
         self._rename_map = dict(rename_map or {})
         self._include_documentation = include_documentation
         self._log_unhandled = log_unhandled
+        self._skip_href_without_id = skip_href_without_id
 
     @property
     def element_type(self) -> str:
@@ -53,6 +56,11 @@ class SimpleNodeHandler(ElementHandler):
     def handle(self, ctx, elem: ET.Element) -> None:
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+
+        # External type references (e.g., PrimitiveTypes.xmi#//String) are not
+        # model elements and commonly have no xmi:id.
+        if self._skip_href_without_id and not xmi_id(elem) and elem.attrib.get("href"):
+            return
 
         node_id = self.require_xmi_id(ctx, elem, role="Node")
         if not node_id:

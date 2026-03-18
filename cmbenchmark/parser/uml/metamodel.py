@@ -29,7 +29,26 @@ class UMLHandlerSpec:
     source_child_tag: Optional[str] = None
     target_child_tag: Optional[str] = None
     include_name: bool = True
+    skip_href_without_id: bool = False
     custom_kwargs: Mapping[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class UMLParseContract:
+    """Concept-level parse contract consumed by handlers."""
+
+    node_type: Optional[str] = None
+    edge_type: Optional[str] = None
+    scalar_attrs: Tuple[str, ...] = ()
+    boolean_attrs: Tuple[str, ...] = ()
+    list_attrs: Tuple[str, ...] = ()
+    rename_map: Mapping[str, str] = field(default_factory=dict)
+    source_attr: Optional[str] = None
+    target_attr: Optional[str] = None
+    source_child_tag: Optional[str] = None
+    target_child_tag: Optional[str] = None
+    include_documentation: bool = True
+    include_name: bool = True
 
 
 @dataclass(frozen=True)
@@ -41,6 +60,7 @@ class UMLConceptSpec:
     allowed_children: FrozenSet[str]
     produces: str
     handler: Optional[UMLHandlerSpec] = None
+    parse_contract: Optional[UMLParseContract] = None
 
 
 SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
@@ -71,6 +91,18 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
             "elementImport",
         }),
         produces="Node(type=Class)",
+    ),
+    "uml:ClassifierTemplateParameter": UMLConceptSpec(
+        concept_id="uml:ClassifierTemplateParameter",
+        allowed_attributes=frozenset({"name", "parameteredElement", "signature", "constrainingClassifier"}),
+        allowed_children=frozenset({"ownedParameteredElement", "constrainingClassifier", "ownedComment"}),
+        produces="Node(type=ClassifierTemplateParameter)",
+    ),
+    "uml:RedefinableTemplateSignature": UMLConceptSpec(
+        concept_id="uml:RedefinableTemplateSignature",
+        allowed_attributes=frozenset({"name", "parameter"}),
+        allowed_children=frozenset({"ownedParameter", "ownedComment"}),
+        produces="Node(type=RedefinableTemplateSignature)",
     ),
     "uml:Interface": UMLConceptSpec(
         concept_id="uml:Interface",
@@ -112,6 +144,23 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
             "ownedAttribute",
         }),
         produces="Node(type=Component)",
+    ),
+    "uml:Port": UMLConceptSpec(
+        concept_id="uml:Port",
+        allowed_attributes=frozenset(
+            {
+                "name",
+                "visibility",
+                "type",
+                "isDerived",
+                "isReadOnly",
+                "isUnique",
+                "isOrdered",
+                "isStatic",
+            }
+        ),
+        allowed_children=frozenset({"ownedComment", "lowerValue", "upperValue", "defaultValue"}),
+        produces="Node(type=Port)",
     ),
     "uml:UseCase": UMLConceptSpec(
         concept_id="uml:UseCase",
@@ -225,9 +274,39 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
     ),
     "uml:OpaqueAction": UMLConceptSpec(
         concept_id="uml:OpaqueAction",
-        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing"}),
+        allowed_attributes=frozenset({"name", "visibility", "incoming", "outgoing", "inPartition", "href"}),
         allowed_children=frozenset({"ownedComment", "inputValue", "outputValue"}),
         produces="Node(type=OpaqueAction)",
+    ),
+    "uml:CallBehaviorAction": UMLConceptSpec(
+        concept_id="uml:CallBehaviorAction",
+        allowed_attributes=frozenset({"name", "visibility", "behavior", "incoming", "outgoing", "inPartition"}),
+        allowed_children=frozenset({"ownedComment", "argument", "result"}),
+        produces="Node(type=CallBehaviorAction)",
+    ),
+    "uml:SendSignalAction": UMLConceptSpec(
+        concept_id="uml:SendSignalAction",
+        allowed_attributes=frozenset({"name", "visibility", "signal", "incoming", "outgoing", "inPartition"}),
+        allowed_children=frozenset({"ownedComment", "argument", "target"}),
+        produces="Node(type=SendSignalAction)",
+    ),
+    "uml:ActivityParameterNode": UMLConceptSpec(
+        concept_id="uml:ActivityParameterNode",
+        allowed_attributes=frozenset({"name", "visibility", "parameter", "incoming", "outgoing", "inPartition"}),
+        allowed_children=frozenset({"ownedComment"}),
+        produces="Node(type=ActivityParameterNode)",
+    ),
+    "uml:CentralBufferNode": UMLConceptSpec(
+        concept_id="uml:CentralBufferNode",
+        allowed_attributes=frozenset({"name", "visibility", "type", "incoming", "outgoing", "inState", "inPartition"}),
+        allowed_children=frozenset({"ownedComment"}),
+        produces="Node(type=CentralBufferNode)",
+    ),
+    "uml:DataStoreNode": UMLConceptSpec(
+        concept_id="uml:DataStoreNode",
+        allowed_attributes=frozenset({"name", "visibility", "type", "incoming", "outgoing", "inState", "inPartition"}),
+        allowed_children=frozenset({"ownedComment"}),
+        produces="Node(type=DataStoreNode)",
     ),
     "uml:InitialNode": UMLConceptSpec(
         concept_id="uml:InitialNode",
@@ -306,6 +385,12 @@ SUPPORTED_UML_CONCEPTS: Mapping[str, UMLConceptSpec] = {
         allowed_attributes=frozenset({"name", "visibility", "container", "incoming", "outgoing"}),
         allowed_children=frozenset({"ownedComment", "region", "entry", "exit", "doActivity"}),
         produces="Node(type=State)",
+    ),
+    "uml:FinalState": UMLConceptSpec(
+        concept_id="uml:FinalState",
+        allowed_attributes=frozenset({"name", "visibility", "container", "incoming", "outgoing"}),
+        allowed_children=frozenset({"ownedComment", "entry", "exit", "doActivity"}),
+        produces="Node(type=FinalState)",
     ),
     "uml:Pseudostate": UMLConceptSpec(
         concept_id="uml:Pseudostate",
@@ -471,6 +556,7 @@ def _simple_node_handler_spec(
     boolean_attrs: Tuple[str, ...] = (),
     list_attrs: Tuple[str, ...] = (),
     rename_map: Optional[Mapping[str, str]] = None,
+    skip_href_without_id: bool = False,
 ) -> UMLHandlerSpec:
     return UMLHandlerSpec(
         kind="simple_node",
@@ -479,6 +565,7 @@ def _simple_node_handler_spec(
         boolean_attrs=boolean_attrs,
         list_attrs=list_attrs,
         rename_map=rename_map or {},
+        skip_href_without_id=skip_href_without_id,
     )
 
 
@@ -508,14 +595,112 @@ def _directed_edge_handler_spec(
     )
 
 
+def _node_parse_contract(
+    *,
+    node_type: str,
+    scalar_attrs: Tuple[str, ...] = (),
+    boolean_attrs: Tuple[str, ...] = (),
+    list_attrs: Tuple[str, ...] = (),
+    rename_map: Optional[Mapping[str, str]] = None,
+    include_documentation: bool = True,
+) -> UMLParseContract:
+    return UMLParseContract(
+        node_type=node_type,
+        scalar_attrs=scalar_attrs,
+        boolean_attrs=boolean_attrs,
+        list_attrs=list_attrs,
+        rename_map=rename_map or {},
+        include_documentation=include_documentation,
+        include_name=True,
+    )
+
+
+def _edge_parse_contract(
+    *,
+    edge_type: str,
+    source_attr: Optional[str] = None,
+    target_attr: Optional[str] = None,
+    source_child_tag: Optional[str] = None,
+    target_child_tag: Optional[str] = None,
+    scalar_attrs: Tuple[str, ...] = (),
+    list_attrs: Tuple[str, ...] = (),
+    rename_map: Optional[Mapping[str, str]] = None,
+    include_name: bool = True,
+) -> UMLParseContract:
+    return UMLParseContract(
+        edge_type=edge_type,
+        source_attr=source_attr,
+        target_attr=target_attr,
+        source_child_tag=source_child_tag,
+        target_child_tag=target_child_tag,
+        scalar_attrs=scalar_attrs,
+        list_attrs=list_attrs,
+        rename_map=rename_map or {},
+        include_documentation=False,
+        include_name=include_name,
+    )
+
+
+def _parse_contract_from_handler_spec(handler_spec: UMLHandlerSpec) -> Optional[UMLParseContract]:
+    if handler_spec.kind == "simple_node":
+        if not handler_spec.node_type:
+            return None
+        return _node_parse_contract(
+            node_type=handler_spec.node_type,
+            scalar_attrs=handler_spec.scalar_attrs,
+            boolean_attrs=handler_spec.boolean_attrs,
+            list_attrs=handler_spec.list_attrs,
+            rename_map=handler_spec.rename_map,
+        )
+
+    if handler_spec.kind == "directed_edge":
+        if not handler_spec.edge_type:
+            return None
+        return _edge_parse_contract(
+            edge_type=handler_spec.edge_type,
+            source_attr=handler_spec.source_attr,
+            target_attr=handler_spec.target_attr,
+            source_child_tag=handler_spec.source_child_tag,
+            target_child_tag=handler_spec.target_child_tag,
+            scalar_attrs=handler_spec.scalar_attrs,
+            list_attrs=handler_spec.list_attrs,
+            rename_map=handler_spec.rename_map,
+            include_name=handler_spec.include_name,
+        )
+
+    return None
+
+
 CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
     "uml:Model": _custom_handler_spec("ModelHandler"),
     "uml:Package": _custom_handler_spec("PackageHandler"),
     "uml:Class": _custom_handler_spec("ClassHandler"),
+    "uml:ClassifierTemplateParameter": _simple_node_handler_spec(
+        node_type="ClassifierTemplateParameter",
+        scalar_attrs=("parameteredElement", "signature"),
+        list_attrs=("constrainingClassifier",),
+        rename_map={"constrainingClassifier": "constrainingClassifierRefs"},
+    ),
+    "uml:RedefinableTemplateSignature": _simple_node_handler_spec(
+        node_type="RedefinableTemplateSignature",
+        list_attrs=("parameter",),
+        rename_map={"parameter": "parameterRefs"},
+    ),
     "uml:Interface": _custom_handler_spec("InterfaceHandler"),
     "uml:Enumeration": _custom_handler_spec("EnumerationHandler"),
     "uml:DataType": _custom_handler_spec("DataTypeHandler"),
     "uml:Component": _custom_handler_spec("ComponentHandler"),
+    "uml:Port": _simple_node_handler_spec(
+        node_type="Port",
+        scalar_attrs=("visibility", "type"),
+        boolean_attrs=(
+            "isDerived",
+            "isReadOnly",
+            "isUnique",
+            "isOrdered",
+            "isStatic",
+        ),
+    ),
     "uml:UseCase": _custom_handler_spec("UseCaseHandler"),
     "uml:Actor": _custom_handler_spec("ActorHandler"),
     "uml:Activity": _simple_node_handler_spec(
@@ -566,9 +751,49 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
     ),
     "uml:OpaqueAction": _simple_node_handler_spec(
         node_type="OpaqueAction",
-        scalar_attrs=("visibility",),
-        list_attrs=("incoming", "outgoing"),
-        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+        scalar_attrs=("visibility", "href"),
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
+    ),
+    "uml:CallBehaviorAction": _simple_node_handler_spec(
+        node_type="CallBehaviorAction",
+        scalar_attrs=("visibility", "behavior"),
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
+    ),
+    "uml:SendSignalAction": _simple_node_handler_spec(
+        node_type="SendSignalAction",
+        scalar_attrs=("visibility", "signal"),
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
+    ),
+    "uml:ActivityParameterNode": _simple_node_handler_spec(
+        node_type="ActivityParameterNode",
+        scalar_attrs=("visibility", "parameter"),
+        list_attrs=("incoming", "outgoing", "inPartition"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs", "inPartition": "inPartitionRefs"},
+    ),
+    "uml:CentralBufferNode": _simple_node_handler_spec(
+        node_type="CentralBufferNode",
+        scalar_attrs=("visibility", "type"),
+        list_attrs=("incoming", "outgoing", "inState", "inPartition"),
+        rename_map={
+            "incoming": "incomingRefs",
+            "outgoing": "outgoingRefs",
+            "inState": "inStateRefs",
+            "inPartition": "inPartitionRefs",
+        },
+    ),
+    "uml:DataStoreNode": _simple_node_handler_spec(
+        node_type="DataStoreNode",
+        scalar_attrs=("visibility", "type"),
+        list_attrs=("incoming", "outgoing", "inState", "inPartition"),
+        rename_map={
+            "incoming": "incomingRefs",
+            "outgoing": "outgoingRefs",
+            "inState": "inStateRefs",
+            "inPartition": "inPartitionRefs",
+        },
     ),
     "uml:InitialNode": _simple_node_handler_spec(
         node_type="InitialNode",
@@ -646,6 +871,12 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
         list_attrs=("incoming", "outgoing"),
         rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
     ),
+    "uml:FinalState": _simple_node_handler_spec(
+        node_type="FinalState",
+        scalar_attrs=("visibility", "container"),
+        list_attrs=("incoming", "outgoing"),
+        rename_map={"incoming": "incomingRefs", "outgoing": "outgoingRefs"},
+    ),
     "uml:Pseudostate": _simple_node_handler_spec(
         node_type="Pseudostate",
         scalar_attrs=("visibility", "container", "kind"),
@@ -705,6 +936,7 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
     "uml:PrimitiveType": _simple_node_handler_spec(
         node_type="PrimitiveType",
         scalar_attrs=("visibility", "href"),
+        skip_href_without_id=True,
     ),
     "uml:EnumerationLiteral": _simple_node_handler_spec(
         node_type="EnumerationLiteral",
@@ -751,6 +983,118 @@ CONCEPT_HANDLER_SPECS: Mapping[str, UMLHandlerSpec] = {
     "uml:Extend": _custom_handler_spec("ExtendHandler"),
 }
 
+
+CUSTOM_CONCEPT_PARSE_CONTRACTS: Mapping[str, UMLParseContract] = {
+    "uml:Model": _node_parse_contract(
+        node_type="ModelMetadata",
+        scalar_attrs=("visibility",),
+        include_documentation=False,
+    ),
+    "uml:Package": _node_parse_contract(
+        node_type="Package",
+        scalar_attrs=("visibility",),
+    ),
+    "uml:Class": _node_parse_contract(
+        node_type="Class",
+        scalar_attrs=("visibility", "href", "owningTemplateParameter"),
+        boolean_attrs=("isAbstract", "isLeaf"),
+        list_attrs=("templateParameter",),
+    ),
+    "uml:Interface": _node_parse_contract(
+        node_type="Interface",
+        scalar_attrs=("visibility", "href"),
+        boolean_attrs=("isAbstract",),
+    ),
+    "uml:Enumeration": _node_parse_contract(
+        node_type="Enumeration",
+        scalar_attrs=("visibility", "href"),
+    ),
+    "uml:DataType": _node_parse_contract(
+        node_type="DataType",
+        scalar_attrs=("visibility", "href"),
+        boolean_attrs=("isAbstract",),
+    ),
+    "uml:Component": _node_parse_contract(
+        node_type="Component",
+        scalar_attrs=("visibility",),
+        boolean_attrs=("isAbstract", "isLeaf"),
+    ),
+    "uml:UseCase": _node_parse_contract(
+        node_type="UseCase",
+        scalar_attrs=("visibility", "href"),
+        boolean_attrs=("isAbstract", "isLeaf"),
+    ),
+    "uml:Actor": _node_parse_contract(
+        node_type="Actor",
+        scalar_attrs=("visibility", "href"),
+        boolean_attrs=("isAbstract", "isLeaf"),
+    ),
+    "uml:AssociationClass": _node_parse_contract(
+        node_type="AssociationClass",
+        scalar_attrs=("visibility",),
+        boolean_attrs=("isAbstract", "isLeaf"),
+        list_attrs=("memberEnd", "navigableOwnedEnd"),
+    ),
+    "uml:CommunicationPath": _edge_parse_contract(
+        edge_type="CommunicationPath",
+        list_attrs=("navigableOwnedEnd",),
+        include_name=True,
+    ),
+    "uml:InformationFlow": _edge_parse_contract(
+        edge_type="InformationFlow",
+        source_attr="informationSource",
+        target_attr="informationTarget",
+        include_name=True,
+    ),
+    "uml:Association": _edge_parse_contract(
+        edge_type="Association",
+        list_attrs=("navigableOwnedEnd",),
+        include_name=True,
+    ),
+    "uml:Generalization": _edge_parse_contract(
+        edge_type="Generalization",
+        source_attr="specific",
+        target_attr="general",
+        target_child_tag="general",
+        include_name=True,
+    ),
+    "uml:InterfaceRealization": _edge_parse_contract(
+        edge_type="InterfaceRealization",
+        source_attr="implementingClassifier",
+        target_attr="contract",
+        target_child_tag="contract",
+        scalar_attrs=("client", "supplier"),
+        include_name=True,
+    ),
+    "uml:Dependency": _edge_parse_contract(
+        edge_type="Dependency",
+        source_attr="client",
+        target_attr="supplier",
+        include_name=True,
+    ),
+    "uml:Usage": _edge_parse_contract(
+        edge_type="Usage",
+        source_attr="client",
+        target_attr="supplier",
+        include_name=True,
+    ),
+    "uml:Include": _edge_parse_contract(
+        edge_type="includes",
+        source_attr="includingCase",
+        target_attr="addition",
+        target_child_tag="addition",
+        include_name=False,
+    ),
+    "uml:Extend": _edge_parse_contract(
+        edge_type="extends",
+        source_attr="extension",
+        target_attr="extendedCase",
+        target_child_tag="extendedCase",
+        scalar_attrs=("extensionLocation",),
+        include_name=False,
+    ),
+}
+
 _missing_handler_specs = sorted(set(SUPPORTED_UML_CONCEPTS) - set(CONCEPT_HANDLER_SPECS))
 _extra_handler_specs = sorted(set(CONCEPT_HANDLER_SPECS) - set(SUPPORTED_UML_CONCEPTS))
 if _missing_handler_specs or _extra_handler_specs:
@@ -758,8 +1102,27 @@ if _missing_handler_specs or _extra_handler_specs:
         f"UML handler spec mismatch (missing={_missing_handler_specs}, extra={_extra_handler_specs})"
     )
 
+CONCEPT_PARSE_CONTRACTS: Mapping[str, Optional[UMLParseContract]] = {
+    concept_id: CUSTOM_CONCEPT_PARSE_CONTRACTS.get(
+        concept_id, _parse_contract_from_handler_spec(CONCEPT_HANDLER_SPECS[concept_id])
+    )
+    for concept_id in SUPPORTED_UML_CONCEPTS
+}
+_missing_parse_contracts = sorted(
+    concept_id for concept_id, parse_contract in CONCEPT_PARSE_CONTRACTS.items() if parse_contract is None
+)
+_extra_parse_contracts = sorted(set(CUSTOM_CONCEPT_PARSE_CONTRACTS) - set(SUPPORTED_UML_CONCEPTS))
+if _missing_parse_contracts or _extra_parse_contracts:
+    raise ValueError(
+        f"UML parse contract mismatch (missing={_missing_parse_contracts}, extra={_extra_parse_contracts})"
+    )
+
 SUPPORTED_UML_CONCEPTS = {
-    concept_id: replace(spec, handler=CONCEPT_HANDLER_SPECS[concept_id])
+    concept_id: replace(
+        spec,
+        handler=CONCEPT_HANDLER_SPECS[concept_id],
+        parse_contract=CONCEPT_PARSE_CONTRACTS[concept_id],
+    )
     for concept_id, spec in SUPPORTED_UML_CONCEPTS.items()
 }
 

@@ -295,6 +295,34 @@ def test_handler_class_attributes_and_operations(synthetic_uml_ir) -> None:
     assert op["parameters"][0]["id"] == "p1"
 
 
+def test_external_primitive_type_attribute_is_normalized_without_missing_id_warning(tmp_path) -> None:
+    xmi = """<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:xmi="http://schema.omg.org/spec/XMI/2.1"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML">
+  <uml:Model xmi:id="m1" name="ModelA">
+    <packagedElement xsi:type="uml:Class" xmi:id="c1" name="Y">
+      <ownedAttribute xmi:id="a1" name="attY">
+        <type xsi:type="uml:PrimitiveType" href="http://www.omg.org/spec/UML/20131001/PrimitiveTypes.xmi#//String"/>
+      </ownedAttribute>
+    </packagedElement>
+  </uml:Model>
+</xmi:XMI>
+"""
+    path = tmp_path / "external_primitive_type_attr.xmi"
+    path.write_text(xmi, encoding="utf-8")
+
+    parser = UMLXMIParser()
+    ir, stats = parser.parse(str(path))
+    nodes = _nodes_by_id(ir)
+
+    attr = nodes["c1"].data["attributes"][0]
+    assert attr["name"] == "attY"
+    assert attr["type"] == "String"
+    assert attr["qualifiedType"] == "PrimitiveTypes::String"
+    assert stats.warnings_by_type.get(WarningType.MISSING_ATTRIBUTE, 0) == 0
+
+
 def test_handler_interface_node(synthetic_uml_ir) -> None:
     nodes = _nodes_by_id(synthetic_uml_ir)
 
@@ -658,7 +686,7 @@ def test_unhandled_typed_non_packaged_element_is_reported_in_stats(tmp_path) -> 
          xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML">
   <uml:Model xmi:id="m1" name="ModelA">
     <packagedElement xsi:type="uml:Activity" xmi:id="act1" name="Act">
-      <ownedNode xsi:type="uml:SendSignalAction" xmi:id="ssa1" name="Send"/>
+      <ownedNode xsi:type="uml:UnknownAction" xmi:id="ssa1" name="Send"/>
     </packagedElement>
   </uml:Model>
 </xmi:XMI>
@@ -689,10 +717,10 @@ def test_simple_node_unhandled_attributes_are_warned(tmp_path) -> None:
     parser = UMLXMIParser()
     _, stats = parser.parse(str(path))
 
-    assert stats.warnings_by_type[WarningType.OTHER] >= 1
+    assert stats.warnings_by_type[WarningType.UNHANDLED_ATTRIBUTE] >= 1
     assert any(
         "UNHANDLED ATTRIBUTE" in msg and "foo" in msg
-        for msg in stats.warning_msgs[WarningType.OTHER]
+        for msg in stats.warning_msgs[WarningType.UNHANDLED_ATTRIBUTE]
     )
 
 

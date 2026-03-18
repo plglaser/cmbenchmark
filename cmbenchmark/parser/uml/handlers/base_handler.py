@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 
 from cmbenchmark.types.enums import WarningType
 from cmbenchmark.types.ir import Node
-from cmbenchmark.parser.uml.metamodel import SUPPORTED_UML_CONCEPTS
+from cmbenchmark.parser.uml.metamodel import SUPPORTED_UML_CONCEPTS, UMLConceptSpec, UMLParseContract
 from cmbenchmark.parser.uml.xmi_utils import (
     xmi_id,
     xsi_type,
@@ -31,16 +31,27 @@ class ElementHandler(ABC):
     def handle(self, ctx, elem: ET.Element) -> None:
         """Handle a single element."""
 
+    def concept_spec(self) -> Optional[UMLConceptSpec]:
+        """Return metamodel concept spec for the current handler."""
+        return SUPPORTED_UML_CONCEPTS.get(self.element_type)
+
+    def get_parse_contract(self) -> UMLParseContract:
+        """Return parse contract for the current handler, if defined."""
+        concept = self.concept_spec()
+        if concept is None or concept.parse_contract is None:
+            return UMLParseContract()
+        return concept.parse_contract
+
     def get_handled_attributes(self) -> Set[str]:
         """Return set of attribute names this handler processes."""
-        concept = SUPPORTED_UML_CONCEPTS.get(self.element_type)
+        concept = self.concept_spec()
         if concept is None:
             return set()
         return set(concept.allowed_attributes)
 
     def get_handled_children(self) -> Set[str]:
         """Return set of child element tags this handler processes."""
-        concept = SUPPORTED_UML_CONCEPTS.get(self.element_type)
+        concept = self.concept_spec()
         if concept is None:
             return set()
         return set(concept.allowed_children)
@@ -60,7 +71,7 @@ class ElementHandler(ABC):
 
             if attr_local not in handled:
                 ctx.warn(
-                    WarningType.OTHER,
+                    WarningType.UNHANDLED_ATTRIBUTE,
                     f"[UNHANDLED ATTRIBUTE] Element: {elem_type} "
                     f"(ID: {elem_id}), Attribute: {attr_local}, Value: {attr_value}",
                 )
@@ -88,13 +99,13 @@ class ElementHandler(ABC):
                 child_id = xmi_id(child)
                 if child_type:
                     ctx.warn(
-                        WarningType.OTHER,
+                        WarningType.UNHANDLED_CHILD,
                         f"[UNHANDLED CHILD] Element: {elem_type} (ID: {elem_id}), "
                         f"Child: {child_tag} (xsi:type={child_type}, ID: {child_id})",
                     )
                 else:
                     ctx.warn(
-                        WarningType.OTHER,
+                        WarningType.UNHANDLED_CHILD,
                         f"[UNHANDLED CHILD] Element: {elem_type} (ID: {elem_id}), "
                         f"Child: {child_tag} (ID: {child_id})",
                     )
@@ -176,6 +187,17 @@ class ElementHandler(ABC):
                 out[rename_map.get(attr_name, attr_name)] = values
 
         return out
+
+    def collect_concept_attributes(self, elem: ET.Element) -> Dict[str, Any]:
+        """Collect attributes declared in the concept parse contract."""
+        contract = self.get_parse_contract()
+        return self.collect_attributes(
+            elem,
+            scalar_attrs=contract.scalar_attrs,
+            boolean_attrs=contract.boolean_attrs,
+            list_attrs=contract.list_attrs,
+            rename_map=contract.rename_map,
+        )
 
     def upsert_node(
         self,
@@ -326,3 +348,19 @@ class ElementHandler(ABC):
             return href_to_type_ref(type_elem.attrib["href"])
 
         return None
+
+    def set_resolved_type_fields(
+        self,
+        data: Dict[str, Any],
+        resolved_type: str,
+        *,
+        type_key: str = "type",
+        qualified_type_key: str = "qualifiedType",
+    ) -> None:
+        """Store a resolved type in normalized short + qualified form when possible."""
+        if "::" in resolved_type:
+            _, short_name = resolved_type.rsplit("::", 1)
+            data[type_key] = short_name
+            data[qualified_type_key] = resolved_type
+            return
+        data[type_key] = resolved_type

@@ -19,13 +19,14 @@ class EnumerationHandler(ElementHandler):
         """Create Enumeration node with literals."""
         handled_attrs = self.get_handled_attributes()
         handled_children = self.get_handled_children()
+        contract = self.get_parse_contract()
 
         enum_id = self.require_xmi_id(ctx, elem, role="Node")
         if not enum_id:
             return
 
         name = self.read_name(elem)
-        data: Dict[str, Any] = self.collect_attributes(elem, scalar_attrs=("visibility", "href"))
+        data: Dict[str, Any] = self.collect_concept_attributes(elem)
 
         doc = self.extract_documentation(elem)
         if doc:
@@ -35,7 +36,7 @@ class EnumerationHandler(ElementHandler):
         if literals:
             data["literals"] = literals
 
-        ctx.add_node(Node(id=enum_id, type="Enumeration", name=name, data=data))
+        ctx.add_node(Node(id=enum_id, type=contract.node_type or "Enumeration", name=name, data=data))
 
         self.log_unhandled_attributes(ctx, elem, handled_attrs)
         self.log_unhandled_children(ctx, elem, handled_children)
