@@ -371,6 +371,187 @@ export function createDimensions(reportData: any, parserLanguage?: string | null
       ],
     },
     {
+      id: 'construct-coverage',
+      name: 'Construct Coverage',
+      description: 'Coverage of language constructs in models.',
+      measures: [
+        {
+          id: 'construct-presence',
+          name: 'Construct Presence (D3.M1)',
+          description: 'Which constructs appear at least once in the dataset.',
+          tiles: [
+            {
+              id: 'presence-chart',
+              title: 'Coverage Summary',
+              component: (
+                <ConstructPresenceChart data={parsingData?.constructPresenceChartData || null} />
+              ),
+            },
+            {
+              id: 'presence-kpis',
+              title: 'Key Metrics',
+              component: (
+                <ConstructPresenceKPIs
+                  data={parsingData?.constructPresence || null}
+                  constructCatalog={parsingData?.constructCatalog || null}
+                  parserLanguage={parserLanguage}
+                />
+              ),
+            },
+            {
+              id: 'coverage-matrix',
+              title: 'Coverage Matrix (Construct × Model)',
+              component: (
+                <ConstructCoverageMatrix
+                  data={parsingData?.constructPresencePerModel || []}
+                  constructCatalog={parsingData?.constructCatalog || null}
+                />
+              ),
+            },
+            {
+              id: 'coverage-share-dist',
+              title: 'Coverage Share Distribution',
+              component: <CoverageShareChart histogramData={parsingData?.coverageShareHistogram || []} />,
+            },
+            {
+              id: 'coverage-by-group',
+              title: 'Coverage by Group',
+              component: <CoverageByGroupChart data={parsingData?.coverageByGroup || []} />,
+            },
+            {
+              id: 'missing-constructs',
+              title: 'Missing Constructs',
+              component: <MissingConstructsTable data={parsingData?.missingConstructs || []} />,
+            },
+            {
+              id: 'lowest-coverage',
+              title: 'Top 10 Models with Lowest Coverage',
+              component: (
+                <CoverageOutliersTable
+                  data={parsingData?.lowestCoverage || []}
+                  title="Top 10 Models with Lowest Coverage"
+                />
+              ),
+            },
+            {
+              id: 'highest-coverage',
+              title: 'Top 10 Models with Highest Coverage',
+              component: (
+                <CoverageOutliersTable
+                  data={parsingData?.highestCoverage || []}
+                  title="Top 10 Models with Highest Coverage"
+                />
+              ),
+            },
+            {
+              id: 'unknown-share-dist',
+              title: 'Unknown Type Share Distribution',
+              component: <UnknownTypeShareChart histogramData={parsingData?.unknownTypeShareHistogram || []} />,
+            },
+            {
+              id: 'unknown-types',
+              title: 'Top Unknown Types',
+              component: <UnknownTypesTable data={parsingData?.unknownTypes || []} />,
+            },
+          ],
+        },
+        {
+          id: 'construct-frequency',
+          name: 'Construct Frequency (D3.M3)',
+          description: 'Counts per construct at model and dataset level.',
+          tiles: [
+            {
+              id: 'frequency-kpis',
+              title: 'Key Metrics',
+              component: (
+                <ConstructFrequencyKPIs
+                  data={parsingData?.constructFrequency || null}
+                  frequencyData={parsingData?.constructFrequencyData || []}
+                />
+              ),
+            },
+            {
+              id: 'frequency-total-hist',
+              title: 'Total Construct Instances (Models)',
+              component: (
+                <ConstructFrequencyTotalsChart
+                  histogramData={parsingData?.constructFrequencyTotalsHistogram || []}
+                />
+              ),
+            },
+            {
+              id: 'frequency-entropy-hist',
+              title: 'Utilization Entropy (Models)',
+              component: (
+                <ConstructFrequencyEntropyChart
+                  histogramData={parsingData?.constructFrequencyEntropyHistogram || []}
+                />
+              ),
+            },
+            {
+              id: 'frequency-top-models',
+              title: 'Top Models by Construct Instances',
+              component: (
+                <ConstructFrequencyTopModelsTable
+                  data={parsingData?.constructFrequencyTopModels || []}
+                />
+              ),
+            },
+            {
+              id: 'frequency-chart',
+              title: 'Construct Frequency',
+              component: (
+                <ConstructFrequencyChartWithFilter data={parsingData?.constructFrequencyData || []} />
+              ),
+            },
+            {
+              id: 'frequency-treemap',
+              title: 'Frequency Treemap',
+              component: (
+                <ConstructFrequencyTreemapWithFilter data={parsingData?.constructFrequencyData || []} />
+              ),
+            },
+            {
+              id: 'frequency-pareto',
+              title: 'Construct Concentration',
+              component: (
+                <ConstructFrequencyParetoWithFilter data={parsingData?.constructFrequencyData || []} />
+              ),
+            },
+            {
+              id: 'frequency-by-group',
+              title: 'Frequency by Group',
+              component: (
+                <ConstructFrequencyByGroupChart data={parsingData?.constructFrequencyByGroup || []} />
+              ),
+            },
+            {
+              id: 'frequency-heatmap',
+              title: 'Construct × Model (Counts)',
+              component: (
+                <ConstructFrequencyHeatmap
+                  data={parsingData?.constructFrequencyPerModel || []}
+                  constructCatalog={parsingData?.constructCatalog || null}
+                  constructTotals={parsingData?.constructFrequencyData || []}
+                />
+              ),
+            },
+            {
+              id: 'frequency-share-heatmap',
+              title: 'Construct × Model (Share)',
+              component: (
+                <ConstructFrequencyShareHeatmap
+                  data={parsingData?.constructFrequencyPerModelShares || []}
+                  constructCatalog={parsingData?.constructCatalog || null}
+                  constructTotals={parsingData?.constructFrequencyData || []}
+                />
+              ),
+            },
+          ],
+        },
+      ],
+    },
+    {
       id: 'size-complexity',
       name: 'Size & Complexity',
       description: 'Size and structural complexity of models.',
@@ -601,187 +782,6 @@ export function createDimensions(reportData: any, parserLanguage?: string | null
               id: 'depth-top',
               title: 'Top 10 Models by Max Depth',
               component: <DepthTopTable data={parsingData?.depthTop10 || []} />,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'construct-coverage',
-      name: 'Construct Coverage',
-      description: 'Coverage of language constructs in models.',
-      measures: [
-        {
-          id: 'construct-presence',
-          name: 'Construct Presence (D3.M1)',
-          description: 'Which constructs appear at least once in the dataset.',
-          tiles: [
-            {
-              id: 'presence-chart',
-              title: 'Coverage Summary',
-              component: (
-                <ConstructPresenceChart data={parsingData?.constructPresenceChartData || null} />
-              ),
-            },
-            {
-              id: 'presence-kpis',
-              title: 'Key Metrics',
-              component: (
-                <ConstructPresenceKPIs
-                  data={parsingData?.constructPresence || null}
-                  constructCatalog={parsingData?.constructCatalog || null}
-                  parserLanguage={parserLanguage}
-                />
-              ),
-            },
-            {
-              id: 'coverage-matrix',
-              title: 'Coverage Matrix (Construct × Model)',
-              component: (
-                <ConstructCoverageMatrix
-                  data={parsingData?.constructPresencePerModel || []}
-                  constructCatalog={parsingData?.constructCatalog || null}
-                />
-              ),
-            },
-            {
-              id: 'coverage-share-dist',
-              title: 'Coverage Share Distribution',
-              component: <CoverageShareChart histogramData={parsingData?.coverageShareHistogram || []} />,
-            },
-            {
-              id: 'coverage-by-group',
-              title: 'Coverage by Group',
-              component: <CoverageByGroupChart data={parsingData?.coverageByGroup || []} />,
-            },
-            {
-              id: 'missing-constructs',
-              title: 'Missing Constructs',
-              component: <MissingConstructsTable data={parsingData?.missingConstructs || []} />,
-            },
-            {
-              id: 'lowest-coverage',
-              title: 'Top 10 Models with Lowest Coverage',
-              component: (
-                <CoverageOutliersTable
-                  data={parsingData?.lowestCoverage || []}
-                  title="Top 10 Models with Lowest Coverage"
-                />
-              ),
-            },
-            {
-              id: 'highest-coverage',
-              title: 'Top 10 Models with Highest Coverage',
-              component: (
-                <CoverageOutliersTable
-                  data={parsingData?.highestCoverage || []}
-                  title="Top 10 Models with Highest Coverage"
-                />
-              ),
-            },
-            {
-              id: 'unknown-share-dist',
-              title: 'Unknown Type Share Distribution',
-              component: <UnknownTypeShareChart histogramData={parsingData?.unknownTypeShareHistogram || []} />,
-            },
-            {
-              id: 'unknown-types',
-              title: 'Top Unknown Types',
-              component: <UnknownTypesTable data={parsingData?.unknownTypes || []} />,
-            },
-          ],
-        },
-        {
-          id: 'construct-frequency',
-          name: 'Construct Frequency (D3.M3)',
-          description: 'Counts per construct at model and dataset level.',
-          tiles: [
-            {
-              id: 'frequency-kpis',
-              title: 'Key Metrics',
-              component: (
-                <ConstructFrequencyKPIs
-                  data={parsingData?.constructFrequency || null}
-                  frequencyData={parsingData?.constructFrequencyData || []}
-                />
-              ),
-            },
-            {
-              id: 'frequency-total-hist',
-              title: 'Total Construct Instances (Models)',
-              component: (
-                <ConstructFrequencyTotalsChart
-                  histogramData={parsingData?.constructFrequencyTotalsHistogram || []}
-                />
-              ),
-            },
-            {
-              id: 'frequency-entropy-hist',
-              title: 'Utilization Entropy (Models)',
-              component: (
-                <ConstructFrequencyEntropyChart
-                  histogramData={parsingData?.constructFrequencyEntropyHistogram || []}
-                />
-              ),
-            },
-            {
-              id: 'frequency-top-models',
-              title: 'Top Models by Construct Instances',
-              component: (
-                <ConstructFrequencyTopModelsTable
-                  data={parsingData?.constructFrequencyTopModels || []}
-                />
-              ),
-            },
-            {
-              id: 'frequency-chart',
-              title: 'Construct Frequency',
-              component: (
-                <ConstructFrequencyChartWithFilter data={parsingData?.constructFrequencyData || []} />
-              ),
-            },
-            {
-              id: 'frequency-treemap',
-              title: 'Frequency Treemap',
-              component: (
-                <ConstructFrequencyTreemapWithFilter data={parsingData?.constructFrequencyData || []} />
-              ),
-            },
-            {
-              id: 'frequency-pareto',
-              title: 'Construct Concentration',
-              component: (
-                <ConstructFrequencyParetoWithFilter data={parsingData?.constructFrequencyData || []} />
-              ),
-            },
-            {
-              id: 'frequency-by-group',
-              title: 'Frequency by Group',
-              component: (
-                <ConstructFrequencyByGroupChart data={parsingData?.constructFrequencyByGroup || []} />
-              ),
-            },
-            {
-              id: 'frequency-heatmap',
-              title: 'Construct × Model (Counts)',
-              component: (
-                <ConstructFrequencyHeatmap
-                  data={parsingData?.constructFrequencyPerModel || []}
-                  constructCatalog={parsingData?.constructCatalog || null}
-                  constructTotals={parsingData?.constructFrequencyData || []}
-                />
-              ),
-            },
-            {
-              id: 'frequency-share-heatmap',
-              title: 'Construct × Model (Share)',
-              component: (
-                <ConstructFrequencyShareHeatmap
-                  data={parsingData?.constructFrequencyPerModelShares || []}
-                  constructCatalog={parsingData?.constructCatalog || null}
-                  constructTotals={parsingData?.constructFrequencyData || []}
-                />
-              ),
             },
           ],
         },
