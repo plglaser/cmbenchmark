@@ -13,6 +13,9 @@ from cmbenchmark.types.constructs import ConstructDef
 _LANGUAGE_TO_PROFILE = {
     "ArchiMate-Archi": "archimate_constructs.json",
     "ArchiMate-XML": "archimate_constructs.json",
+    "BPMN-Signavio-JSON": "bpmn_signavio_json_constructs.json",
+    "bpmn-signavio-json": "bpmn_signavio_json_constructs.json",
+    "BPMN": "bpmn_signavio_json_constructs.json",
     "Ecore": "ecore_constructs.json",
     "UML": "uml_constructs.json",
     "UML-custom1": "uml_constructs.json",

@@ -20,6 +20,7 @@ from cmbenchmark.parser.uml import parser as uml_parser  # noqa: F401
 from cmbenchmark.parser.archimate import ArchiMateArchiParser  # noqa: F401
 from cmbenchmark.parser.archimate import ArchiMateXMLParser  # noqa: F401
 from cmbenchmark.parser.ecore import EcoreParser  # noqa: F401
+from cmbenchmark.parser.bpmn import BPMNSignavioJSONParser  # noqa: F401
 
 import uvicorn
 

@@ -38,10 +38,12 @@ def test_parser_registry_contains_all_builtin_parsers() -> None:
     assert "Ecore" in parser_languages
     assert "ArchiMate-Archi" in parser_languages
     assert "ArchiMate-XML" in parser_languages
+    assert "BPMN-Signavio-JSON" in parser_languages
 
     assert get_parser("UML") is not None
     assert get_parser("UML-custom1") is not None
     assert get_parser("Ecore") is not None
+    assert get_parser("BPMN-Signavio-JSON") is not None
 
 
 def test_parse_service_pipeline_with_uml(tmp_path: Path) -> None:
@@ -96,6 +98,16 @@ def test_construct_catalog_contains_uml_custom1_profile() -> None:
     assert constructs is not None
     assert "uml:Class" in constructs
     assert "uml:Association" in constructs
+
+
+def test_construct_catalog_contains_bpmn_signavio_json_profile() -> None:
+    path = get_construct_profile_path("BPMN-Signavio-JSON")
+    assert path is not None
+
+    constructs = load_construct_defs("BPMN-Signavio-JSON")
+    assert constructs is not None
+    assert "bpmn-signavio:Task" in constructs
+    assert "bpmn-signavio:SequenceFlow" in constructs
 
 
 def test_parse_service_pipeline_with_uml_custom1(tmp_path: Path) -> None:

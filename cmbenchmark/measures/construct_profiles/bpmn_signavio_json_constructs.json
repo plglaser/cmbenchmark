@@ -1,0 +1,817 @@
+{
+  "language": "BPMN-Signavio-JSON",
+  "constructs": [
+    {
+      "id": "bpmn-signavio:AND_Gateway",
+      "kind": "node_type",
+      "match_type": "AND_Gateway",
+      "match_data_equals": {},
+      "meta": {
+        "group": "gateway"
+      },
+      "description": "BPMN Signavio stencil 'AND_Gateway'."
+    },
+    {
+      "id": "bpmn-signavio:Association_Bidirectional",
+      "kind": "edge_type",
+      "match_type": "Association_Bidirectional",
+      "match_data_equals": {},
+      "meta": {
+        "group": "connecting"
+      },
+      "description": "BPMN Signavio stencil 'Association_Bidirectional'."
+    },
+    {
+      "id": "bpmn-signavio:Association_Undirected",
+      "kind": "edge_type",
+      "match_type": "Association_Undirected",
+      "match_data_equals": {},
+      "meta": {
+        "group": "connecting"
+      },
+      "description": "BPMN Signavio stencil 'Association_Undirected'."
+    },
+    {
+      "id": "bpmn-signavio:Association_Unidirectional",
+      "kind": "edge_type",
+      "match_type": "Association_Unidirectional",
+      "match_data_equals": {},
+      "meta": {
+        "group": "connecting"
+      },
+      "description": "BPMN Signavio stencil 'Association_Unidirectional'."
+    },
+    {
+      "id": "bpmn-signavio:BPMNDiagram",
+      "kind": "node_type",
+      "match_type": "BPMNDiagram",
+      "match_data_equals": {},
+      "meta": {
+        "group": "diagram"
+      },
+      "description": "BPMN Signavio stencil 'BPMNDiagram'."
+    },
+    {
+      "id": "bpmn-signavio:ChoreographyParticipant",
+      "kind": "node_type",
+      "match_type": "ChoreographyParticipant",
+      "match_data_equals": {},
+      "meta": {
+        "group": "swimlane"
+      },
+      "description": "BPMN Signavio stencil 'ChoreographyParticipant'."
+    },
+    {
+      "id": "bpmn-signavio:ChoreographySubprocessCollapsed",
+      "kind": "node_type",
+      "match_type": "ChoreographySubprocessCollapsed",
+      "match_data_equals": {},
+      "meta": {
+        "group": "activity"
+      },
+      "description": "BPMN Signavio stencil 'ChoreographySubprocessCollapsed'."
+    },
+    {
+      "id": "bpmn-signavio:ChoreographySubprocessExpanded",
+      "kind": "node_type",
+      "match_type": "ChoreographySubprocessExpanded",
+      "match_data_equals": {},
+      "meta": {
+        "group": "activity"
+      },
+      "description": "BPMN Signavio stencil 'ChoreographySubprocessExpanded'."
+    },
+    {
+      "id": "bpmn-signavio:ChoreographyTask",
+      "kind": "node_type",
+      "match_type": "ChoreographyTask",
+      "match_data_equals": {},
+      "meta": {
+        "group": "activity"
+      },
+      "description": "BPMN Signavio stencil 'ChoreographyTask'."
+    },
+    {
+      "id": "bpmn-signavio:CollapsedEventSubprocess",
+      "kind": "node_type",
+      "match_type": "CollapsedEventSubprocess",
+      "match_data_equals": {},
+      "meta": {
+        "group": "activity"
+      },
+      "description": "BPMN Signavio stencil 'CollapsedEventSubprocess'."
+    },
+    {
+      "id": "bpmn-signavio:CollapsedPool",
+      "kind": "node_type",
+      "match_type": "CollapsedPool",
+      "match_data_equals": {},
+      "meta": {
+        "group": "swimlane"
+      },
+      "description": "BPMN Signavio stencil 'CollapsedPool'."
+    },
+    {
+      "id": "bpmn-signavio:CollapsedSubprocess",
+      "kind": "node_type",
+      "match_type": "CollapsedSubprocess",
+      "match_data_equals": {},
+      "meta": {
+        "group": "activity"
+      },
+      "description": "BPMN Signavio stencil 'CollapsedSubprocess'."
+    },
+    {
+      "id": "bpmn-signavio:CollapsedVerticalPool",
+      "kind": "node_type",
+      "match_type": "CollapsedVerticalPool",
+      "match_data_equals": {},
+      "meta": {
+        "group": "swimlane"
+      },
+      "description": "BPMN Signavio stencil 'CollapsedVerticalPool'."
+    },
+    {
+      "id": "bpmn-signavio:Communication",
+      "kind": "node_type",
+      "match_type": "Communication",
+      "match_data_equals": {},
+      "meta": {
+        "group": "conversation"
+      },
+      "description": "BPMN Signavio stencil 'Communication'."
+    },
+    {
+      "id": "bpmn-signavio:ComplexGateway",
+      "kind": "node_type",
+      "match_type": "ComplexGateway",
+      "match_data_equals": {},
+      "meta": {
+        "group": "gateway"
+      },
+      "description": "BPMN Signavio stencil 'ComplexGateway'."
+    },
+    {
+      "id": "bpmn-signavio:Complex_Gateway",
+      "kind": "node_type",
+      "match_type": "Complex_Gateway",
+      "match_data_equals": {},
+      "meta": {
+        "group": "gateway"
+      },
+      "description": "BPMN Signavio stencil 'Complex_Gateway'."
+    },
+    {
+      "id": "bpmn-signavio:ConversationLink",
+      "kind": "edge_type",
+      "match_type": "ConversationLink",
+      "match_data_equals": {},
+      "meta": {
+        "group": "connecting"
+      },
+      "description": "BPMN Signavio stencil 'ConversationLink'."
+    },
+    {
+      "id": "bpmn-signavio:DataObject",
+      "kind": "node_type",
+      "match_type": "DataObject",
+      "match_data_equals": {},
+      "meta": {
+        "group": "data"
+      },
+      "description": "BPMN Signavio stencil 'DataObject'."
+    },
+    {
+      "id": "bpmn-signavio:DataStore",
+      "kind": "node_type",
+      "match_type": "DataStore",
+      "match_data_equals": {},
+      "meta": {
+        "group": "data"
+      },
+      "description": "BPMN Signavio stencil 'DataStore'."
+    },
+    {
+      "id": "bpmn-signavio:EndCancelEvent",
+      "kind": "node_type",
+      "match_type": "EndCancelEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndCancelEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EndCompensationEvent",
+      "kind": "node_type",
+      "match_type": "EndCompensationEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndCompensationEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EndErrorEvent",
+      "kind": "node_type",
+      "match_type": "EndErrorEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndErrorEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EndEscalationEvent",
+      "kind": "node_type",
+      "match_type": "EndEscalationEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndEscalationEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EndEvent",
+      "kind": "node_type",
+      "match_type": "EndEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EndMessageEvent",
+      "kind": "node_type",
+      "match_type": "EndMessageEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndMessageEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EndMultipleEvent",
+      "kind": "node_type",
+      "match_type": "EndMultipleEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndMultipleEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EndNoneEvent",
+      "kind": "node_type",
+      "match_type": "EndNoneEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndNoneEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EndSignalEvent",
+      "kind": "node_type",
+      "match_type": "EndSignalEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndSignalEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EndTerminateEvent",
+      "kind": "node_type",
+      "match_type": "EndTerminateEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "end_event"
+      },
+      "description": "BPMN Signavio stencil 'EndTerminateEvent'."
+    },
+    {
+      "id": "bpmn-signavio:EventSubprocess",
+      "kind": "node_type",
+      "match_type": "EventSubprocess",
+      "match_data_equals": {},
+      "meta": {
+        "group": "activity"
+      },
+      "description": "BPMN Signavio stencil 'EventSubprocess'."
+    },
+    {
+      "id": "bpmn-signavio:EventbasedGateway",
+      "kind": "node_type",
+      "match_type": "EventbasedGateway",
+      "match_data_equals": {},
+      "meta": {
+        "group": "gateway"
+      },
+      "description": "BPMN Signavio stencil 'EventbasedGateway'."
+    },
+    {
+      "id": "bpmn-signavio:Exclusive_Databased_Gateway",
+      "kind": "node_type",
+      "match_type": "Exclusive_Databased_Gateway",
+      "match_data_equals": {},
+      "meta": {
+        "group": "gateway"
+      },
+      "description": "BPMN Signavio stencil 'Exclusive_Databased_Gateway'."
+    },
+    {
+      "id": "bpmn-signavio:Exclusive_Eventbased_Gateway",
+      "kind": "node_type",
+      "match_type": "Exclusive_Eventbased_Gateway",
+      "match_data_equals": {},
+      "meta": {
+        "group": "gateway"
+      },
+      "description": "BPMN Signavio stencil 'Exclusive_Eventbased_Gateway'."
+    },
+    {
+      "id": "bpmn-signavio:Group",
+      "kind": "node_type",
+      "match_type": "Group",
+      "match_data_equals": {},
+      "meta": {
+        "group": "artifact"
+      },
+      "description": "BPMN Signavio stencil 'Group'."
+    },
+    {
+      "id": "bpmn-signavio:ITSystem",
+      "kind": "node_type",
+      "match_type": "ITSystem",
+      "match_data_equals": {},
+      "meta": {
+        "group": "data"
+      },
+      "description": "BPMN Signavio stencil 'ITSystem'."
+    },
+    {
+      "id": "bpmn-signavio:InclusiveGateway",
+      "kind": "node_type",
+      "match_type": "InclusiveGateway",
+      "match_data_equals": {},
+      "meta": {
+        "group": "gateway"
+      },
+      "description": "BPMN Signavio stencil 'InclusiveGateway'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateCancelEvent",
+      "kind": "node_type",
+      "match_type": "IntermediateCancelEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateCancelEvent'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateCompensationEventCatching",
+      "kind": "node_type",
+      "match_type": "IntermediateCompensationEventCatching",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateCompensationEventCatching'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateCompensationEventThrowing",
+      "kind": "node_type",
+      "match_type": "IntermediateCompensationEventThrowing",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateCompensationEventThrowing'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateConditionalEvent",
+      "kind": "node_type",
+      "match_type": "IntermediateConditionalEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateConditionalEvent'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateErrorEvent",
+      "kind": "node_type",
+      "match_type": "IntermediateErrorEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateErrorEvent'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateEscalationEvent",
+      "kind": "node_type",
+      "match_type": "IntermediateEscalationEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateEscalationEvent'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateEscalationEventThrowing",
+      "kind": "node_type",
+      "match_type": "IntermediateEscalationEventThrowing",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateEscalationEventThrowing'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateEvent",
+      "kind": "node_type",
+      "match_type": "IntermediateEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateEvent'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateLinkEventCatching",
+      "kind": "node_type",
+      "match_type": "IntermediateLinkEventCatching",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateLinkEventCatching'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateLinkEventThrowing",
+      "kind": "node_type",
+      "match_type": "IntermediateLinkEventThrowing",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateLinkEventThrowing'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateMessageEventCatching",
+      "kind": "node_type",
+      "match_type": "IntermediateMessageEventCatching",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateMessageEventCatching'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateMessageEventThrowing",
+      "kind": "node_type",
+      "match_type": "IntermediateMessageEventThrowing",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateMessageEventThrowing'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateMultipleEventCatching",
+      "kind": "node_type",
+      "match_type": "IntermediateMultipleEventCatching",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateMultipleEventCatching'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateMultipleEventThrowing",
+      "kind": "node_type",
+      "match_type": "IntermediateMultipleEventThrowing",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateMultipleEventThrowing'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateParallelMultipleEventCatching",
+      "kind": "node_type",
+      "match_type": "IntermediateParallelMultipleEventCatching",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateParallelMultipleEventCatching'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateSignalEventCatching",
+      "kind": "node_type",
+      "match_type": "IntermediateSignalEventCatching",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateSignalEventCatching'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateSignalEventThrowing",
+      "kind": "node_type",
+      "match_type": "IntermediateSignalEventThrowing",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateSignalEventThrowing'."
+    },
+    {
+      "id": "bpmn-signavio:IntermediateTimerEvent",
+      "kind": "node_type",
+      "match_type": "IntermediateTimerEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "intermediate_event"
+      },
+      "description": "BPMN Signavio stencil 'IntermediateTimerEvent'."
+    },
+    {
+      "id": "bpmn-signavio:Lane",
+      "kind": "node_type",
+      "match_type": "Lane",
+      "match_data_equals": {},
+      "meta": {
+        "group": "swimlane"
+      },
+      "description": "BPMN Signavio stencil 'Lane'."
+    },
+    {
+      "id": "bpmn-signavio:Message",
+      "kind": "node_type",
+      "match_type": "Message",
+      "match_data_equals": {},
+      "meta": {
+        "group": "data"
+      },
+      "description": "BPMN Signavio stencil 'Message'."
+    },
+    {
+      "id": "bpmn-signavio:MessageFlow",
+      "kind": "edge_type",
+      "match_type": "MessageFlow",
+      "match_data_equals": {},
+      "meta": {
+        "group": "connecting"
+      },
+      "description": "BPMN Signavio stencil 'MessageFlow'."
+    },
+    {
+      "id": "bpmn-signavio:OR_Gateway",
+      "kind": "node_type",
+      "match_type": "OR_Gateway",
+      "match_data_equals": {},
+      "meta": {
+        "group": "gateway"
+      },
+      "description": "BPMN Signavio stencil 'OR_Gateway'."
+    },
+    {
+      "id": "bpmn-signavio:ParallelGateway",
+      "kind": "node_type",
+      "match_type": "ParallelGateway",
+      "match_data_equals": {},
+      "meta": {
+        "group": "gateway"
+      },
+      "description": "BPMN Signavio stencil 'ParallelGateway'."
+    },
+    {
+      "id": "bpmn-signavio:Participant",
+      "kind": "node_type",
+      "match_type": "Participant",
+      "match_data_equals": {},
+      "meta": {
+        "group": "swimlane"
+      },
+      "description": "BPMN Signavio stencil 'Participant'."
+    },
+    {
+      "id": "bpmn-signavio:Pool",
+      "kind": "node_type",
+      "match_type": "Pool",
+      "match_data_equals": {},
+      "meta": {
+        "group": "swimlane"
+      },
+      "description": "BPMN Signavio stencil 'Pool'."
+    },
+    {
+      "id": "bpmn-signavio:SequenceFlow",
+      "kind": "edge_type",
+      "match_type": "SequenceFlow",
+      "match_data_equals": {},
+      "meta": {
+        "group": "connecting"
+      },
+      "description": "BPMN Signavio stencil 'SequenceFlow'."
+    },
+    {
+      "id": "bpmn-signavio:StartCompensationEvent",
+      "kind": "node_type",
+      "match_type": "StartCompensationEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartCompensationEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartConditionalEvent",
+      "kind": "node_type",
+      "match_type": "StartConditionalEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartConditionalEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartErrorEvent",
+      "kind": "node_type",
+      "match_type": "StartErrorEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartErrorEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartEscalationEvent",
+      "kind": "node_type",
+      "match_type": "StartEscalationEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartEscalationEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartEvent",
+      "kind": "node_type",
+      "match_type": "StartEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartMessageEvent",
+      "kind": "node_type",
+      "match_type": "StartMessageEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartMessageEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartMultipleEvent",
+      "kind": "node_type",
+      "match_type": "StartMultipleEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartMultipleEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartNoneEvent",
+      "kind": "node_type",
+      "match_type": "StartNoneEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartNoneEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartParallelMultipleEvent",
+      "kind": "node_type",
+      "match_type": "StartParallelMultipleEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartParallelMultipleEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartSignalEvent",
+      "kind": "node_type",
+      "match_type": "StartSignalEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartSignalEvent'."
+    },
+    {
+      "id": "bpmn-signavio:StartTimerEvent",
+      "kind": "node_type",
+      "match_type": "StartTimerEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "start_event"
+      },
+      "description": "BPMN Signavio stencil 'StartTimerEvent'."
+    },
+    {
+      "id": "bpmn-signavio:SubConversation",
+      "kind": "node_type",
+      "match_type": "SubConversation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "conversation"
+      },
+      "description": "BPMN Signavio stencil 'SubConversation'."
+    },
+    {
+      "id": "bpmn-signavio:Subprocess",
+      "kind": "node_type",
+      "match_type": "Subprocess",
+      "match_data_equals": {},
+      "meta": {
+        "group": "activity"
+      },
+      "description": "BPMN Signavio stencil 'Subprocess'."
+    },
+    {
+      "id": "bpmn-signavio:Task",
+      "kind": "node_type",
+      "match_type": "Task",
+      "match_data_equals": {},
+      "meta": {
+        "group": "activity"
+      },
+      "description": "BPMN Signavio stencil 'Task'."
+    },
+    {
+      "id": "bpmn-signavio:TextAnnotation",
+      "kind": "node_type",
+      "match_type": "TextAnnotation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "artifact"
+      },
+      "description": "BPMN Signavio stencil 'TextAnnotation'."
+    },
+    {
+      "id": "bpmn-signavio:VerticalLane",
+      "kind": "node_type",
+      "match_type": "VerticalLane",
+      "match_data_equals": {},
+      "meta": {
+        "group": "swimlane"
+      },
+      "description": "BPMN Signavio stencil 'VerticalLane'."
+    },
+    {
+      "id": "bpmn-signavio:VerticalPool",
+      "kind": "node_type",
+      "match_type": "VerticalPool",
+      "match_data_equals": {},
+      "meta": {
+        "group": "swimlane"
+      },
+      "description": "BPMN Signavio stencil 'VerticalPool'."
+    },
+    {
+      "id": "bpmn-signavio:processparticipant",
+      "kind": "node_type",
+      "match_type": "processparticipant",
+      "match_data_equals": {},
+      "meta": {
+        "group": "swimlane"
+      },
+      "description": "BPMN Signavio stencil 'processparticipant'."
+    },
+    {
+      "id": "bpmn-signavio:contains",
+      "kind": "edge_type",
+      "match_type": "contains",
+      "match_data_equals": {
+        "feature": "childShapes"
+      },
+      "meta": {
+        "group": "containment"
+      },
+      "description": "Hierarchy relation derived from Signavio childShapes containment."
+    }
+  ]
+}

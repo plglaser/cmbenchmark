@@ -1,0 +1,49 @@
+{
+  "name": "SignavioBPMN_Benchmark_01",
+  "version": "1.0",
+  "output_path": "../out/signavio-bpmn",
+  "scan": {
+    "dataset_path": "/Users/philipp/Projects/datasets/sap-sam/extracted_models",
+    "include": ["*.json"],
+    "exclude": [],
+    "size_limit_mb": 100
+  },
+  "parse": {
+    "parser_language": "BPMN-Signavio-JSON"
+  },
+  "measure": {
+    "parse": {
+      "enabled": true
+    },
+    "lexical": {
+      "enabled": true,
+      "include_nodes": true,
+      "include_edges": false,
+      "label_attributes": ["name"],
+      "enable_d2_m1": true,
+      "enable_d2_m2": true,
+      "enable_d2_m3": true,
+      "enable_d2_m4": true,
+      "enable_d2_m5": true,
+      "tokenizer": {
+        "name": "simple_en",
+        "split_on_punct": true,
+        "split_camel_case": true,
+        "strip": true,
+        "lowercase": false,
+        "keep_numbers": true,
+        "collapse_whitespace": true,
+        "unicode_nfkc": true,
+        "stopword_list": null,
+        "noise_token_list": null
+      }
+    },
+    "constructs": {
+      "enabled": true,
+      "enable_d3_m1": true,
+      "enable_d3_m2": true,
+      "enable_d3_m3": true
+    }
+  },
+  "report": {}
+}
