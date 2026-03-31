@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import statistics
 from collections import deque
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional, Callable, Iterable
 
 from cmbenchmark.types.ir import IR, Edge
 from cmbenchmark.types.measures import (
@@ -169,7 +169,10 @@ def _compute_containment_depth(ir: IR) -> Tuple[int, float, float, List[int], in
 
 
 def compute_size_complexity_measures(
-    ir_models: List[IR],
+    ir_models: Iterable[IR],
+    progress_callback: Optional[Callable[[int, int], None]] = None,
+    cancel_requested: Optional[Callable[[], bool]] = None,
+    total_models: Optional[int] = None,
 ) -> Tuple[SizeComplexityMeasuresDataset, SizeComplexityMeasuresPerModel]:
     """Compute size & complexity measures (D4.M1-D4.M4) for IR models."""
     per_model_m1: Dict[str, D4M1ModelSizePerModel] = {}
@@ -204,7 +207,19 @@ def compute_size_complexity_measures(
     total_contained_nodes = 0
     total_root = 0
 
-    for ir in ir_models:
+    inferred_total_models: Optional[int] = total_models
+    if inferred_total_models is None and hasattr(ir_models, "__len__"):
+        try:
+            inferred_total_models = len(ir_models)  # type: ignore[arg-type]
+        except TypeError:
+            inferred_total_models = None
+
+    processed_models = 0
+    for model_index, ir in enumerate(ir_models, start=1):
+        if cancel_requested and cancel_requested():
+            raise InterruptedError("Measure computation cancelled.")
+        processed_models = model_index
+
         node_count = len(ir.nodes)
         edge_count = len(ir.edges)
         element_count = node_count + edge_count
@@ -298,6 +313,26 @@ def compute_size_complexity_measures(
         contained_node_shares.append(float(contained_node_share))
         total_contained_nodes += contained_node_count
         total_root += root_count
+
+        if progress_callback and (
+            model_index % 5 == 0
+            or (
+                inferred_total_models is not None
+                and model_index == inferred_total_models
+            )
+        ):
+            progress_callback(model_index, inferred_total_models or model_index)
+
+    if (
+        progress_callback
+        and processed_models > 0
+        and processed_models % 5 != 0
+        and (
+            inferred_total_models is None
+            or processed_models != inferred_total_models
+        )
+    ):
+        progress_callback(processed_models, inferred_total_models or processed_models)
 
     dataset_m1 = D4M1ModelSizeDataset(
         total_node_count=total_node_count,

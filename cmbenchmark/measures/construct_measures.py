@@ -1,6 +1,6 @@
 """Computation functions for construct coverage measures (D3)."""
 
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Tuple, Any, Optional, Callable, Iterable
 from collections import Counter, defaultdict
 import math
 
@@ -96,8 +96,11 @@ def _compute_utilization_entropy(relative_frequency_by_construct: Dict[str, floa
 
 
 def compute_construct_measures(
-    ir_models: List[IR],
+    ir_models: Iterable[IR],
     constructs: Dict[str, ConstructDef],
+    progress_callback: Optional[Callable[[int, int], None]] = None,
+    cancel_requested: Optional[Callable[[], bool]] = None,
+    total_models: Optional[int] = None,
 ) -> Tuple[ConstructMeasuresDataset, ConstructMeasuresPerModel]:
     """
     Compute construct coverage measures (D3.M1, D3.M3) for IR models.
@@ -145,7 +148,19 @@ def compute_construct_measures(
     unknown_type_examples_dataset: Dict[str, int] = defaultdict(int)
     
     # Process each IR model
-    for ir in ir_models:
+    inferred_total_models: Optional[int] = total_models
+    if inferred_total_models is None and hasattr(ir_models, "__len__"):
+        try:
+            inferred_total_models = len(ir_models)  # type: ignore[arg-type]
+        except TypeError:
+            inferred_total_models = None
+
+    processed_models = 0
+    for model_index, ir in enumerate(ir_models, start=1):
+        if cancel_requested and cancel_requested():
+            raise InterruptedError("Measure computation cancelled.")
+        processed_models = model_index
+
         # Match constructs
         construct_counts, unknown_node_types, unknown_edge_types = _match_constructs_for_ir(
             ir, constructs
@@ -210,6 +225,26 @@ def compute_construct_measures(
         
         for unknown_type, count in all_unknown_types.items():
             unknown_type_examples_dataset[unknown_type] += count
+
+        if progress_callback and (
+            model_index % 5 == 0
+            or (
+                inferred_total_models is not None
+                and model_index == inferred_total_models
+            )
+        ):
+            progress_callback(model_index, inferred_total_models or model_index)
+
+    if (
+        progress_callback
+        and processed_models > 0
+        and processed_models % 5 != 0
+        and (
+            inferred_total_models is None
+            or processed_models != inferred_total_models
+        )
+    ):
+        progress_callback(processed_models, inferred_total_models or processed_models)
     
     # D3.M1: Dataset-level
     constructs_observed_dataset = len([

@@ -1,21 +1,36 @@
 """API endpoints for cmbenchmark web interface."""
 
-import json
 from pathlib import Path
 from typing import Dict, Any, List
 from fastapi import APIRouter, HTTPException, Query
-from cmbenchmark.services.scan import scan_dataset
-from cmbenchmark.services.parse import parse_from_scan
-from cmbenchmark.services.measure import compute_measure, save_measure_dataset, save_measure_per_model
-from cmbenchmark.services.report import generate_report
 from cmbenchmark.parser import get_all_parsers
 from cmbenchmark.types.ir import IR
-from cmbenchmark.types.dataset import IRInfo
 from cmbenchmark.types.profile import BenchmarkProfile
 from cmbenchmark.construct_catalog import load_construct_profile_json, get_construct_profile_path
+from cmbenchmark.web.scan_jobs import (
+    create_scan_job,
+    get_scan_job,
+    get_scan_job_files,
+    cancel_scan_job,
+    SCAN_FILES_DEFAULT_LIMIT,
+    SCAN_FILES_MAX_LIMIT,
+    ScanFileCategory,
+)
+from cmbenchmark.web.parse_jobs import create_parse_job, get_parse_job, cancel_parse_job
+from cmbenchmark.web.measure_jobs import create_measure_job, get_measure_job, cancel_measure_job
+from cmbenchmark.web.report_jobs import create_report_job, get_report_job, cancel_report_job
 from .schemas import (
-    ScanRequest, ScanResponse, ParseRequest, ParseResponse, ErrorResponse,
-    MeasureRequest, MeasureResponse, ReportRequest, DerivedReportResponse
+    ScanRequest,
+    ScanJobCreateResponse,
+    ScanJobStatusResponse,
+    ScanJobFilesResponse,
+    ScanJobCancelResponse,
+    StageJobCreateResponse,
+    StageJobStatusResponse,
+    StageJobCancelResponse,
+    ParseRequest,
+    MeasureRequest,
+    ReportRequest,
 )
 
 router = APIRouter()
@@ -70,94 +85,223 @@ async def get_parsers():
     return [parser.language for parser in parsers]
 
 
-@router.post("/scan", response_model=ScanResponse)
-async def scan(request: ScanRequest):
-    """
-    Scan a dataset directory for model files and generate statistics.
-    
-    This endpoint wraps the scan_dataset service function.
-    The dataset_info.json file is saved to the profile's output_path.
-    """
+@router.post("/scan-jobs", response_model=ScanJobCreateResponse, status_code=202)
+async def start_scan_job(request: ScanRequest):
+    """Create an asynchronous scan job and return a job id."""
     try:
         profile = _normalize_profile(request.profile)
-        dataset_info = scan_dataset(
-            dataset_path=profile.scan.dataset_path,
-            include=profile.scan.include,
-            exclude=profile.scan.exclude,
-            size_limit_mb=profile.scan.size_limit_mb,
+        job = create_scan_job(profile)
+        return ScanJobCreateResponse(
+            job_id=job["job_id"],
+            status=job["status"],
+            created_at=job["created_at"],
+            status_url=f"/api/scan-jobs/{job['job_id']}",
         )
-        
-        # Save dataset_info.json to the output directory
-        output_dir = Path(profile.output_path).resolve()
-        output_dir.mkdir(parents=True, exist_ok=True)
-        dataset_info_path = output_dir / "dataset_info.json"
-        with open(dataset_info_path, "w", encoding="utf-8") as f:
-            json.dump(dataset_info.to_dict(), f, indent=2)
-        
-        # Convert DatasetInfo to response schema
-        response = ScanResponse(
-            dataset_root=dataset_info.dataset_root,
-            scanned_at=dataset_info.scanned_at,
-            parameters=dataset_info.parameters,
-            totals=dataset_info.totals,
-            extensions=dataset_info.extensions,
-            duplicates_groups=dataset_info.duplicates_groups,
-            too_large=dataset_info.too_large,
-            unreadable=dataset_info.unreadable,
-            candidates=dataset_info.candidates,
-            filtered=dataset_info.filtered,
-        )
-        
-        # Add the saved path and output directory to parameters for convenience
-        response.parameters["dataset_info_path"] = str(dataset_info_path)
-        response.parameters["out"] = str(output_dir)
-        
-        return response
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.post("/parse", response_model=ParseResponse)
-async def parse(request: ParseRequest):
-    """
-    Parse models from dataset_info.json and produce IR files.
-    
-    This endpoint wraps the parse_from_scan service function.
-    """
+@router.get("/scan-jobs/{job_id}", response_model=ScanJobStatusResponse)
+async def scan_job_status(job_id: str):
+    """Get current status/progress for a scan job."""
     try:
-        profile = _normalize_profile(request.profile)
-        dataset_info_path = Path(profile.output_path).resolve() / "dataset_info.json"
-        ir_info = parse_from_scan(
-            dataset_info_path=str(dataset_info_path),
-            output_dir=profile.output_path,
-            parser_language=profile.parse.parser_language,
-            ecore_enable_scoped_uri_mappings=getattr(
-                profile.parse, "ecore_enable_scoped_uri_mappings", None
-            ),
+        job = get_scan_job(job_id)
+        return ScanJobStatusResponse(**job)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Scan job not found: {job_id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/scan-jobs/{job_id}/files", response_model=ScanJobFilesResponse)
+async def scan_job_files(
+    job_id: str,
+    category: ScanFileCategory = Query(
+        ...,
+        description="One of: candidates, filtered, unreadable, too_large, duplicates",
+    ),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(SCAN_FILES_DEFAULT_LIMIT, ge=1, le=SCAN_FILES_MAX_LIMIT),
+    q: str = Query("", description="Case-insensitive substring filter"),
+):
+    """Get paginated scan details for a completed scan job."""
+    try:
+        data = get_scan_job_files(
+            job_id=job_id,
+            category=category,
+            offset=offset,
+            limit=limit,
+            query=q,
         )
-        
-        # Convert ModelParseDiagnostics to response schema
-        diagnostics = {
-            k: v.to_dict() if hasattr(v, 'to_dict') else v
-            for k, v in ir_info.modelParseDiagnostics.items()
-        }
-        
-        # Convert IRInfo to response schema
-        response = ParseResponse(
-            dataset_root=ir_info.dataset_root,
-            parsed_at=ir_info.parsed_at,
-            parameters=ir_info.parameters,
-            totals=ir_info.totals,
-            index=ir_info.index,
-            modelParseDiagnostics=diagnostics,
-        )
-        # Add output_dir to parameters for convenience
-        response.parameters["output_dir"] = profile.output_path
-        return response
+        return ScanJobFilesResponse(**data)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Scan job not found: {job_id}")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/scan-jobs/{job_id}", response_model=ScanJobCancelResponse)
+async def cancel_scan(job_id: str):
+    """Request cancellation of a scan job."""
+    try:
+        cancel_requested = cancel_scan_job(job_id)
+        job = get_scan_job(job_id)
+        return ScanJobCancelResponse(
+            job_id=job_id,
+            status=job["status"],
+            cancel_requested=cancel_requested,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Scan job not found: {job_id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/parse-jobs", response_model=StageJobCreateResponse, status_code=202)
+async def start_parse_job(request: ParseRequest):
+    """Create an asynchronous parse job and return a job id."""
+    try:
+        profile = _normalize_profile(request.profile)
+        job = create_parse_job(profile)
+        return StageJobCreateResponse(
+            job_id=job["job_id"],
+            status=job["status"],
+            created_at=job["created_at"],
+            status_url=f"/api/parse-jobs/{job['job_id']}",
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/parse-jobs/{job_id}", response_model=StageJobStatusResponse)
+async def parse_job_status(job_id: str):
+    """Get current status for a parse job."""
+    try:
+        job = get_parse_job(job_id)
+        return StageJobStatusResponse(**job)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Parse job not found: {job_id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/parse-jobs/{job_id}", response_model=StageJobCancelResponse)
+async def cancel_parse(job_id: str):
+    """Request cancellation of a parse job."""
+    try:
+        cancel_requested = cancel_parse_job(job_id)
+        job = get_parse_job(job_id)
+        return StageJobCancelResponse(
+            job_id=job_id,
+            status=job["status"],
+            cancel_requested=cancel_requested,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Parse job not found: {job_id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/measure-jobs", response_model=StageJobCreateResponse, status_code=202)
+async def start_measure_job(request: MeasureRequest):
+    """Create an asynchronous measure job and return a job id."""
+    try:
+        profile = _normalize_profile(request.profile)
+        job = create_measure_job(profile)
+        return StageJobCreateResponse(
+            job_id=job["job_id"],
+            status=job["status"],
+            created_at=job["created_at"],
+            status_url=f"/api/measure-jobs/{job['job_id']}",
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/measure-jobs/{job_id}", response_model=StageJobStatusResponse)
+async def measure_job_status(job_id: str):
+    """Get current status for a measure job."""
+    try:
+        job = get_measure_job(job_id)
+        return StageJobStatusResponse(**job)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Measure job not found: {job_id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/measure-jobs/{job_id}", response_model=StageJobCancelResponse)
+async def cancel_measure(job_id: str):
+    """Request cancellation of a measure job."""
+    try:
+        cancel_requested = cancel_measure_job(job_id)
+        job = get_measure_job(job_id)
+        return StageJobCancelResponse(
+            job_id=job_id,
+            status=job["status"],
+            cancel_requested=cancel_requested,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Measure job not found: {job_id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/report-jobs", response_model=StageJobCreateResponse, status_code=202)
+async def start_report_job(request: ReportRequest):
+    """Create an asynchronous report job and return a job id."""
+    try:
+        profile = _normalize_profile(request.profile)
+        job = create_report_job(profile)
+        return StageJobCreateResponse(
+            job_id=job["job_id"],
+            status=job["status"],
+            created_at=job["created_at"],
+            status_url=f"/api/report-jobs/{job['job_id']}",
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/report-jobs/{job_id}", response_model=StageJobStatusResponse)
+async def report_job_status(job_id: str):
+    """Get current status for a report job."""
+    try:
+        job = get_report_job(job_id)
+        return StageJobStatusResponse(**job)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Report job not found: {job_id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/report-jobs/{job_id}", response_model=StageJobCancelResponse)
+async def cancel_report(job_id: str):
+    """Request cancellation of a report job."""
+    try:
+        cancel_requested = cancel_report_job(job_id)
+        job = get_report_job(job_id)
+        return StageJobCancelResponse(
+            job_id=job_id,
+            status=job["status"],
+            cancel_requested=cancel_requested,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Report job not found: {job_id}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
@@ -180,77 +324,6 @@ async def get_ir(ir_id: str, output_dir: str = Query(..., description="Output di
         
         ir = IR.load(str(ir_path))
         return ir.to_dict()
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-
-
-@router.post("/measure", response_model=MeasureResponse)
-async def measure(request: MeasureRequest):
-    """
-    Compute dataset-level and per-model measures from IR models.
-    
-    This endpoint wraps the compute_measure service function.
-    The measures.json and measures_per_model.json files are saved to the profile's output_path.
-    """
-    try:
-        profile = _normalize_profile(request.profile)
-        ir_dir = Path(profile.output_path).resolve() / "ir"
-
-        # Compute measures
-        dataset_measures, per_model_measures = compute_measure(str(ir_dir), profile=profile)
-        
-        # Save measures to output directory
-        output_dir = Path(profile.output_path).resolve()
-        output_dir.mkdir(parents=True, exist_ok=True)
-        
-        measures_path = output_dir / "measures.json"
-        measures_per_model_path = output_dir / "measures_per_model.json"
-        
-        save_measure_dataset(dataset_measures, str(measures_path))
-        save_measure_per_model(per_model_measures, str(measures_per_model_path))
-        
-        return MeasureResponse(
-            measures_path=str(measures_path),
-            measures_per_model_path=str(measures_per_model_path),
-            output_dir=str(output_dir),
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-
-
-@router.post("/report", response_model=DerivedReportResponse)
-async def report(request: ReportRequest):
-    """
-    Build UI-ready derived report JSON from measures and IR info.
-    
-    This endpoint loads the measures JSON files, optionally IR info, and returns a stable
-    derived payload that the frontend can render directly (charts, tables, etc.).
-    """
-    try:
-        profile = _normalize_profile(request.profile)
-        output_dir = Path(profile.output_path).resolve()
-        
-        measures_path = output_dir / "measures.json"
-        if not measures_path.exists():
-            raise HTTPException(status_code=404, detail=f"Measures file not found: {measures_path}")
-
-        measures_per_model_path = output_dir / "measures_per_model.json"
-        if not measures_per_model_path.exists():
-            raise HTTPException(status_code=404, detail=f"Measures per model file not found: {measures_per_model_path}")
-
-        ir_info_path = output_dir / "ir_info.json"
-
-        report_result = generate_report(
-            measures_path=str(measures_path),
-            measures_per_model_path=str(measures_per_model_path),
-            output_dir=str(output_dir),
-            ir_info_path=str(ir_info_path) if ir_info_path.exists() else None,
-        )
-        return report_result["data"]
     except HTTPException:
         raise
     except Exception as e:

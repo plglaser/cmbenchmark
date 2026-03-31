@@ -34,6 +34,97 @@ export interface ScanResponse {
   filtered: string[];
 }
 
+export interface ScanJobCreateResponse {
+  job_id: string;
+  status: string;
+  created_at: string;
+  status_url: string;
+}
+
+export interface ScanJobStatusResponse {
+  job_id: string;
+  job_type: string;
+  status: 'queued' | 'running' | 'cancel_requested' | 'completed' | 'failed' | 'cancelled';
+  created_at: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+  progress: {
+    phase?: string;
+    message?: string;
+    percentage?: number;
+    counters?: Record<string, number>;
+  };
+  result?: {
+    dataset_root: string;
+    scanned_at: string;
+    parameters: {
+      include: string[];
+      exclude: string[];
+      size_limit_mb?: number | null;
+      dataset_info_path?: string;
+      out?: string;
+    };
+    totals: {
+      total_seen: number;
+      candidates: number;
+      unreadable: number;
+      too_large: number;
+      filtered: number;
+    };
+    extensions: Record<string, number>;
+    duplicates_groups_count: number;
+    duplicates_files_count?: number;
+  } | null;
+  error?: string | null;
+  cancel_requested: boolean;
+}
+
+export interface ScanJobFilesResponse {
+  job_id: string;
+  category: string;
+  offset: number;
+  limit: number;
+  total: number;
+  items: any[];
+}
+
+export interface ScanJobCancelResponse {
+  job_id: string;
+  status: string;
+  cancel_requested: boolean;
+}
+
+export interface StageJobCreateResponse {
+  job_id: string;
+  status: string;
+  created_at: string;
+  status_url: string;
+}
+
+export interface StageJobStatusResponse {
+  job_id: string;
+  job_type: string;
+  status: 'queued' | 'running' | 'cancel_requested' | 'completed' | 'failed' | 'cancelled';
+  created_at: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+  progress: {
+    phase?: string;
+    message?: string;
+    percentage?: number;
+    counters?: Record<string, number>;
+  };
+  result?: any;
+  error?: string | null;
+  cancel_requested: boolean;
+}
+
+export interface StageJobCancelResponse {
+  job_id: string;
+  status: string;
+  cancel_requested: boolean;
+}
+
 export interface ParseRequest {
   profile: BenchmarkProfile;
 }
@@ -113,7 +204,8 @@ export interface MeasureRequest {
 
 export interface MeasureResponse {
   measures_path: string;
-  measures_per_model_path: string;
+  measures_dir: string;
+  measures_index_path: string;
   output_dir: string;
 }
 

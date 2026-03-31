@@ -21,11 +21,12 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { apiService } from '../services/api';
-import type { ParseResponse, ModelParseDiagnostics } from '../types/api';
+import type { ParseResponse, ModelParseDiagnostics, StageJobStatusResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
 import { IRVisualization } from './IRVisualization';
 import { ReadonlyField } from './profile/ReadonlyField';
 import { ConfigCard } from './profile/ConfigCard';
+import { StageProgressCard } from './StageProgressCard';
 
 const truncatePath = (path: string, maxLength: number = 50) => {
   if (path.length <= maxLength) return path;
@@ -76,10 +77,16 @@ interface ParseStepProps {
   profile: BenchmarkProfile | null;
 }
 
+const POLL_INTERVAL_MS = 500;
+const MIN_PROGRESS_VISIBLE_MS = 900;
+
 export function ParseStep({ onParseComplete, profile }: ParseStepProps) {
   const [loading, setLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ParseResponse | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<StageJobStatusResponse | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(true);
   const [selectedDiagnostics, setSelectedDiagnostics] = useState<ModelParseDiagnostics | null>(null);
@@ -88,24 +95,70 @@ export function ParseStep({ onParseComplete, profile }: ParseStepProps) {
   const [fileTableColumnFilters, setFileTableColumnFilters] = useState<ColumnFiltersState>([]);
   const [fileTablePagination, setFileTablePagination] = useState({ pageIndex: 0, pageSize: 20 });
 
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const pollUntilTerminal = async (parseJobId: string): Promise<StageJobStatusResponse> => {
+    while (true) {
+      const status = await apiService.getParseJob(parseJobId);
+      setJobStatus(status);
+      if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
+        return status;
+      }
+      await delay(POLL_INTERVAL_MS);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    const runStartedAtMs = Date.now();
 
     try {
       if (!profile) {
         throw new Error('Load a benchmark profile to run the parse step.');
       }
-      const response = await apiService.parse({
+      const created = await apiService.startParseJob({
         profile,
       });
+      setJobId(created.job_id);
+
+      const finalStatus = await pollUntilTerminal(created.job_id);
+      if (finalStatus.status === 'failed') {
+        throw new Error(finalStatus.error || 'Parse job failed');
+      }
+      if (finalStatus.status === 'cancelled') {
+        throw new Error('Parse job was cancelled');
+      }
+      if (finalStatus.status !== 'completed' || !finalStatus.result) {
+        throw new Error('Parse job did not complete successfully');
+      }
+
+      const response = finalStatus.result as ParseResponse;
       setResult(response);
       onParseComplete(response);
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Failed to parse dataset');
     } finally {
+      const elapsedMs = Date.now() - runStartedAtMs;
+      if (elapsedMs < MIN_PROGRESS_VISIBLE_MS) {
+        await delay(MIN_PROGRESS_VISIBLE_MS - elapsedMs);
+      }
       setLoading(false);
+      setCancelling(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!jobId) {
+      return;
+    }
+    setCancelling(true);
+    try {
+      await apiService.cancelParseJob(jobId);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.message || 'Failed to cancel parse job');
+      setCancelling(false);
     }
   };
 
@@ -354,10 +407,35 @@ export function ParseStep({ onParseComplete, profile }: ParseStepProps) {
             </div>
           )}
 
-          <Button type="submit" disabled={loading || !profile || result !== null}>
-            {loading ? 'Parsing...' : 'Parse Models'}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="submit" disabled={loading || !profile || result !== null}>
+              {loading ? 'Parsing...' : 'Parse Models'}
+            </Button>
+            {loading && (
+              <Button type="button" variant="outline" onClick={handleCancel} disabled={cancelling}>
+                {cancelling ? 'Cancelling...' : 'Cancel'}
+              </Button>
+            )}
+          </div>
         </form>
+
+        {loading && jobStatus && (
+          <StageProgressCard
+            title="Parse Progress"
+            status={jobStatus.status}
+            phase={jobStatus.progress?.phase}
+            message={jobStatus.progress?.message || 'Parse job is running.'}
+            percentage={jobStatus.progress?.percentage}
+            processed={Number(jobStatus.progress?.counters?.processed_models ?? 0)}
+            total={Number(jobStatus.progress?.counters?.total_models ?? 0)}
+            unitLabel="models"
+            details={[
+              { label: 'Success', value: Number(jobStatus.progress?.counters?.parsed_success ?? 0) },
+              { label: 'Warnings', value: Number(jobStatus.progress?.counters?.parsed_warning ?? 0) },
+              { label: 'Failures', value: Number(jobStatus.progress?.counters?.parsed_failure ?? 0) },
+            ]}
+          />
+        )}
 
         {result && diagnosticsData && (
           <div className="mt-6 space-y-4">

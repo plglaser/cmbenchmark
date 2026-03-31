@@ -4,13 +4,16 @@ import axios from 'axios';
 import { z } from 'zod';
 import type {
   ScanRequest,
-  ScanResponse,
+  ScanJobCreateResponse,
+  ScanJobStatusResponse,
+  ScanJobFilesResponse,
+  ScanJobCancelResponse,
+  StageJobCreateResponse,
+  StageJobStatusResponse,
+  StageJobCancelResponse,
   ParseRequest,
-  ParseResponse,
   MeasureRequest,
-  MeasureResponse,
   ReportRequest,
-  ReportResponse,
 } from '../types/api';
 
 // Use relative URL so it works in both dev (with proxy) and production (same origin)
@@ -20,6 +23,9 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+export const MAX_SCAN_FILES_LIMIT = 2000;
+const MIN_SCAN_FILES_LIMIT = 1;
 
 // Zod schemas for validation
 export const ScanRequestSchema = z.object({
@@ -48,25 +54,53 @@ export const apiService = {
     return response.data;
   },
 
-  /**
-   * Scan a dataset directory
-   */
-  async scan(request: ScanRequest): Promise<ScanResponse> {
-    // Validate request
+  async startScanJob(request: ScanRequest): Promise<ScanJobCreateResponse> {
     ScanRequestSchema.parse(request);
-    
-    const response = await api.post<ScanResponse>('/scan', request);
+    const response = await api.post<ScanJobCreateResponse>('/scan-jobs', request);
     return response.data;
   },
 
-  /**
-   * Parse models from dataset info
-   */
-  async parse(request: ParseRequest): Promise<ParseResponse> {
-    // Validate request
+  async getScanJob(jobId: string): Promise<ScanJobStatusResponse> {
+    const response = await api.get<ScanJobStatusResponse>(`/scan-jobs/${jobId}`);
+    return response.data;
+  },
+
+  async getScanJobFiles(
+    jobId: string,
+    category: 'candidates' | 'filtered' | 'unreadable' | 'too_large' | 'duplicates',
+    offset = 0,
+    limit = 100,
+    q = ''
+  ): Promise<ScanJobFilesResponse> {
+    const safeOffset = Math.max(0, Math.floor(offset));
+    const safeLimit = Math.min(
+      MAX_SCAN_FILES_LIMIT,
+      Math.max(MIN_SCAN_FILES_LIMIT, Math.floor(limit))
+    );
+    const response = await api.get<ScanJobFilesResponse>(`/scan-jobs/${jobId}/files`, {
+      params: { category, offset: safeOffset, limit: safeLimit, q },
+    });
+    return response.data;
+  },
+
+  async cancelScanJob(jobId: string): Promise<ScanJobCancelResponse> {
+    const response = await api.delete<ScanJobCancelResponse>(`/scan-jobs/${jobId}`);
+    return response.data;
+  },
+
+  async startParseJob(request: ParseRequest): Promise<StageJobCreateResponse> {
     ParseRequestSchema.parse(request);
-    
-    const response = await api.post<ParseResponse>('/parse', request);
+    const response = await api.post<StageJobCreateResponse>('/parse-jobs', request);
+    return response.data;
+  },
+
+  async getParseJob(jobId: string): Promise<StageJobStatusResponse> {
+    const response = await api.get<StageJobStatusResponse>(`/parse-jobs/${jobId}`);
+    return response.data;
+  },
+
+  async cancelParseJob(jobId: string): Promise<StageJobCancelResponse> {
+    const response = await api.delete<StageJobCancelResponse>(`/parse-jobs/${jobId}`);
     return response.data;
   },
 
@@ -80,25 +114,35 @@ export const apiService = {
     return response.data;
   },
 
-  /**
-   * Compute measures from IR models
-   */
-  async measure(request: MeasureRequest): Promise<MeasureResponse> {
-    // Validate request
+  async startMeasureJob(request: MeasureRequest): Promise<StageJobCreateResponse> {
     MeasureRequestSchema.parse(request);
-    
-    const response = await api.post<MeasureResponse>('/measure', request);
+    const response = await api.post<StageJobCreateResponse>('/measure-jobs', request);
     return response.data;
   },
 
-  /**
-   * Load measures and IR info for reporting
-   */
-  async report(request: ReportRequest): Promise<ReportResponse> {
-    // Validate request
+  async getMeasureJob(jobId: string): Promise<StageJobStatusResponse> {
+    const response = await api.get<StageJobStatusResponse>(`/measure-jobs/${jobId}`);
+    return response.data;
+  },
+
+  async cancelMeasureJob(jobId: string): Promise<StageJobCancelResponse> {
+    const response = await api.delete<StageJobCancelResponse>(`/measure-jobs/${jobId}`);
+    return response.data;
+  },
+
+  async startReportJob(request: ReportRequest): Promise<StageJobCreateResponse> {
     ReportRequestSchema.parse(request);
-    
-    const response = await api.post<ReportResponse>('/report', request);
+    const response = await api.post<StageJobCreateResponse>('/report-jobs', request);
+    return response.data;
+  },
+
+  async getReportJob(jobId: string): Promise<StageJobStatusResponse> {
+    const response = await api.get<StageJobStatusResponse>(`/report-jobs/${jobId}`);
+    return response.data;
+  },
+
+  async cancelReportJob(jobId: string): Promise<StageJobCancelResponse> {
+    const response = await api.delete<StageJobCancelResponse>(`/report-jobs/${jobId}`);
     return response.data;
   },
 
@@ -114,4 +158,3 @@ export const apiService = {
 };
 
 export default apiService;
-

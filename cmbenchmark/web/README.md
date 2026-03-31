@@ -31,8 +31,8 @@ API documentation (Swagger UI) will be available at http://localhost:8000/docs
 ### GET /api/parsers
 Get list of available parser languages.
 
-### POST /api/scan
-Scan a dataset directory for model files.
+### POST /api/scan-jobs
+Create an asynchronous scan job.
 
 **Request Body:**
 ```json
@@ -55,11 +55,25 @@ Scan a dataset directory for model files.
 ```
 
 **Response:**
-Returns scan results including statistics, file extensions, duplicates, etc.
-The `dataset_info.json` file is saved to the profile's `output_path`.
+Returns `202 Accepted` with a `job_id`.
 
-### POST /api/parse
-Parse models from `dataset_info.json` saved in the profile output directory.
+### GET /api/scan-jobs/{job_id}
+Get current scan job status, progress, and final summary when completed.
+
+### GET /api/scan-jobs/{job_id}/files
+Get paginated file details for a completed scan job.
+
+Query params:
+- `category`: `candidates | filtered | unreadable | too_large | duplicates`
+- `offset`: pagination offset
+- `limit`: page size (max 2000)
+- `q`: optional substring filter
+
+### DELETE /api/scan-jobs/{job_id}
+Request cancellation for a queued/running scan job.
+
+### POST /api/parse-jobs
+Create an asynchronous parse job.
 
 **Request Body:**
 ```json
@@ -70,12 +84,37 @@ Parse models from `dataset_info.json` saved in the profile output directory.
 }
 ```
 
-**Response:**
-Returns parse results including statistics, loss summary, and failures.
+### GET /api/parse-jobs/{job_id}
+Get parse job status and result.
+
+### DELETE /api/parse-jobs/{job_id}
+Request cancellation for parse job.
+
+### POST /api/measure-jobs
+Create an asynchronous measure job.
+
+Result artifacts:
+- `measures.json`
+- `measures_index.json`
+- `measures/{model_id}.json`
+
+### GET /api/measure-jobs/{job_id}
+Get measure job status and result.
+
+### DELETE /api/measure-jobs/{job_id}
+Request cancellation for measure job.
+
+### POST /api/report-jobs
+Create an asynchronous report job.
+
+### GET /api/report-jobs/{job_id}
+Get report job status and result.
+
+### DELETE /api/report-jobs/{job_id}
+Request cancellation for report job.
 
 ## CORS
 
 CORS is configured to allow requests from:
 - http://localhost:5173 (Vite default)
 - http://localhost:3000 (alternative dev server)
-

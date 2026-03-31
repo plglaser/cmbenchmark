@@ -6,12 +6,16 @@ import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Callable
 from cmbenchmark.types.dataset import DatasetInfo, IRInfo
 from cmbenchmark.types.parsing import ModelParseDiagnostics
 from cmbenchmark.types.enums import WarningType, ParseStatus
 from cmbenchmark.parser import get_parser, get_all_parsers
 from cmbenchmark.types.ir import IR
+
+
+class ParseCancelledError(Exception):
+    """Raised when parse execution is cancelled via callback."""
 
 
 def _compute_file_id(file_path: Path) -> str:
@@ -56,6 +60,8 @@ def parse_from_scan(
     output_dir: str,
     parser_language: str,
     ecore_enable_scoped_uri_mappings: Optional[bool] = None,
+    progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    cancel_requested: Optional[Callable[[], bool]] = None,
 ) -> IRInfo:
     """
     Parse models from dataset_info.json and produce IR files.
@@ -74,6 +80,14 @@ def parse_from_scan(
     Returns:
         IRInfo object
     """
+    def _emit_progress(update: Dict[str, Any]) -> None:
+        if progress_callback:
+            progress_callback(update)
+
+    def _check_cancelled() -> None:
+        if cancel_requested and cancel_requested():
+            raise ParseCancelledError("Parse job was cancelled.")
+
     # Stage 1: Initialize
     dataset_info_file = Path(dataset_info_path)
     if not dataset_info_file.exists():
@@ -110,10 +124,26 @@ def parse_from_scan(
     ):
         parser.set_enable_scoped_uri_mappings(ecore_enable_scoped_uri_mappings)
     parsed_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    total_models = len(dataset_info.candidates)
+
+    _emit_progress(
+        {
+            "phase": "initializing",
+            "message": "Preparing parser and output directories.",
+            "percentage": 0.0,
+            "counters": {
+                "total_models": total_models,
+                "processed_models": 0,
+                "parsed_success": 0,
+                "parsed_warning": 0,
+                "parsed_failure": 0,
+            },
+        }
+    )
 
     # Initialize tracking structures
     totals = {
-        "candidates_in": len(dataset_info.candidates),
+        "candidates_in": total_models,
         "parsed_success": 0,
         "parsed_warning": 0,
         "parsed_failure": 0,
@@ -125,11 +155,25 @@ def parse_from_scan(
     # Stage 2: Process each candidate file
     counter = 0
     for relpath in dataset_info.candidates:
+        _check_cancelled()
         counter += 1
-        if counter % 100 == 0:
-            print(f"Processing file {counter} of {len(dataset_info.candidates)}")
         file_path = dataset_root / relpath
         if not file_path.exists():
+            totals["parsed_failure"] += 1
+            _emit_progress(
+                {
+                    "phase": "parsing",
+                    "message": f"Parsing models ({counter}/{total_models}).",
+                    "percentage": (counter / max(1, total_models)) * 100.0,
+                    "counters": {
+                        "total_models": total_models,
+                        "processed_models": counter,
+                        "parsed_success": totals["parsed_success"],
+                        "parsed_warning": totals["parsed_warning"],
+                        "parsed_failure": totals["parsed_failure"],
+                    },
+                }
+            )
             continue
 
         file_id = _compute_file_id(file_path)
@@ -224,7 +268,24 @@ def parse_from_scan(
         else:  # failure
             totals["parsed_failure"] += 1
 
+        if counter % 10 == 0 or counter == total_models:
+            _emit_progress(
+                {
+                    "phase": "parsing",
+                    "message": f"Parsing models ({counter}/{total_models}).",
+                    "percentage": (counter / max(1, total_models)) * 100.0,
+                    "counters": {
+                        "total_models": total_models,
+                        "processed_models": counter,
+                        "parsed_success": totals["parsed_success"],
+                        "parsed_warning": totals["parsed_warning"],
+                        "parsed_failure": totals["parsed_failure"],
+                    },
+                }
+            )
+
     # Stage 3: Build IRInfo object
+    _check_cancelled()
     ir_info = IRInfo(
         dataset_root=str(dataset_root),
         parsed_at=parsed_at,
@@ -246,5 +307,20 @@ def parse_from_scan(
     ir_info_path = output_path / "ir_info.json"
     with open(ir_info_path, "w", encoding="utf-8") as f:
         json.dump(ir_info.to_dict(), f, indent=2)
+
+    _emit_progress(
+        {
+            "phase": "completed",
+            "message": "Parse completed.",
+            "percentage": 100.0,
+            "counters": {
+                "total_models": total_models,
+                "processed_models": total_models,
+                "parsed_success": totals["parsed_success"],
+                "parsed_warning": totals["parsed_warning"],
+                "parsed_failure": totals["parsed_failure"],
+            },
+        }
+    )
 
     return ir_info

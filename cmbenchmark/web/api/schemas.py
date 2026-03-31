@@ -34,6 +34,74 @@ class ScanResponse(BaseModel):
     filtered: List[str]
 
 
+class ScanJobCreateResponse(BaseModel):
+    """Response schema for creating scan jobs."""
+    job_id: str
+    status: str
+    created_at: str
+    status_url: str
+
+
+class ScanJobStatusResponse(BaseModel):
+    """Response schema for scan job status."""
+    job_id: str
+    job_type: str
+    status: str
+    created_at: str
+    started_at: Optional[str] = None
+    finished_at: Optional[str] = None
+    progress: Dict[str, Any] = Field(default_factory=dict)
+    result: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+    cancel_requested: bool = False
+
+
+class ScanJobFilesResponse(BaseModel):
+    """Response schema for paginated scan-file details."""
+    job_id: str
+    category: str
+    offset: int
+    limit: int
+    total: int
+    items: List[Any] = Field(default_factory=list)
+
+
+class ScanJobCancelResponse(BaseModel):
+    """Response schema for scan job cancellation requests."""
+    job_id: str
+    status: str
+    cancel_requested: bool
+
+
+class StageJobCreateResponse(BaseModel):
+    """Generic response schema for creating async stage jobs."""
+    job_id: str
+    status: str
+    created_at: str
+    status_url: str
+
+
+class StageJobStatusResponse(BaseModel):
+    """Generic response schema for stage job status."""
+    job_id: str
+    job_type: str
+    status: str
+    created_at: str
+    started_at: Optional[str] = None
+    finished_at: Optional[str] = None
+    progress: Dict[str, Any] = Field(default_factory=dict)
+    result: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+    cancel_requested: bool = False
+
+
+class StageJobCancelResponse(BaseModel):
+    """Generic response schema for stage job cancellation requests."""
+    job_id: str
+    status: str
+    cancel_requested: bool
+
+
 class ModelParseDiagnosticsResponse(BaseModel):
     """Response schema for model parse diagnostics."""
     file_id: str
@@ -69,7 +137,8 @@ class MeasureRequest(ProfileRequest):
 class MeasureResponse(BaseModel):
     """Response schema for measure endpoint."""
     measures_path: str = Field(..., description="Path to measures.json file")
-    measures_per_model_path: str = Field(..., description="Path to measures_per_model.json file")
+    measures_dir: str = Field(..., description="Path to directory with per-model measure JSON files")
+    measures_index_path: str = Field(..., description="Path to measures_index.json file")
     output_dir: str = Field(..., description="Output directory where measures were saved")
 
 

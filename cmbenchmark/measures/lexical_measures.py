@@ -3,7 +3,7 @@
 import re
 import statistics
 import unicodedata
-from typing import List, Tuple, Dict, Optional, Protocol
+from typing import List, Tuple, Dict, Optional, Protocol, Callable, Iterable
 from collections import Counter
 
 from cmbenchmark.types.ir import IR, Node, Edge
@@ -254,8 +254,11 @@ def _compute_entropy(counts: Dict[str, int]) -> float:
 
 
 def compute_lexical_measures(
-    ir_models: List[IR],
+    ir_models: Iterable[IR],
     lexical_profile: LexicalProfile,
+    progress_callback: Optional[Callable[[int, int], None]] = None,
+    cancel_requested: Optional[Callable[[], bool]] = None,
+    total_models: Optional[int] = None,
 ) -> Tuple[LexicalMeasuresDataset, LexicalMeasuresPerModel]:
     """
     Compute lexical quality measures (D2.M1-D2.M5) for IR models.
@@ -344,7 +347,19 @@ def compute_lexical_measures(
     label_occurrence_counts: Counter[str] = Counter()
     
     # Process each IR model
-    for ir in ir_models:
+    inferred_total_models: Optional[int] = total_models
+    if inferred_total_models is None and hasattr(ir_models, "__len__"):
+        try:
+            inferred_total_models = len(ir_models)  # type: ignore[arg-type]
+        except TypeError:
+            inferred_total_models = None
+
+    processed_models = 0
+    for model_index, ir in enumerate(ir_models, start=1):
+        if cancel_requested and cancel_requested():
+            raise InterruptedError("Measure computation cancelled.")
+        processed_models = model_index
+
         labels = _extract_labels(ir, lexical_profile)
 
         # D2.M6: Language Usage (per-model)
@@ -537,6 +552,26 @@ def compute_lexical_measures(
             stopword_tokens=stopword_count,
             stopword_share=stopword_share,
         )
+
+        if progress_callback and (
+            model_index % 5 == 0
+            or (
+                inferred_total_models is not None
+                and model_index == inferred_total_models
+            )
+        ):
+            progress_callback(model_index, inferred_total_models or model_index)
+
+    if (
+        progress_callback
+        and processed_models > 0
+        and processed_models % 5 != 0
+        and (
+            inferred_total_models is None
+            or processed_models != inferred_total_models
+        )
+    ):
+        progress_callback(processed_models, inferred_total_models or processed_models)
     
     # Build dataset-level measures
     dataset_label_present_share = dataset_label_present_count / dataset_label_eligible_count if dataset_label_eligible_count > 0 else 0.0

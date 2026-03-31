@@ -5,11 +5,15 @@ import fnmatch
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Callable
 from cmbenchmark.types.dataset import DatasetInfo
 
 # Default file extensions to include (supported model file types)
 DEFAULT_INCLUDE_PATTERNS = ["*.xmi", "*.uml", "*.xml", "*.bpmn", "*.bpmn2", "*.ecore", "*.archimate"]
+
+
+class ScanCancelledError(Exception):
+    """Raised when a scan is cancelled via callback."""
 
 
 def _compute_file_hash(file_path: Path) -> Optional[str]:
@@ -92,6 +96,8 @@ def scan_dataset(
     include: Optional[List[str]] = None,
     exclude: Optional[List[str]] = None,
     size_limit_mb: Optional[int] = None,
+    progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    cancel_requested: Optional[Callable[[], bool]] = None,
 ) -> DatasetInfo:
     """
     Scan a dataset directory for model files and generate statistics.
@@ -108,6 +114,14 @@ def scan_dataset(
     Raises:
         ValueError: If dataset path is invalid
     """
+    def _emit_progress(update: Dict[str, Any]) -> None:
+        if progress_callback:
+            progress_callback(update)
+
+    def _check_cancelled() -> None:
+        if cancel_requested and cancel_requested():
+            raise ScanCancelledError("Scan job was cancelled.")
+
     # Step 1: Initialize
     dataset_dir = Path(dataset_path).resolve()
     if not dataset_dir.exists():
@@ -126,71 +140,157 @@ def scan_dataset(
     # Normalize exclude patterns (empty list if None)
     exclude_patterns = exclude.copy() if exclude else []
 
-    # Step 2: Build Candidate File List
+    # Step 2: Count files once so progress can be expressed as processed/total files.
+    total_files = 0
+    for file_path in dataset_dir.rglob("*"):
+        _check_cancelled()
+        if file_path.is_file():
+            total_files += 1
+
+    _emit_progress(
+        {
+            "phase": "discovering",
+            "message": "Discovering files in dataset.",
+            "percentage": 0.0,
+            "counters": {
+                "total_files": total_files,
+                "files_processed": 0,
+                "total_seen": 0,
+                "filtered": 0,
+                "candidate_total": 0,
+                "candidates_processed": 0,
+                "unreadable": 0,
+                "too_large": 0,
+                "duplicates_groups": 0,
+            },
+        }
+    )
+
+    # Step 3: Process files and collect candidate metadata
     total_seen = 0
+    files_processed = 0
     candidate_files: List[Path] = []
     filtered_files: List[str] = []
-
-    # Walk directory tree
-    for file_path in dataset_dir.rglob("*"):
-        if not file_path.is_file():
-            continue
-
-        total_seen += 1
-
-        # Apply include filter
-        if not _matches_patterns(file_path, include_patterns, dataset_dir):
-            filtered_files.append(str(file_path.relative_to(dataset_dir)))
-            continue
-
-        # Skip excluded patterns
-        if exclude_patterns and _matches_patterns(file_path, exclude_patterns, dataset_dir):
-            filtered_files.append(str(file_path.relative_to(dataset_dir)))
-            continue
-
-        candidate_files.append(file_path)
-
-    # Step 3: Sanity & Safety Checks
     unreadable_files: List[str] = []
     too_large_files: List[str] = []
     file_hashes: Dict[str, List[Path]] = {}  # hash -> list of files with that hash
     extension_counts: Dict[str, int] = {}
     size_limit_bytes = (size_limit_mb * 1024 * 1024) if size_limit_mb else None
 
-    for file_path in candidate_files:
-        # Track extension
-        ext = file_path.suffix or ".noext"
-        extension_counts[ext] = extension_counts.get(ext, 0) + 1
-
-        # Check readability
-        try:
-            with open(file_path, "rb") as f:
-                f.read(1)  # Try to read at least one byte
-        except Exception:
-            unreadable_files.append(str(file_path.relative_to(dataset_dir)))
+    for file_path in dataset_dir.rglob("*"):
+        _check_cancelled()
+        if not file_path.is_file():
             continue
 
-        # Check size threshold
-        try:
-            file_size = file_path.stat().st_size
-            if size_limit_bytes and file_size > size_limit_bytes:
-                too_large_files.append(str(file_path.relative_to(dataset_dir)))
-        except Exception:
-            # If we can't get file size, skip duplicate detection for this file
-            continue
+        files_processed += 1
+        total_seen += 1
+        relpath = str(file_path.relative_to(dataset_dir))
 
-        # Compute hash for duplicate detection
-        file_hash = _compute_file_hash(file_path)
-        if file_hash:
-            if file_hash not in file_hashes:
-                file_hashes[file_hash] = []
-            file_hashes[file_hash].append(file_path)
+        # Apply include/exclude filters first
+        if not _matches_patterns(file_path, include_patterns, dataset_dir):
+            filtered_files.append(relpath)
+        elif exclude_patterns and _matches_patterns(file_path, exclude_patterns, dataset_dir):
+            filtered_files.append(relpath)
+        else:
+            candidate_files.append(file_path)
 
-    # Build duplicate groups (only groups with 2+ files)
+            # Track extension
+            ext = file_path.suffix or ".noext"
+            extension_counts[ext] = extension_counts.get(ext, 0) + 1
+
+            # Check readability
+            try:
+                with open(file_path, "rb") as f:
+                    f.read(1)  # Try to read at least one byte
+            except Exception:
+                unreadable_files.append(relpath)
+                if files_processed % 100 == 0 or files_processed == total_files:
+                    ratio = files_processed / max(1, total_files)
+                    _emit_progress(
+                        {
+                            "phase": "analyzing",
+                            "message": f"Processing files ({files_processed}/{total_files}).",
+                            "percentage": ratio * 90.0,
+                            "counters": {
+                                "total_files": total_files,
+                                "files_processed": files_processed,
+                                "total_seen": total_seen,
+                                "filtered": len(filtered_files),
+                                "candidate_total": len(candidate_files),
+                                "candidates_processed": len(candidate_files),
+                                "unreadable": len(unreadable_files),
+                                "too_large": len(too_large_files),
+                                "duplicates_groups": 0,
+                            },
+                        }
+                    )
+                continue
+
+            # Check size threshold
+            try:
+                file_size = file_path.stat().st_size
+                if size_limit_bytes and file_size > size_limit_bytes:
+                    too_large_files.append(relpath)
+            except Exception:
+                # If we can't get file size, skip duplicate detection for this file
+                pass
+
+            # Compute hash for duplicate detection
+            file_hash = _compute_file_hash(file_path)
+            if file_hash:
+                if file_hash not in file_hashes:
+                    file_hashes[file_hash] = []
+                file_hashes[file_hash].append(file_path)
+
+        if files_processed % 100 == 0 or files_processed == total_files:
+            ratio = files_processed / max(1, total_files)
+            _emit_progress(
+                {
+                    "phase": "analyzing",
+                    "message": f"Processing files ({files_processed}/{total_files}).",
+                    "percentage": ratio * 90.0,
+                    "counters": {
+                        "total_files": total_files,
+                        "files_processed": files_processed,
+                        "total_seen": total_seen,
+                        "filtered": len(filtered_files),
+                        "candidate_total": len(candidate_files),
+                        "candidates_processed": len(candidate_files),
+                        "unreadable": len(unreadable_files),
+                        "too_large": len(too_large_files),
+                        "duplicates_groups": 0,
+                    },
+                }
+            )
+
+    total_candidates = len(candidate_files)
+
+    # Step 4: Build duplicate groups (only groups with 2+ files)
     duplicates_groups: List[Dict[str, Any]] = []
     duplicate_files_to_exclude: set[Path] = set()  # Files to exclude from candidates (all but first in each group)
-    
-    for file_hash, files in file_hashes.items():
+
+    _emit_progress(
+        {
+            "phase": "deduplicating",
+            "message": "Grouping duplicate files.",
+            "percentage": 92.0,
+            "counters": {
+                "total_files": total_files,
+                "files_processed": files_processed,
+                "total_seen": total_seen,
+                "filtered": len(filtered_files),
+                "candidate_total": total_candidates,
+                "candidates_processed": total_candidates,
+                "unreadable": len(unreadable_files),
+                "too_large": len(too_large_files),
+                "duplicates_groups": 0,
+            },
+        }
+    )
+
+    total_hashes = len(file_hashes)
+    for idx, (file_hash, files) in enumerate(file_hashes.items(), start=1):
+        _check_cancelled()
         if len(files) > 1:
             # Sort files for deterministic selection (keep first, exclude rest)
             sorted_files = sorted(files, key=lambda p: str(p.relative_to(dataset_dir)))
@@ -200,6 +300,27 @@ def scan_dataset(
             })
             # Mark all but the first file as duplicates to exclude
             duplicate_files_to_exclude.update(sorted_files[1:])
+
+        if idx % 500 == 0 or idx == total_hashes:
+            ratio = idx / max(1, total_hashes)
+            _emit_progress(
+                {
+                    "phase": "deduplicating",
+                    "message": "Grouping duplicate files.",
+                    "percentage": 92.0 + (ratio * 5.0),
+                    "counters": {
+                        "total_files": total_files,
+                        "files_processed": files_processed,
+                        "total_seen": total_seen,
+                        "filtered": len(filtered_files),
+                        "candidate_total": total_candidates,
+                        "candidates_processed": total_candidates,
+                        "unreadable": len(unreadable_files),
+                        "too_large": len(too_large_files),
+                        "duplicates_groups": len(duplicates_groups),
+                    },
+                }
+            )
 
     # Build candidates list (relative paths), excluding too_large, unreadable, and duplicate files
     too_large_set = set(too_large_files)
@@ -215,7 +336,26 @@ def scan_dataset(
     # Step 4: Create Summary
     scanned_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
-    return DatasetInfo(
+    _emit_progress(
+        {
+            "phase": "finalizing",
+            "message": "Finalizing scan result.",
+            "percentage": 97.0,
+            "counters": {
+                "total_files": total_files,
+                "files_processed": files_processed,
+                "total_seen": total_seen,
+                "filtered": len(filtered_files),
+                "candidate_total": total_candidates,
+                "candidates_processed": total_candidates,
+                "unreadable": len(unreadable_files),
+                "too_large": len(too_large_files),
+                "duplicates_groups": len(duplicates_groups),
+            },
+        }
+    )
+
+    result = DatasetInfo(
         dataset_root=str(dataset_dir),
         scanned_at=scanned_at,
         parameters={
@@ -238,3 +378,23 @@ def scan_dataset(
         filtered=sorted(filtered_files),  # Sort for consistent output
     )
 
+    _emit_progress(
+        {
+            "phase": "completed",
+            "message": "Scan completed.",
+            "percentage": 100.0,
+            "counters": {
+                "total_files": total_files,
+                "files_processed": files_processed,
+                "total_seen": total_seen,
+                "filtered": len(filtered_files),
+                "candidate_total": total_candidates,
+                "candidates_processed": total_candidates,
+                "unreadable": len(unreadable_files),
+                "too_large": len(too_large_files),
+                "duplicates_groups": len(duplicates_groups),
+            },
+        }
+    )
+
+    return result

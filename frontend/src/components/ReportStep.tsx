@@ -5,36 +5,71 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { apiService } from '../services/api';
-import type { ReportResponse } from '../types/api';
+import type { ReportResponse, StageJobStatusResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
 import { createDimensions } from '../data/dimensions';
 import { ExpandableTileDialog } from './report/ExpandableTileDialog';
+import { StageProgressCard } from './StageProgressCard';
 
 interface ReportStepProps {
   onReportComplete?: (result: ReportResponse) => void;
   profile: BenchmarkProfile | null;
 }
 
+const POLL_INTERVAL_MS = 500;
+const MIN_PROGRESS_VISIBLE_MS = 900;
+
 export function ReportStep({ onReportComplete, profile }: ReportStepProps) {
   const [loading, setLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportResponse | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<StageJobStatusResponse | null>(null);
   const [selectedDimensionId, setSelectedDimensionId] = useState<string>('parsing');
   const [selectedMeasureId, setSelectedMeasureId] = useState<string | null>(null);
   const [configOpen, setConfigOpen] = useState(true);
+
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const pollUntilTerminal = async (reportJobId: string): Promise<StageJobStatusResponse> => {
+    while (true) {
+      const status = await apiService.getReportJob(reportJobId);
+      setJobStatus(status);
+      if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
+        return status;
+      }
+      await delay(POLL_INTERVAL_MS);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    const runStartedAtMs = Date.now();
 
     try {
       if (!profile) {
         throw new Error('Load a benchmark profile to build the report.');
       }
-      const response = await apiService.report({
+      const created = await apiService.startReportJob({
         profile,
       });
+      setJobId(created.job_id);
+
+      const finalStatus = await pollUntilTerminal(created.job_id);
+      if (finalStatus.status === 'failed') {
+        throw new Error(finalStatus.error || 'Report job failed');
+      }
+      if (finalStatus.status === 'cancelled') {
+        throw new Error('Report job was cancelled');
+      }
+      if (finalStatus.status !== 'completed' || !finalStatus.result) {
+        throw new Error('Report job did not complete successfully');
+      }
+
+      const response = finalStatus.result as ReportResponse;
       setReportData(response);
       if (onReportComplete) {
         onReportComplete(response);
@@ -42,7 +77,25 @@ export function ReportStep({ onReportComplete, profile }: ReportStepProps) {
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Failed to load report data');
     } finally {
+      const elapsedMs = Date.now() - runStartedAtMs;
+      if (elapsedMs < MIN_PROGRESS_VISIBLE_MS) {
+        await delay(MIN_PROGRESS_VISIBLE_MS - elapsedMs);
+      }
       setLoading(false);
+      setCancelling(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!jobId) {
+      return;
+    }
+    setCancelling(true);
+    try {
+      await apiService.cancelReportJob(jobId);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.message || 'Failed to cancel report job');
+      setCancelling(false);
     }
   };
 
@@ -165,10 +218,30 @@ export function ReportStep({ onReportComplete, profile }: ReportStepProps) {
               </div>
             )}
 
-            <Button type="submit" disabled={loading || !profile}>
-              {loading ? 'Loading...' : 'Load Report'}
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={loading || !profile}>
+                {loading ? 'Loading...' : 'Load Report'}
+              </Button>
+              {loading && (
+                <Button type="button" variant="outline" onClick={handleCancel} disabled={cancelling}>
+                  {cancelling ? 'Cancelling...' : 'Cancel'}
+                </Button>
+              )}
+            </div>
           </form>
+        )}
+
+        {loading && jobStatus && (
+          <StageProgressCard
+            title="Report Progress"
+            status={jobStatus.status}
+            phase={jobStatus.progress?.phase}
+            message={jobStatus.progress?.message || 'Report job is running.'}
+            percentage={jobStatus.progress?.percentage}
+            processed={Number(jobStatus.progress?.counters?.processed_models ?? 0)}
+            total={Number(jobStatus.progress?.counters?.total_models ?? 0)}
+            unitLabel="models"
+          />
         )}
 
         {reportData && dimensions.length > 0 && (

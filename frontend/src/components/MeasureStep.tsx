@@ -3,44 +3,97 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Loader2, CheckCircle2, FileJson } from 'lucide-react';
 import { apiService } from '../services/api';
-import type { MeasureResponse } from '../types/api';
+import type { MeasureResponse, StageJobStatusResponse } from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
 import { ReadonlyField } from './profile/ReadonlyField';
 import { ReadonlyListField } from './profile/ReadonlyListField';
 import { ConfigCard } from './profile/ConfigCard';
+import { StageProgressCard } from './StageProgressCard';
 
 interface MeasureStepProps {
   onMeasureComplete: (result: MeasureResponse) => void;
   profile: BenchmarkProfile | null;
 }
 
+const POLL_INTERVAL_MS = 500;
+const MIN_PROGRESS_VISIBLE_MS = 900;
+
 export function MeasureStep({ onMeasureComplete, profile }: MeasureStepProps) {
   const [loading, setLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MeasureResponse | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<StageJobStatusResponse | null>(null);
   const [parseConfigOpen, setParseConfigOpen] = useState(false);
   const [lexicalConfigOpen, setLexicalConfigOpen] = useState(false);
   const [constructConfigOpen, setConstructConfigOpen] = useState(false);
   const [sizeConfigOpen, setSizeConfigOpen] = useState(false);
 
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const pollUntilTerminal = async (measureJobId: string): Promise<StageJobStatusResponse> => {
+    while (true) {
+      const status = await apiService.getMeasureJob(measureJobId);
+      setJobStatus(status);
+      if (status.status === 'completed' || status.status === 'failed' || status.status === 'cancelled') {
+        return status;
+      }
+      await delay(POLL_INTERVAL_MS);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    const runStartedAtMs = Date.now();
 
     try {
       if (!profile) {
         throw new Error('Load a benchmark profile to compute measures.');
       }
-      const response = await apiService.measure({
+      const created = await apiService.startMeasureJob({
         profile,
       });
+      setJobId(created.job_id);
+
+      const finalStatus = await pollUntilTerminal(created.job_id);
+      if (finalStatus.status === 'failed') {
+        throw new Error(finalStatus.error || 'Measure job failed');
+      }
+      if (finalStatus.status === 'cancelled') {
+        throw new Error('Measure job was cancelled');
+      }
+      if (finalStatus.status !== 'completed' || !finalStatus.result) {
+        throw new Error('Measure job did not complete successfully');
+      }
+
+      const response = finalStatus.result as MeasureResponse;
       setResult(response);
       onMeasureComplete(response);
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Failed to compute measures');
     } finally {
+      const elapsedMs = Date.now() - runStartedAtMs;
+      if (elapsedMs < MIN_PROGRESS_VISIBLE_MS) {
+        await delay(MIN_PROGRESS_VISIBLE_MS - elapsedMs);
+      }
       setLoading(false);
+      setCancelling(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!jobId) {
+      return;
+    }
+    setCancelling(true);
+    try {
+      await apiService.cancelMeasureJob(jobId);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.message || 'Failed to cancel measure job');
+      setCancelling(false);
     }
   };
 
@@ -139,17 +192,43 @@ export function MeasureStep({ onMeasureComplete, profile }: MeasureStepProps) {
             </div>
           )}
 
-          <Button type="submit" disabled={loading || !profile || result !== null}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Computing measures...
-              </>
-            ) : (
-              'Compute Measures'
+          <div className="flex gap-2">
+            <Button type="submit" disabled={loading || !profile || result !== null}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Computing measures...
+                </>
+              ) : (
+                'Compute Measures'
+              )}
+            </Button>
+            {loading && (
+              <Button type="button" variant="outline" onClick={handleCancel} disabled={cancelling}>
+                {cancelling ? 'Cancelling...' : 'Cancel'}
+              </Button>
             )}
-          </Button>
+          </div>
         </form>
+
+        {loading && jobStatus && (
+          <StageProgressCard
+            title="Measure Progress"
+            status={jobStatus.status}
+            phase={jobStatus.progress?.phase}
+            message={jobStatus.progress?.message || 'Measure job is running.'}
+            percentage={jobStatus.progress?.percentage}
+            processed={Number(jobStatus.progress?.counters?.processed_models ?? 0)}
+            total={Number(jobStatus.progress?.counters?.total_models ?? 0)}
+            unitLabel="models"
+            details={[
+              {
+                label: 'Valid Models',
+                value: Number(jobStatus.progress?.counters?.valid_models_loaded ?? 0),
+              },
+            ]}
+          />
+        )}
 
         {result && (
           <div className="mt-6 space-y-4">
@@ -170,8 +249,14 @@ export function MeasureStep({ onMeasureComplete, profile }: MeasureStepProps) {
                     <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
                       <CheckCircle2 className="h-4 w-4" />
                       <FileJson className="h-4 w-4" />
-                      <code className="font-mono">{result.measures_per_model_path}</code>
-                      <span className="text-muted-foreground">(per-model)</span>
+                      <code className="font-mono">{result.measures_dir}</code>
+                      <span className="text-muted-foreground">(per-model directory)</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                      <CheckCircle2 className="h-4 w-4" />
+                      <FileJson className="h-4 w-4" />
+                      <code className="font-mono">{result.measures_index_path}</code>
+                      <span className="text-muted-foreground">(per-model index)</span>
                     </div>
                   </div>
                 </div>

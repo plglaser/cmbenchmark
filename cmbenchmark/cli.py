@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.table import Table
 
 from cmbenchmark.services import scan_dataset, generate_report
-from cmbenchmark.services.measure import compute_measure, save_measure_dataset, save_measure_per_model
+from cmbenchmark.services.measure import compute_measure, save_measure_dataset, save_measure_per_model_split
 from cmbenchmark.services.parse import parse_from_scan
 from cmbenchmark.utils import info, section, success, warn, error, step
 from cmbenchmark.types.profile import BenchmarkProfile
@@ -183,13 +183,15 @@ def _run_measure(profile: BenchmarkProfile, ir_path: str, out: str):
     measure_dataset_path = output_dir / "measures.json"
     save_measure_dataset(measure_dataset, str(measure_dataset_path))
 
-    # Save per-model measures
-    measure_per_model_path = output_dir / "measures_per_model.json"
-    save_measure_per_model(measure_per_model, str(measure_per_model_path))
+    # Save per-model measures in split layout
+    save_measure_per_model_split(measure_per_model, str(output_dir))
+    measures_dir = output_dir / "measures"
+    measures_index_path = output_dir / "measures_index.json"
 
     success("Measure computation complete")
     console.print(f"  Dataset measures: {measure_dataset_path}")
-    console.print(f"  Per-model measures: {measure_per_model_path}")
+    console.print(f"  Per-model measures directory: {measures_dir}")
+    console.print(f"  Per-model measures index: {measures_index_path}")
 
     # Display summary
     table = Table(title="Measure Summary")
@@ -235,15 +237,15 @@ def _run_report(profile: BenchmarkProfile, ir_path: str, measure_path: str, out:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with step("Generating report..."):
-        measures_per_model_path = output_dir / "measures_per_model.json"
-        if not measures_per_model_path.exists():
-            error(f"Measures per model file does not exist: {measures_per_model_path}")
+        measures_index_path = output_dir / "measures_index.json"
+        if not measures_index_path.exists():
+            error(f"Measures index file does not exist: {measures_index_path}")
             raise typer.Exit(1)
 
         ir_info_path = output_dir / "ir_info.json"
         report_paths = generate_report(
             str(measure_file),
-            str(measures_per_model_path),
+            str(measures_index_path),
             str(output_dir),
             str(ir_info_path) if ir_info_path.exists() else None,
         )
