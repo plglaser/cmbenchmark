@@ -26,6 +26,30 @@ from cmbenchmark.types.measures import (
 )
 from cmbenchmark.types.profile import LexicalProfile, TokenizerConfig
 from cmbenchmark.measures.parsing_measures import _compute_distribution_summary, _compute_percentile
+from cmbenchmark.measures.labels import iter_labels
+
+# D2.M1 counts "label presence", so purely value-carrying UML nodes should not
+# be treated as label-eligible slots. Keep this filter M1-local; other lexical
+# measures still consume the full label stream.
+_D2_M1_EXCLUDED_UML_NODE_TYPES = frozenset(
+    {
+        "LiteralBoolean",
+        "LiteralInteger",
+        "LiteralReal",
+        "LiteralString",
+        "LiteralUnlimitedNatural",
+        "Region",
+        "Expression",
+        "InstanceValue",
+        "InteractionOperand",
+        "ClassifierTemplateParameter",
+        "CombinedFragment",
+        "RedefinableTemplateSignature",
+        "MessageOccurrenceSpecification",
+        "ExecutionOccurrenceSpecification",
+        "BehaviorExecutionSpecification",
+    }
+)
 
 
 class LabelTokenizer(Protocol):
@@ -41,82 +65,37 @@ class LabelTokenizer(Protocol):
 
 
 class SimpleTokenizer:
-    """Simple tokenizer implementation based on TokenizerConfig."""
-    
+    """Simple tokenizer implementation based on TokenizerConfig.
+
+    Implements the :class:`LabelTokenizer` protocol exactly — no extra surface
+    area. Stopword filtering is no longer a tokenizer concern; downstream
+    measures that need stopword analysis own their own resources.
+    """
+
     def __init__(self, config: TokenizerConfig):
         self.config = config
-        self._stopwords: Optional[set] = None
-        self._noise_tokens: Optional[set] = None
-        
-        # Load stopwords if specified
-        if config.stopword_list:
-            # For now, we'll use a simple default English stopword list
-            # In a full implementation, this would load from a resource file
-            if config.stopword_list == "en_default":
-                self._stopwords = {
-                    "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
-                    "of", "with", "by", "from", "as", "is", "was", "are", "were", "be",
-                    "been", "being", "have", "has", "had", "do", "does", "did", "will",
-                    "would", "should", "could", "may", "might", "must", "can", "this",
-                    "that", "these", "those", "it", "its", "they", "them", "their",
-                }
-        
-        # Load noise tokens if specified
-        if config.noise_token_list:
-            if config.noise_token_list == "generic_noise_v1":
-                self._noise_tokens = {
-                    "", " ", "\t", "\n", "\r", "-", "_", ".", ",", ";", ":", "!", "?",
-                }
-    
+
     @property
     def name(self) -> str:
         return self.config.name
-    
+
     def tokenize(self, text: str) -> List[str]:
         """Tokenize text according to configuration."""
-        return self._tokenize_internal(
-            text=text,
-            filter_stopwords=True,
-            filter_noise=True,
-        )
-
-    def tokenize_with_filters(
-        self,
-        text: str,
-        *,
-        filter_stopwords: bool = True,
-        filter_noise: bool = True,
-    ) -> List[str]:
-        """Tokenize text while allowing callers to control final token filters."""
-        return self._tokenize_internal(
-            text=text,
-            filter_stopwords=filter_stopwords,
-            filter_noise=filter_noise,
-        )
-
-    def _tokenize_internal(
-        self,
-        text: str,
-        *,
-        filter_stopwords: bool,
-        filter_noise: bool,
-    ) -> List[str]:
-        """Tokenize text according to configuration and optional token filters."""
         if not text:
             return []
-        
+
         # Unicode normalization
         if self.config.unicode_nfkc:
             text = unicodedata.normalize("NFKC", text)
-        
+
         # Strip whitespace
         if self.config.strip:
             text = text.strip()
-        
+
         # Collapse whitespace
         if self.config.collapse_whitespace:
             text = re.sub(r'\s+', ' ', text)
-        
+
         # Split camel case
         if self.config.split_camel_case:
             text = self._split_camel_case(text)
@@ -124,38 +103,36 @@ class SimpleTokenizer:
         # Lowercase after camel-case splitting so case boundaries are preserved.
         if self.config.lowercase:
             text = text.lower()
-        
+
         # Split on punctuation
         if self.config.split_on_punct:
-            # Split on punctuation but keep tokens
             tokens = re.split(r'[\s\W_]+', text)
         else:
-            # Split only on whitespace
             tokens = text.split()
-        
+
         # Filter empty tokens
         tokens = [t for t in tokens if t]
-        
+
         # Remove numbers if not keeping them
         if not self.config.keep_numbers:
             tokens = [t for t in tokens if not t.isdigit()]
-        
-        # Filter stopwords
-        if filter_stopwords and self._stopwords:
-            tokens = [t for t in tokens if t.lower() not in self._stopwords]
-        
-        # Filter noise tokens
-        if filter_noise and self._noise_tokens:
-            tokens = [t for t in tokens if t not in self._noise_tokens]
-        
+
         return tokens
-    
+
     def _split_camel_case(self, text: str) -> str:
-        """Insert spaces before capital letters in camelCase."""
-        # Split acronym boundaries (e.g. "HTTPServer" -> "HTTP Server"),
-        # then split lower/digit to upper boundaries (e.g. "myValue" -> "my Value").
+        """Insert spaces at camelCase / digit boundaries.
+
+        Splits in four passes so each transformation is independent:
+          1. Acronym boundary: ``HTTPServer`` -> ``HTTP Server``
+          2. Lower/digit -> upper: ``myValue`` -> ``my Value``
+          3. Letter -> digit: ``approveOrder2`` -> ``approveOrder 2``
+          4. Digit -> letter: ``v2Server`` -> ``v 2Server``
+        """
         text = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1 \2', text)
-        return re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', text)
+        text = re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', text)
+        text = re.sub(r'([A-Za-z])(\d)', r'\1 \2', text)
+        text = re.sub(r'(\d)([A-Za-z])', r'\1 \2', text)
+        return text
 
 
 def build_tokenizer(cfg: TokenizerConfig) -> LabelTokenizer:
@@ -164,39 +141,28 @@ def build_tokenizer(cfg: TokenizerConfig) -> LabelTokenizer:
 
 
 def _extract_labels(ir: IR, profile: LexicalProfile) -> List[Tuple[Optional[str], str, str]]:
+    """Extract label candidates from IR according to profile.
+
+    Thin adapter over :func:`cmbenchmark.measures.labels.iter_labels` that preserves
+    the historical ``(label_text, element_type, element_id)`` shape expected by the
+    rest of this module. Nested children (UML/Ecore attributes, operations,
+    enum literals) are surfaced when ``profile.include_nested_labels`` is set.
+
+    ``label_text`` is ``None`` when the label slot exists but holds no string
+    value, so downstream "missing label" counters can distinguish a missing
+    name from an absent slot.
     """
-    Extract label candidates from IR according to profile.
-    
-    Returns:
-        List of (label_text, element_type, element_id) tuples.
-        Every tuple represents one eligible label slot (included element + existing label attribute).
-        `label_text` is `None` when the slot exists but is not a string value.
-    """
-    labels: List[Tuple[Optional[str], str, str]] = []
-    
-    if profile.include_nodes:
-        for node in ir.nodes:
-            for attr in profile.label_attributes:
-                if hasattr(node, attr):
-                    label_text = getattr(node, attr)
-                    labels.append((label_text if isinstance(label_text, str) else None, node.type, node.id))
-                elif attr in node.data:
-                    label_text = node.data[attr]
-                    labels.append((label_text if isinstance(label_text, str) else None, node.type, node.id))
-    
-    if profile.include_edges:
-        for edge in ir.edges:
-            for attr in profile.label_attributes:
-                # Check if attribute exists on edge object (e.g., type)
-                if hasattr(edge, attr):
-                    label_text = getattr(edge, attr)
-                    labels.append((label_text if isinstance(label_text, str) else None, edge.type, edge.id))
-                # Check if attribute exists in edge.data dict
-                elif attr in edge.data:
-                    label_text = edge.data[attr]
-                    labels.append((label_text if isinstance(label_text, str) else None, edge.type, edge.id))
-    
-    return labels
+    out: List[Tuple[Optional[str], str, str]] = []
+    for view in iter_labels(
+        ir,
+        include_nodes=profile.include_nodes,
+        include_edges=profile.include_edges,
+        include_nested_labels=profile.include_nested_labels,
+        label_attributes=profile.label_attributes,
+    ):
+        text: Optional[str] = view.name if view.name else None
+        out.append((text, view.type, view.id))
+    return out
 
 
 def _detect_case_style(text: str) -> str:
@@ -253,6 +219,16 @@ def _compute_entropy(counts: Dict[str, int]) -> float:
     return entropy
 
 
+def _is_d2_m1_label_eligible(elem_type: str) -> bool:
+    """Whether a label slot contributes to D2.M1 eligibility.
+
+    Accepts both plain IR types (e.g. ``LiteralString``) and namespaced
+    variants (e.g. ``uml:LiteralString``).
+    """
+    canonical = elem_type.rsplit(":", 1)[-1]
+    return canonical not in _D2_M1_EXCLUDED_UML_NODE_TYPES
+
+
 def compute_lexical_measures(
     ir_models: Iterable[IR],
     lexical_profile: LexicalProfile,
@@ -261,7 +237,7 @@ def compute_lexical_measures(
     total_models: Optional[int] = None,
 ) -> Tuple[LexicalMeasuresDataset, LexicalMeasuresPerModel]:
     """
-    Compute lexical quality measures (D2.M1-D2.M5) for IR models.
+    Compute lexical quality measures (D2.M1-D2.M6) for IR models.
     
     Args:
         ir_models: List of IR models to analyze
@@ -335,15 +311,15 @@ def compute_lexical_measures(
     naming_style_entropies: List[float] = []
     dataset_case_style_counts: Counter[str] = Counter()
     
-    # For D2.M4: collect shares per model
+    # For D2.M4: collect shares per model. `total_m4_present_labels` is an
+    # M4-local denominator so the M4 dataset share stays correct when M1 is off.
     share_single_word_labels: List[float] = []
     total_single_word_labels = 0
     total_multi_word_labels = 0
+    total_m4_present_labels = 0
     
     # For D2.M5: aggregate tokens across all models
     all_tokens: List[str] = []
-    all_stopword_tokens = 0
-    all_raw_token_count = 0
     label_occurrence_counts: Counter[str] = Counter()
     
     # Process each IR model
@@ -362,7 +338,9 @@ def compute_lexical_measures(
 
         labels = _extract_labels(ir, lexical_profile)
 
-        # D2.M6: Language Usage (per-model)
+        # D2.M6: Language Usage (per-model + dataset), both gated by enable_d2_m6.
+        # When disabled, per-model language rows remain empty and dataset counts
+        # stay empty as well.
         merged_text = " ".join(
             label_text.strip()
             for label_text, _, _ in labels
@@ -375,47 +353,52 @@ def compute_lexical_measures(
                 detected_code = _lang_to_code(lang) or "unknown"
             except Exception:
                 detected_code = "unknown"
-        per_model_d2m6[ir.id] = D2M6LanguageUsagePerModel(language=detected_code)
-        dataset_language_counts[detected_code] += 1
-        
-        # D2.M1: Label Presence
-        eligible_count = len(labels)
-        present_count = sum(1 for label_text, _, _ in labels if label_text and label_text.strip())
+        if lexical_profile.enable_d2_m6:
+            per_model_d2m6[ir.id] = D2M6LanguageUsagePerModel(language=detected_code)
+            dataset_language_counts[detected_code] += 1
+
+        # D2.M1 has a stricter notion of "label-eligible" than other lexical
+        # measures: some UML node kinds are value carriers rather than labelled
+        # modelling concepts and must not count as missing labels.
+        d2m1_labels = [t for t in labels if _is_d2_m1_label_eligible(t[1])]
+        eligible_count = len(d2m1_labels)
+        present_count = sum(1 for label_text, _, _ in d2m1_labels if label_text and label_text.strip())
         present_share = present_count / eligible_count if eligible_count > 0 else 0.0
         missing_share = 1.0 - present_share
-        
-        # Per-type missing shares
+
         missing_by_type: Dict[str, int] = {}
-        for label_text, elem_type, _ in labels:
+        for label_text, elem_type, _ in d2m1_labels:
             if not label_text or not label_text.strip():
                 missing_by_type[elem_type] = missing_by_type.get(elem_type, 0) + 1
-        
+
         missing_count_by_type = {
             elem_type: count for elem_type, count in missing_by_type.items() if count > 0
         }
-        
-        per_model_d2m1[ir.id] = D2M1LabelPresencePerModel(
-            label_eligible_count=eligible_count,
-            label_present_count=present_count,
-            label_present_share=present_share,
-            label_missing_share=missing_share,
-            label_missing_count_by_type=missing_count_by_type,
-        )
-        
-        dataset_label_eligible_count += eligible_count
-        dataset_label_present_count += present_count
-        for elem_type, count in missing_by_type.items():
-            label_missing_by_type[elem_type] = label_missing_by_type.get(elem_type, 0) + count
-        
+
+        # D2.M1: Label Presence
+        if lexical_profile.enable_d2_m1:
+            per_model_d2m1[ir.id] = D2M1LabelPresencePerModel(
+                label_eligible_count=eligible_count,
+                label_present_count=present_count,
+                label_present_share=present_share,
+                label_missing_share=missing_share,
+                label_missing_count_by_type=missing_count_by_type,
+            )
+            dataset_label_eligible_count += eligible_count
+            dataset_label_present_count += present_count
+            for elem_type, count in missing_by_type.items():
+                label_missing_by_type[elem_type] = label_missing_by_type.get(elem_type, 0) + count
+
         # D2.M2: Label Length
         present_labels = [(label_text, elem_type) for label_text, elem_type, _ in labels if label_text and label_text.strip()]
 
-        for label_text, _ in present_labels:
-            normalized_label = label_text.strip()
-            if normalized_label:
-                label_occurrence_counts[normalized_label] += 1
-        
-        if present_labels:
+        if lexical_profile.enable_d2_m5:
+            for label_text, _ in present_labels:
+                normalized_label = label_text.strip()
+                if normalized_label:
+                    label_occurrence_counts[normalized_label] += 1
+
+        if lexical_profile.enable_d2_m2 and present_labels:
             label_lengths_chars = [len(label_text) for label_text, _ in present_labels]
             label_lengths_tokens = [len(tokenizer.tokenize(label_text)) for label_text, _ in present_labels]
             
@@ -451,7 +434,7 @@ def compute_lexical_measures(
             label_length_tokens_medians.append(tokens_median)
             short_label_shares.append(short_share)
             long_label_shares.append(long_share)
-        else:
+        elif lexical_profile.enable_d2_m2:
             per_model_d2m2[ir.id] = D2M2LabelLengthPerModel(
                 label_count=0,
                 label_length_chars_mean=0.0,
@@ -463,95 +446,74 @@ def compute_lexical_measures(
                 short_label_share=0.0,
                 long_label_share=0.0,
             )
-        
+
         # D2.M3: Naming Convention
-        case_style_counts: Counter[str] = Counter()
-        for label_text, _ in present_labels:
-            case_style = _detect_case_style(label_text)
-            case_style_counts[case_style] += 1
-            dataset_case_style_counts[case_style] += 1
-        
-        case_style_share = {
-            style: count / len(present_labels) if present_labels else 0.0
-            for style, count in case_style_counts.items()
-        }
-        
-        entropy = _compute_entropy(dict(case_style_counts))
-        naming_style_entropies.append(entropy)
-        
-        per_model_d2m3[ir.id] = D2M3NamingConventionPerModel(
-            case_style_counts=dict(case_style_counts),
-            case_style_share=case_style_share,
-            naming_style_entropy=entropy,
-        )
-        
+        if lexical_profile.enable_d2_m3:
+            case_style_counts: Counter[str] = Counter()
+            for label_text, _ in present_labels:
+                case_style = _detect_case_style(label_text)
+                case_style_counts[case_style] += 1
+                dataset_case_style_counts[case_style] += 1
+
+            case_style_share = {
+                style: count / len(present_labels) if present_labels else 0.0
+                for style, count in case_style_counts.items()
+            }
+
+            entropy = _compute_entropy(dict(case_style_counts))
+            naming_style_entropies.append(entropy)
+
+            per_model_d2m3[ir.id] = D2M3NamingConventionPerModel(
+                case_style_counts=dict(case_style_counts),
+                case_style_share=case_style_share,
+                naming_style_entropy=entropy,
+            )
+
         # D2.M4: Single vs Multi Word
-        single_word_count = 0
-        multi_word_count = 0
-        
-        total_present_labels = len(present_labels)
-        for label_text, _ in present_labels:
-            tokens = tokenizer.tokenize(label_text)
-            if len(tokens) == 1:
-                single_word_count += 1
-            elif len(tokens) > 1:
-                multi_word_count += 1
-        
-        single_word_share = single_word_count / total_present_labels if total_present_labels > 0 else 0.0
-        multi_word_share = multi_word_count / total_present_labels if total_present_labels > 0 else 0.0
-        
-        per_model_d2m4[ir.id] = D2M4SingleMultiWordPerModel(
-            single_word_label_count=single_word_count,
-            multi_word_label_count=multi_word_count,
-            single_word_label_share=single_word_share,
-            multi_word_label_share=multi_word_share,
-        )
-        
-        share_single_word_labels.append(single_word_share)
-        total_single_word_labels += single_word_count
-        total_multi_word_labels += multi_word_count
-        
+        if lexical_profile.enable_d2_m4:
+            single_word_count = 0
+            multi_word_count = 0
+
+            total_present_labels = len(present_labels)
+            for label_text, _ in present_labels:
+                tokens = tokenizer.tokenize(label_text)
+                if len(tokens) == 1:
+                    single_word_count += 1
+                elif len(tokens) > 1:
+                    multi_word_count += 1
+
+            single_word_share = single_word_count / total_present_labels if total_present_labels > 0 else 0.0
+            multi_word_share = multi_word_count / total_present_labels if total_present_labels > 0 else 0.0
+
+            per_model_d2m4[ir.id] = D2M4SingleMultiWordPerModel(
+                single_word_label_count=single_word_count,
+                multi_word_label_count=multi_word_count,
+                single_word_label_share=single_word_share,
+                multi_word_label_share=multi_word_share,
+            )
+
+            share_single_word_labels.append(single_word_share)
+            total_single_word_labels += single_word_count
+            total_multi_word_labels += multi_word_count
+            total_m4_present_labels += total_present_labels
+
         # D2.M5: Lexical Diversity
-        model_tokens: List[str] = []
-        for label_text, _ in present_labels:
-            tokens = tokenizer.tokenize(label_text)
-            model_tokens.extend(tokens)
-            all_tokens.extend(tokens)
-        
-        vocab_size = len(set(model_tokens))
-        total_tokens = len(model_tokens)
-        ttr = vocab_size / total_tokens if total_tokens > 0 else 0.0
-        
-        # Count stopwords (if tokenizer has them)
-        stopword_count = 0
-        raw_token_count = total_tokens
-        if hasattr(tokenizer, '_stopwords') and tokenizer._stopwords:
-            if hasattr(tokenizer, "tokenize_with_filters"):
-                raw_tokens = []
-                for label_text, _ in present_labels:
-                    raw_tokens.extend(
-                        tokenizer.tokenize_with_filters(
-                            label_text,
-                            filter_stopwords=False,
-                            filter_noise=True,
-                        )
-                    )
-                raw_token_count = len(raw_tokens)
-                stopword_count = sum(1 for t in raw_tokens if t.lower() in tokenizer._stopwords)
-            else:
-                stopword_count = sum(1 for t in model_tokens if t.lower() in tokenizer._stopwords)
-            all_stopword_tokens += stopword_count
-        all_raw_token_count += raw_token_count
-        
-        stopword_share = stopword_count / raw_token_count if raw_token_count > 0 else 0.0
-        
-        per_model_d2m5[ir.id] = D2M5LexicalDiversityPerModel(
-            total_tokens=total_tokens,
-            vocab_size=vocab_size,
-            type_token_ratio=ttr,
-            stopword_tokens=stopword_count,
-            stopword_share=stopword_share,
-        )
+        if lexical_profile.enable_d2_m5:
+            model_tokens: List[str] = []
+            for label_text, _ in present_labels:
+                tokens = tokenizer.tokenize(label_text)
+                model_tokens.extend(tokens)
+                all_tokens.extend(tokens)
+
+            vocab_size = len(set(model_tokens))
+            total_tokens = len(model_tokens)
+            ttr = vocab_size / total_tokens if total_tokens > 0 else 0.0
+
+            per_model_d2m5[ir.id] = D2M5LexicalDiversityPerModel(
+                total_tokens=total_tokens,
+                vocab_size=vocab_size,
+                type_token_ratio=ttr,
+            )
 
         if progress_callback and (
             model_index % 5 == 0
@@ -614,10 +576,9 @@ def compute_lexical_measures(
         dataset_case_style_share=dataset_case_style_share,
     )
     
-    total_present_labels_dataset = dataset_label_present_count
     dataset_share_single_word = (
-        total_single_word_labels / total_present_labels_dataset
-        if total_present_labels_dataset > 0
+        total_single_word_labels / total_m4_present_labels
+        if total_m4_present_labels > 0
         else 0.0
     )
     
@@ -631,16 +592,13 @@ def compute_lexical_measures(
     vocab_size = len(set(all_tokens))
     total_tokens = len(all_tokens)
     ttr = vocab_size / total_tokens if total_tokens > 0 else 0.0
-    stopword_share = all_stopword_tokens / all_raw_token_count if all_raw_token_count > 0 else 0.0
     top_labels = label_occurrence_counts.most_common(50)
     top_tokens = Counter(all_tokens).most_common(50)
-    
+
     d2m5_dataset = D2M5LexicalDiversityDataset(
         total_tokens=total_tokens,
         vocab_size=vocab_size,
         type_token_ratio=ttr,
-        stopword_tokens=all_stopword_tokens,
-        stopword_share=stopword_share,
         top_labels=top_labels,
         top_tokens=top_tokens,
     )

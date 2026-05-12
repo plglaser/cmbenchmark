@@ -14,6 +14,11 @@ import type {
   ParseRequest,
   MeasureRequest,
   ReportRequest,
+  CustomViewFieldsResponse,
+  CustomViewListResponse,
+  CustomViewDefinition,
+  CustomViewPreviewResponse,
+  CustomViewDeleteResponse,
 } from '../types/api';
 
 // Use relative URL so it works in both dev (with proxy) and production (same origin)
@@ -152,6 +157,51 @@ export const apiService = {
   async getConstructProfile(parserLanguage: string): Promise<any> {
     const response = await api.get('/construct-profile', {
       params: { parser_language: parserLanguage },
+    });
+    return response.data;
+  },
+
+  async getReportFields(outputDir: string): Promise<CustomViewFieldsResponse> {
+    const response = await api.get<CustomViewFieldsResponse>('/report-fields', {
+      params: { output_dir: outputDir },
+    });
+    return response.data;
+  },
+
+  async getCustomViews(outputDir: string): Promise<CustomViewListResponse> {
+    const response = await api.get<CustomViewListResponse>('/custom-views', {
+      params: { output_dir: outputDir },
+    });
+    return response.data;
+  },
+
+  async createCustomView(outputDir: string, view: CustomViewDefinition): Promise<CustomViewDefinition> {
+    const response = await api.post<CustomViewDefinition>('/custom-views', {
+      output_dir: outputDir,
+      view,
+    });
+    return response.data;
+  },
+
+  async updateCustomView(outputDir: string, viewId: string, view: CustomViewDefinition): Promise<CustomViewDefinition> {
+    const response = await api.put<CustomViewDefinition>(`/custom-views/${viewId}`, {
+      output_dir: outputDir,
+      view,
+    });
+    return response.data;
+  },
+
+  async deleteCustomView(outputDir: string, viewId: string): Promise<CustomViewDeleteResponse> {
+    const response = await api.delete<CustomViewDeleteResponse>(`/custom-views/${viewId}`, {
+      params: { output_dir: outputDir },
+    });
+    return response.data;
+  },
+
+  async previewCustomView(outputDir: string, view: CustomViewDefinition): Promise<CustomViewPreviewResponse> {
+    const response = await api.post<CustomViewPreviewResponse>('/custom-views/preview', {
+      output_dir: outputDir,
+      view,
     });
     return response.data;
   },

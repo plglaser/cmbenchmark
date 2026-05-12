@@ -19,6 +19,15 @@ from cmbenchmark.web.scan_jobs import (
 from cmbenchmark.web.parse_jobs import create_parse_job, get_parse_job, cancel_parse_job
 from cmbenchmark.web.measure_jobs import create_measure_job, get_measure_job, cancel_measure_job
 from cmbenchmark.web.report_jobs import create_report_job, get_report_job, cancel_report_job
+from cmbenchmark.services.custom_views import (
+    load_report_inputs_for_custom_views,
+    get_field_catalog,
+    load_custom_views,
+    create_custom_view,
+    update_custom_view,
+    delete_custom_view,
+    preview_custom_view,
+)
 from .schemas import (
     ScanRequest,
     ScanJobCreateResponse,
@@ -31,6 +40,13 @@ from .schemas import (
     ParseRequest,
     MeasureRequest,
     ReportRequest,
+    CustomViewFieldsResponse,
+    CustomViewListResponse,
+    CustomViewMutationRequest,
+    CustomViewPreviewRequest,
+    CustomViewPreviewResponse,
+    CustomViewDefinition,
+    CustomViewDeleteResponse,
 )
 
 router = APIRouter()
@@ -302,6 +318,124 @@ async def cancel_report(job_id: str):
         )
     except KeyError:
         raise HTTPException(status_code=404, detail=f"Report job not found: {job_id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/report-fields", response_model=CustomViewFieldsResponse)
+async def report_fields(output_dir: str = Query(..., description="Output directory where measure files are stored")):
+    """Return discoverable fields for custom report views."""
+    try:
+        resolved = str(Path(output_dir).expanduser().resolve())
+        measures, measures_per_model, ir_index = load_report_inputs_for_custom_views(resolved)
+        catalog = get_field_catalog(
+            measures=measures,
+            measures_per_model=measures_per_model,
+            ir_index=ir_index,
+        )
+        return CustomViewFieldsResponse(**catalog)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/custom-views", response_model=CustomViewListResponse)
+async def list_custom_views(output_dir: str = Query(..., description="Output directory where custom views are stored")):
+    """List saved custom views for an output directory."""
+    try:
+        resolved = str(Path(output_dir).expanduser().resolve())
+        views = [CustomViewDefinition(**item) for item in load_custom_views(resolved)]
+        return CustomViewListResponse(output_dir=resolved, views=views)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/custom-views", response_model=CustomViewDefinition)
+async def create_custom_view_endpoint(request: CustomViewMutationRequest):
+    """Create and persist a custom view definition."""
+    try:
+        resolved = str(Path(request.output_dir).expanduser().resolve())
+        measures, measures_per_model, ir_index = load_report_inputs_for_custom_views(resolved)
+        # Validate chart configuration against current measure outputs before persisting.
+        preview_custom_view(
+            view=request.view.model_dump(mode="python"),
+            measures=measures,
+            measures_per_model=measures_per_model,
+            ir_index=ir_index,
+        )
+        created = create_custom_view(resolved, request.view.model_dump(mode="python"))
+        return CustomViewDefinition(**created)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/custom-views/preview", response_model=CustomViewPreviewResponse)
+async def preview_custom_view_endpoint(request: CustomViewPreviewRequest):
+    """Preview a custom view definition against current measure outputs."""
+    try:
+        resolved = str(Path(request.output_dir).expanduser().resolve())
+        measures, measures_per_model, ir_index = load_report_inputs_for_custom_views(resolved)
+        payload = preview_custom_view(
+            view=request.view.model_dump(mode="python"),
+            measures=measures,
+            measures_per_model=measures_per_model,
+            ir_index=ir_index,
+        )
+        return CustomViewPreviewResponse(**payload)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.put("/custom-views/{view_id}", response_model=CustomViewDefinition)
+async def update_custom_view_endpoint(view_id: str, request: CustomViewMutationRequest):
+    """Update an existing custom view definition."""
+    try:
+        resolved = str(Path(request.output_dir).expanduser().resolve())
+        measures, measures_per_model, ir_index = load_report_inputs_for_custom_views(resolved)
+        # Validate chart configuration against current measure outputs before persisting.
+        preview_custom_view(
+            view=request.view.model_dump(mode="python"),
+            measures=measures,
+            measures_per_model=measures_per_model,
+            ir_index=ir_index,
+        )
+        updated = update_custom_view(
+            output_dir=resolved,
+            view_id=view_id,
+            view=request.view.model_dump(mode="python"),
+        )
+        return CustomViewDefinition(**updated)
+    except ValueError as e:
+        if "not found" in str(e).lower():
+            raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/custom-views/{view_id}", response_model=CustomViewDeleteResponse)
+async def delete_custom_view_endpoint(
+    view_id: str,
+    output_dir: str = Query(..., description="Output directory where custom views are stored"),
+):
+    """Delete a custom view definition."""
+    try:
+        resolved = str(Path(output_dir).expanduser().resolve())
+        deleted = delete_custom_view(resolved, view_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Custom view not found: {view_id}")
+        return CustomViewDeleteResponse(output_dir=resolved, view_id=view_id, deleted=True)
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 

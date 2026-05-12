@@ -113,6 +113,33 @@ Get report job status and result.
 ### DELETE /api/report-jobs/{job_id}
 Request cancellation for report job.
 
+### GET /api/report-fields
+Discover dataset/per-model fields from `measures.json` and split model measure files.
+
+Query params:
+- `output_dir`: output directory containing measure artifacts
+
+### GET /api/custom-views
+List saved custom view definitions for an output directory.
+
+Query params:
+- `output_dir`: output directory containing `custom_views.json`
+
+### POST /api/custom-views
+Create and persist a custom view definition.
+
+### PUT /api/custom-views/{view_id}
+Update a persisted custom view definition.
+
+### DELETE /api/custom-views/{view_id}
+Delete a persisted custom view definition.
+
+Query params:
+- `output_dir`: output directory containing `custom_views.json`
+
+### POST /api/custom-views/preview
+Compute a preview payload for a custom view definition against the current measure outputs.
+
 ## CORS
 
 CORS is configured to allow requests from:

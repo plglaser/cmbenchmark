@@ -160,7 +160,6 @@ def build_lexical_report(
                     "totalTokens": int(data.get("total_tokens", 0) or 0),
                     "vocabSize": int(data.get("vocab_size", 0) or 0),
                     "typeTokenRatio": float(data.get("type_token_ratio", 0) or 0),
-                    "stopwordShare": float(data.get("stopword_share", 0) or 0),
                 }
                 for model_id, data in d2_m5.items()
                 if isinstance(data, Mapping)

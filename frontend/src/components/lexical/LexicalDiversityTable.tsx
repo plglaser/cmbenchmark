@@ -8,7 +8,6 @@ interface LexicalDiversityTableProps {
     totalTokens: number;
     vocabSize: number;
     typeTokenRatio: number;
-    stopwordShare: number;
   }>;
 }
 
@@ -26,7 +25,6 @@ export function LexicalDiversityTable({ data }: LexicalDiversityTableProps) {
               <TableHead>Total Tokens</TableHead>
               <TableHead>Vocab Size</TableHead>
               <TableHead>TTR</TableHead>
-              <TableHead>Stopword Share</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -37,12 +35,11 @@ export function LexicalDiversityTable({ data }: LexicalDiversityTableProps) {
                   <TableCell>{model.totalTokens.toLocaleString()}</TableCell>
                   <TableCell>{model.vocabSize.toLocaleString()}</TableCell>
                   <TableCell>{model.typeTokenRatio.toFixed(3)}</TableCell>
-                  <TableCell>{(model.stopwordShare * 100).toFixed(1)}%</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={4} className="text-center text-muted-foreground">
                   No data available
                 </TableCell>
               </TableRow>

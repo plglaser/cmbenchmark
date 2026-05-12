@@ -33,9 +33,7 @@
           "lowercase": false,
           "keep_numbers": true,
           "collapse_whitespace": true,
-          "unicode_nfkc": true,
-          "stopword_list": null,
-          "noise_token_list": null
+          "unicode_nfkc": true
         }
       },
       "constructs": {

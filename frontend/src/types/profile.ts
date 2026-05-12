@@ -9,20 +9,20 @@ export interface TokenizerConfig {
   keep_numbers?: boolean;
   collapse_whitespace?: boolean;
   unicode_nfkc?: boolean;
-  stopword_list?: string | null;
-  noise_token_list?: string | null;
 }
 
 export interface LexicalProfile {
   enabled?: boolean;
   include_nodes?: boolean;
   include_edges?: boolean;
+  include_nested_labels?: boolean;
   label_attributes?: string[];
   enable_d2_m1?: boolean;
   enable_d2_m2?: boolean;
   enable_d2_m3?: boolean;
   enable_d2_m4?: boolean;
   enable_d2_m5?: boolean;
+  enable_d2_m6?: boolean;
   tokenizer?: TokenizerConfig;
 }
 

@@ -6,8 +6,6 @@ interface LexicalDiversityKPIsProps {
     total_tokens: number;
     vocab_size: number;
     type_token_ratio: number;
-    stopword_tokens: number;
-    stopword_share: number;
   } | null;
 }
 
@@ -31,14 +29,6 @@ export function LexicalDiversityKPIs({ data }: LexicalDiversityKPIsProps) {
         <div className="flex justify-between">
           <span>Type-Token Ratio:</span>
           <Badge variant="outline">{data.type_token_ratio.toFixed(3)}</Badge>
-        </div>
-        <div className="flex justify-between">
-          <span>Stopword Tokens:</span>
-          <Badge variant="outline">{data.stopword_tokens.toLocaleString()}</Badge>
-        </div>
-        <div className="flex justify-between">
-          <span>Stopword Share:</span>
-          <Badge variant="outline">{(data.stopword_share * 100).toFixed(1)}%</Badge>
         </div>
       </CardContent>
     </Card>

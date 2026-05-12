@@ -132,6 +132,10 @@ export function MeasureStep({ onMeasureComplete, profile }: MeasureStepProps) {
                       <ReadonlyField label="Enabled" value={profile.measure.lexical?.enabled} />
                       <ReadonlyField label="Include Nodes" value={profile.measure.lexical?.include_nodes} />
                       <ReadonlyField label="Include Edges" value={profile.measure.lexical?.include_edges} />
+                      <ReadonlyField
+                        label="Include Nested Labels"
+                        value={profile.measure.lexical?.include_nested_labels}
+                      />
                       <ReadonlyListField
                         label="Label Attributes"
                         values={profile.measure.lexical?.label_attributes ?? undefined}
@@ -141,6 +145,7 @@ export function MeasureStep({ onMeasureComplete, profile }: MeasureStepProps) {
                       <ReadonlyField label="Enable D2.M3" value={profile.measure.lexical?.enable_d2_m3} />
                       <ReadonlyField label="Enable D2.M4" value={profile.measure.lexical?.enable_d2_m4} />
                       <ReadonlyField label="Enable D2.M5" value={profile.measure.lexical?.enable_d2_m5} />
+                      <ReadonlyField label="Enable D2.M6" value={profile.measure.lexical?.enable_d2_m6} />
                     </div>
 
                     <div className="pt-2 border-t space-y-3">
@@ -157,8 +162,6 @@ export function MeasureStep({ onMeasureComplete, profile }: MeasureStepProps) {
                           value={profile.measure.lexical?.tokenizer?.collapse_whitespace}
                         />
                         <ReadonlyField label="Unicode NFKC" value={profile.measure.lexical?.tokenizer?.unicode_nfkc} />
-                        <ReadonlyField label="Stopword List" value={profile.measure.lexical?.tokenizer?.stopword_list} />
-                        <ReadonlyField label="Noise Token List" value={profile.measure.lexical?.tokenizer?.noise_token_list} />
                       </div>
                     </div>
                   </ConfigCard>

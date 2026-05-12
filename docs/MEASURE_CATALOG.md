@@ -134,11 +134,9 @@
 | `total_tokens` | Dataset | Integer | Diversity KPIs | Total token volume in labeled text. |
 | `vocab_size` | Dataset | Integer | Diversity KPIs | Distinct token count. |
 | `type_token_ratio` | Dataset | Float | Diversity KPIs | Dataset-level lexical diversity indicator. |
-| `stopword_tokens` | Dataset | Integer | Diversity KPIs | Stopword volume after tokenizer processing. |
-| `stopword_share` | Dataset | Float | Diversity KPIs | Stopword proportion among raw tokens. |
 | `top_labels` | Dataset | List[(String, Integer)] | Top-labels table | Most frequent normalized label strings. |
 | `top_tokens` | Dataset | List[(String, Integer)] | Diagnostics (report data) | Most frequent tokens after tokenization. |
-| `total_tokens, vocab_size, type_token_ratio, stopword_tokens, stopword_share` | Model | Integer/Float | Top-10 lexical-diversity table | Per-model diversity ranking and comparison. |
+| `total_tokens, vocab_size, type_token_ratio` | Model | Integer/Float | Top-10 lexical-diversity table | Per-model diversity ranking and comparison. |
 
 ### D2.M6 **Language Usage**
 

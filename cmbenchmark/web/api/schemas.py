@@ -1,6 +1,6 @@
 """Pydantic schemas for API requests and responses."""
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Literal
 from pydantic import BaseModel, Field
 from cmbenchmark.types.profile import BenchmarkProfile
 
@@ -146,6 +146,89 @@ class ReportRequest(ProfileRequest):
     """Request schema for report endpoint."""
 
 
+class CustomViewFilter(BaseModel):
+    """Filter clause for custom view data selection."""
+    field: str
+    op: Literal[
+        "eq",
+        "ne",
+        "gt",
+        "gte",
+        "lt",
+        "lte",
+        "contains",
+        "in",
+        "not_in",
+        "is_null",
+        "is_not_null",
+    ] = "eq"
+    value: Optional[Any] = None
+
+
+class CustomViewDefinition(BaseModel):
+    """Declarative custom view definition."""
+    id: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+    chart_type: Literal["kpi", "bar", "pie", "histogram", "scatter"]
+    source: Literal["dataset", "per_model"] = "per_model"
+    config: Dict[str, Any] = Field(default_factory=dict)
+    filters: List[CustomViewFilter] = Field(default_factory=list)
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+
+class CustomViewField(BaseModel):
+    """Discoverable field metadata for custom view builder UI."""
+    path: str
+    label: str
+    source: Literal["dataset", "per_model"]
+    type: str
+    sample: Optional[Any] = None
+    non_null_count: int = 0
+    count: int = 0
+    distinct_count: int = 0
+    is_unique: bool = False
+
+
+class CustomViewFieldsResponse(BaseModel):
+    """Field catalog for custom view configuration."""
+    dataset_fields: List[CustomViewField] = Field(default_factory=list)
+    per_model_fields: List[CustomViewField] = Field(default_factory=list)
+    chart_types: List[str] = Field(default_factory=list)
+
+
+class CustomViewListResponse(BaseModel):
+    """Saved custom views for an output directory."""
+    output_dir: str
+    views: List[CustomViewDefinition] = Field(default_factory=list)
+
+
+class CustomViewMutationRequest(BaseModel):
+    """Create/update request for custom views."""
+    output_dir: str
+    view: CustomViewDefinition
+
+
+class CustomViewPreviewRequest(BaseModel):
+    """Preview request for custom view definitions."""
+    output_dir: str
+    view: CustomViewDefinition
+
+
+class CustomViewPreviewResponse(BaseModel):
+    """Preview response for custom views."""
+    chart_type: str
+    payload: Dict[str, Any] = Field(default_factory=dict)
+
+
+class CustomViewDeleteResponse(BaseModel):
+    """Delete response for custom views."""
+    output_dir: str
+    view_id: str
+    deleted: bool
+
+
 class DerivedHistogramBin(BaseModel):
     bin: str
     count: int
@@ -251,7 +334,6 @@ class DerivedLexicalDiversityTopItem(BaseModel):
     totalTokens: int
     vocabSize: int
     typeTokenRatio: float
-    stopwordShare: float
 
 
 class DerivedLanguageUsageItem(BaseModel):

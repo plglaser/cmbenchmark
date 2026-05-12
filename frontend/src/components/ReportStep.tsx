@@ -1,15 +1,23 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { apiService } from '../services/api';
-import type { ReportResponse, StageJobStatusResponse } from '../types/api';
+import type {
+  CustomViewDefinition,
+  CustomViewFieldsResponse,
+  CustomViewPreviewResponse,
+  ReportResponse,
+  StageJobStatusResponse,
+} from '../types/api';
 import type { BenchmarkProfile } from '../types/profile';
 import { createDimensions } from '../data/dimensions';
 import { ExpandableTileDialog } from './report/ExpandableTileDialog';
 import { StageProgressCard } from './StageProgressCard';
+import { CustomViewBuilderDialog } from './report/CustomViewBuilderDialog';
+import { CustomViewRenderer } from './report/CustomViewRenderer';
 
 interface ReportStepProps {
   onReportComplete?: (result: ReportResponse) => void;
@@ -29,6 +37,13 @@ export function ReportStep({ onReportComplete, profile }: ReportStepProps) {
   const [selectedDimensionId, setSelectedDimensionId] = useState<string>('parsing');
   const [selectedMeasureId, setSelectedMeasureId] = useState<string | null>(null);
   const [configOpen, setConfigOpen] = useState(true);
+  const [customViews, setCustomViews] = useState<CustomViewDefinition[]>([]);
+  const [customFields, setCustomFields] = useState<CustomViewFieldsResponse | null>(null);
+  const [customPreviews, setCustomPreviews] = useState<Record<string, CustomViewPreviewResponse | null>>({});
+  const [customPreviewErrors, setCustomPreviewErrors] = useState<Record<string, string>>({});
+  const [customLoading, setCustomLoading] = useState(false);
+  const [customError, setCustomError] = useState<string | null>(null);
+  const [builderOpen, setBuilderOpen] = useState(false);
 
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -169,6 +184,112 @@ export function ReportStep({ onReportComplete, profile }: ReportStepProps) {
       }
     }
   }, [selectedDimensionId, currentDimension, selectedMeasureId]);
+
+  const outputDir = profile?.output_path ?? null;
+
+  const loadCustomViewState = useCallback(async () => {
+    if (!reportData || !outputDir) {
+      return;
+    }
+    setCustomLoading(true);
+    setCustomError(null);
+    try {
+      const [fieldsResponse, viewsResponse] = await Promise.all([
+        apiService.getReportFields(outputDir),
+        apiService.getCustomViews(outputDir),
+      ]);
+      setCustomFields(fieldsResponse);
+      setCustomViews(viewsResponse.views);
+
+      if (!viewsResponse.views.length) {
+        setCustomPreviews({});
+        setCustomPreviewErrors({});
+        return;
+      }
+
+      const previewEntries = await Promise.all(
+        viewsResponse.views.map(async (view, idx) => {
+          const id = view.id || `${view.name}-${idx}`;
+          try {
+            const preview = await apiService.previewCustomView(outputDir, view);
+            return { id, preview, error: null as string | null };
+          } catch (err: any) {
+            const message = err.response?.data?.detail || err.message || 'Failed to load preview';
+            return { id, preview: null, error: message };
+          }
+        })
+      );
+
+      const nextPreviews: Record<string, CustomViewPreviewResponse | null> = {};
+      const nextErrors: Record<string, string> = {};
+      previewEntries.forEach(({ id, preview, error: previewError }) => {
+        nextPreviews[id] = preview;
+        if (previewError) {
+          nextErrors[id] = previewError;
+        }
+      });
+      setCustomPreviews(nextPreviews);
+      setCustomPreviewErrors(nextErrors);
+    } catch (err: any) {
+      setCustomError(err.response?.data?.detail || err.message || 'Failed to load custom view configuration');
+    } finally {
+      setCustomLoading(false);
+    }
+  }, [reportData, outputDir]);
+
+  useEffect(() => {
+    if (!reportData || !outputDir) {
+      return;
+    }
+    loadCustomViewState();
+  }, [reportData, outputDir, loadCustomViewState]);
+
+  const handleCreateCustomView = async (view: CustomViewDefinition) => {
+    if (!outputDir) {
+      throw new Error('Output directory is missing from profile.');
+    }
+    const created = await apiService.createCustomView(outputDir, view);
+    setCustomViews((prev) => [...prev, created]);
+    if (created.id) {
+      try {
+        const preview = await apiService.previewCustomView(outputDir, created);
+        setCustomPreviews((prev) => ({ ...prev, [created.id!]: preview }));
+        setCustomPreviewErrors((prev) => {
+          const next = { ...prev };
+          delete next[created.id!];
+          return next;
+        });
+      } catch (err: any) {
+        const message = err.response?.data?.detail || err.message || 'Failed to load preview';
+        setCustomPreviewErrors((prev) => ({ ...prev, [created.id!]: message }));
+      }
+    }
+  };
+
+  const handleDeleteCustomView = async (viewId?: string) => {
+    if (!outputDir || !viewId) {
+      return;
+    }
+    if (!window.confirm('Delete this custom view?')) {
+      return;
+    }
+    try {
+      await apiService.deleteCustomView(outputDir, viewId);
+      setCustomViews((prev) => prev.filter((view) => view.id !== viewId));
+      setCustomPreviews((prev) => {
+        const next = { ...prev };
+        delete next[viewId];
+        return next;
+      });
+      setCustomPreviewErrors((prev) => {
+        const next = { ...prev };
+        delete next[viewId];
+        return next;
+      });
+    } catch (err: any) {
+      setCustomError(err.response?.data?.detail || err.message || 'Failed to delete custom view');
+    }
+  };
 
   return (
     <Card>
@@ -339,7 +460,88 @@ export function ReportStep({ onReportComplete, profile }: ReportStepProps) {
             </Tabs>
           </div>
         )}
+
+        {reportData && (
+          <div className="mt-8 border-t pt-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 className="text-lg font-semibold">Custom Views</h3>
+                <p className="text-sm text-muted-foreground">
+                  Create your own charts from dataset-level or per-model measure fields.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={loadCustomViewState} disabled={customLoading || !outputDir}>
+                  Refresh
+                </Button>
+                <Button type="button" onClick={() => setBuilderOpen(true)} disabled={!customFields || !outputDir}>
+                  Create View
+                </Button>
+              </div>
+            </div>
+
+            {customError && (
+              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+                {customError}
+              </div>
+            )}
+
+            {customLoading && customViews.length === 0 && (
+              <div className="p-3 text-sm text-muted-foreground bg-muted rounded-md">
+                Loading custom view metadata...
+              </div>
+            )}
+
+            {!customLoading && customViews.length === 0 && (
+              <div className="p-3 text-sm text-muted-foreground bg-muted rounded-md">
+                No custom views yet. Create your first custom view.
+              </div>
+            )}
+
+            {customViews.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {customViews.map((view) => {
+                  const key = view.id || view.name;
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <div className="text-xs text-muted-foreground truncate">
+                          {view.description || view.chart_type}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteCustomView(view.id)}
+                          disabled={!view.id}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                      <ExpandableTileDialog title={view.name}>
+                        <CustomViewRenderer
+                          view={view}
+                          preview={customPreviews[key] || null}
+                          loading={customLoading && !customPreviews[key] && !customPreviewErrors[key]}
+                          error={customPreviewErrors[key] || null}
+                        />
+                      </ExpandableTileDialog>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
+
+      <CustomViewBuilderDialog
+        open={builderOpen}
+        onOpenChange={setBuilderOpen}
+        outputDir={outputDir}
+        fields={customFields}
+        onCreate={handleCreateCustomView}
+      />
     </Card>
   );
 }

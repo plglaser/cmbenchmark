@@ -296,7 +296,6 @@ export interface ReportResponse {
     totalTokens: number;
     vocabSize: number;
     typeTokenRatio: number;
-    stopwordShare: number;
   }>;
 
   languageUsage?: any | null;
@@ -405,4 +404,81 @@ export interface ReportResponse {
     rootCount: number;
     containedNodeShare: number;
   }>;
+}
+
+export type CustomViewChartType = 'kpi' | 'bar' | 'pie' | 'histogram' | 'scatter';
+export type CustomViewSource = 'dataset' | 'per_model';
+export type CustomViewFilterOp =
+  | 'eq'
+  | 'ne'
+  | 'gt'
+  | 'gte'
+  | 'lt'
+  | 'lte'
+  | 'contains'
+  | 'in'
+  | 'not_in'
+  | 'is_null'
+  | 'is_not_null';
+
+export interface CustomViewFilter {
+  field: string;
+  op: CustomViewFilterOp;
+  value?: any;
+}
+
+export interface CustomViewDefinition {
+  id?: string;
+  name: string;
+  description?: string | null;
+  chart_type: CustomViewChartType;
+  source: CustomViewSource;
+  config: Record<string, any>;
+  filters: CustomViewFilter[];
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface CustomViewField {
+  path: string;
+  label: string;
+  source: CustomViewSource;
+  type: string;
+  sample?: any;
+  non_null_count: number;
+  count: number;
+  distinct_count: number;
+  is_unique: boolean;
+}
+
+export interface CustomViewFieldsResponse {
+  dataset_fields: CustomViewField[];
+  per_model_fields: CustomViewField[];
+  chart_types: string[];
+}
+
+export interface CustomViewListResponse {
+  output_dir: string;
+  views: CustomViewDefinition[];
+}
+
+export interface CustomViewMutationRequest {
+  output_dir: string;
+  view: CustomViewDefinition;
+}
+
+export interface CustomViewPreviewRequest {
+  output_dir: string;
+  view: CustomViewDefinition;
+}
+
+export interface CustomViewPreviewResponse {
+  chart_type: CustomViewChartType;
+  payload: Record<string, any>;
+}
+
+export interface CustomViewDeleteResponse {
+  output_dir: string;
+  view_id: string;
+  deleted: boolean;
 }

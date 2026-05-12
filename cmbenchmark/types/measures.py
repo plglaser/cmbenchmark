@@ -192,8 +192,6 @@ class D2M5LexicalDiversityDataset:
     total_tokens: int
     vocab_size: int
     type_token_ratio: float
-    stopword_tokens: int = 0
-    stopword_share: float = 0.0
     top_labels: List[Tuple[str, int]] = field(default_factory=list)
     top_tokens: List[Tuple[str, int]] = field(default_factory=list)
 
@@ -257,8 +255,6 @@ class D2M5LexicalDiversityPerModel:
     total_tokens: int
     vocab_size: int
     type_token_ratio: float
-    stopword_tokens: int = 0
-    stopword_share: float = 0.0
 
 
 @dataclass
@@ -553,7 +549,12 @@ class MeasureResultDataset:
                 d2_m3_data["naming_style_entropy_stats"] = _to_distribution_summary(d2_m3_data["naming_style_entropy_stats"])
             if isinstance(d2_m4_data.get("share_single_word_labels_stats"), dict):
                 d2_m4_data["share_single_word_labels_stats"] = _to_distribution_summary(d2_m4_data["share_single_word_labels_stats"])
-            
+
+            # Backwards-compat: stopword tracking was removed from D2.M5.
+            if isinstance(d2_m5_data, dict):
+                d2_m5_data.pop("stopword_tokens", None)
+                d2_m5_data.pop("stopword_share", None)
+
             lexical = LexicalMeasuresDataset(
                 d2_m1_label_presence=D2M1LabelPresenceDataset(**d2_m1_data),
                 d2_m2_label_length=D2M2LabelLengthDataset(**d2_m2_data),
@@ -687,6 +688,10 @@ class MeasureResultPerModel:
                         if per_model_class is D2M1LabelPresencePerModel:
                             model_data.pop("label_missing_share_by_type", None)
                             model_data.setdefault("label_missing_count_by_type", {})
+                        if per_model_class is D2M5LexicalDiversityPerModel:
+                            # Backwards-compat: stopword tracking was removed from D2.M5.
+                            model_data.pop("stopword_tokens", None)
+                            model_data.pop("stopword_share", None)
                         result[model_id] = per_model_class(**model_data)
                     else:
                         result[model_id] = model_data

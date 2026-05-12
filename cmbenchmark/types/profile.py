@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from typing import List, Optional
-from pydantic import Field
+from pydantic import Field, field_validator
 import json
 from cmbenchmark.types.strict import StrictBaseModel
 
@@ -17,8 +17,6 @@ class TokenizerConfig(StrictBaseModel):
     keep_numbers: bool = True
     collapse_whitespace: bool = True
     unicode_nfkc: bool = True
-    stopword_list: Optional[str] = None  # e.g. "en_default"
-    noise_token_list: Optional[str] = None  # e.g. "generic_noise_v1"
 
 
 class LexicalProfile(StrictBaseModel):
@@ -27,6 +25,7 @@ class LexicalProfile(StrictBaseModel):
     # what to treat as label-eligible
     include_nodes: bool = True
     include_edges: bool = False  # relationships as labels or not
+    include_nested_labels: bool = True  # nested attributes/operations/literals from `node.data`
     label_attributes: List[str] = Field(default_factory=lambda: ["name"])
 
     # enable/disable individual D2 measures
@@ -35,8 +34,25 @@ class LexicalProfile(StrictBaseModel):
     enable_d2_m3: bool = True
     enable_d2_m4: bool = True
     enable_d2_m5: bool = True
+    enable_d2_m6: bool = True
 
     tokenizer: TokenizerConfig = Field(default_factory=lambda: TokenizerConfig(name="simple_en"))
+
+    @field_validator("label_attributes")
+    @classmethod
+    def _check_label_attributes(cls, v: List[str]) -> List[str]:
+        # Imported lazily to avoid a profile.py ↔ measures.labels import cycle
+        # (measures.labels imports from cmbenchmark.types.ir, which is fine,
+        # but keeping the validator import local makes the dependency obvious).
+        from cmbenchmark.measures.labels import KNOWN_LABEL_ATTRS
+
+        unknown = [a for a in v if a not in KNOWN_LABEL_ATTRS]
+        if unknown:
+            raise ValueError(
+                f"Unknown label_attributes {unknown!r}; allowed values are "
+                f"{sorted(KNOWN_LABEL_ATTRS)!r}."
+            )
+        return v
 
 
 class SizeComplexityProfile(StrictBaseModel):
