@@ -19,6 +19,7 @@ _LANGUAGE_TO_PROFILE = {
     "Ecore": "ecore_constructs.json",
     "UML": "uml_constructs.json",
     "UML-custom1": "uml_constructs.json",
+    "UML-XML-PyEcore": "uml_xml_pyecore_constructs.json",
 }
 
 

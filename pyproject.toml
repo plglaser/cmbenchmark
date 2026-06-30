@@ -23,3 +23,6 @@ cmbenchmark = "cmbenchmark.cli:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["cmbenchmark*"]
+
+[tool.setuptools.package-data]
+cmbenchmark = ["parser/uml/uml_xml_pyecore/metamodel/**/*"]

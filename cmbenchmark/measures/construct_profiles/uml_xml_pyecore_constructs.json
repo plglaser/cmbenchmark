@@ -1,0 +1,6356 @@
+{
+  "language": "UML-XML-PyEcore",
+  "constructs": [
+    {
+      "id": "uml-pyecore:ActivityContent",
+      "kind": "node_type",
+      "match_type": "ActivityContent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true,
+        "interface": true
+      },
+      "description": "UML metamodel object 'ActivityContent'."
+    },
+    {
+      "id": "uml-pyecore:Activity",
+      "kind": "node_type",
+      "match_type": "Activity",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel object 'Activity'."
+    },
+    {
+      "id": "uml-pyecore:Behavior",
+      "kind": "node_type",
+      "match_type": "Behavior",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Behavior'."
+    },
+    {
+      "id": "uml-pyecore:Class",
+      "kind": "node_type",
+      "match_type": "Class",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Class'."
+    },
+    {
+      "id": "uml-pyecore:BehavioredClassifier",
+      "kind": "node_type",
+      "match_type": "BehavioredClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'BehavioredClassifier'."
+    },
+    {
+      "id": "uml-pyecore:Classifier",
+      "kind": "node_type",
+      "match_type": "Classifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Classifier'."
+    },
+    {
+      "id": "uml-pyecore:Namespace",
+      "kind": "node_type",
+      "match_type": "Namespace",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Namespace'."
+    },
+    {
+      "id": "uml-pyecore:NamedElement",
+      "kind": "node_type",
+      "match_type": "NamedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'NamedElement'."
+    },
+    {
+      "id": "uml-pyecore:Element",
+      "kind": "node_type",
+      "match_type": "Element",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Element'."
+    },
+    {
+      "id": "uml-pyecore:Comment",
+      "kind": "node_type",
+      "match_type": "Comment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Comment'."
+    },
+    {
+      "id": "uml-pyecore:Stereotype",
+      "kind": "node_type",
+      "match_type": "Stereotype",
+      "match_data_equals": {},
+      "meta": {
+        "group": "profile"
+      },
+      "description": "UML metamodel object 'Stereotype'."
+    },
+    {
+      "id": "uml-pyecore:Image",
+      "kind": "node_type",
+      "match_type": "Image",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Image'."
+    },
+    {
+      "id": "uml-pyecore:Profile",
+      "kind": "node_type",
+      "match_type": "Profile",
+      "match_data_equals": {},
+      "meta": {
+        "group": "profile"
+      },
+      "description": "UML metamodel object 'Profile'."
+    },
+    {
+      "id": "uml-pyecore:Package",
+      "kind": "node_type",
+      "match_type": "Package",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Package'."
+    },
+    {
+      "id": "uml-pyecore:PackageableElement",
+      "kind": "node_type",
+      "match_type": "PackageableElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'PackageableElement'."
+    },
+    {
+      "id": "uml-pyecore:ParameterableElement",
+      "kind": "node_type",
+      "match_type": "ParameterableElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ParameterableElement'."
+    },
+    {
+      "id": "uml-pyecore:TemplateParameter",
+      "kind": "node_type",
+      "match_type": "TemplateParameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TemplateParameter'."
+    },
+    {
+      "id": "uml-pyecore:TemplateSignature",
+      "kind": "node_type",
+      "match_type": "TemplateSignature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TemplateSignature'."
+    },
+    {
+      "id": "uml-pyecore:TemplateableElement",
+      "kind": "node_type",
+      "match_type": "TemplateableElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'TemplateableElement'."
+    },
+    {
+      "id": "uml-pyecore:TemplateBinding",
+      "kind": "node_type",
+      "match_type": "TemplateBinding",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TemplateBinding'."
+    },
+    {
+      "id": "uml-pyecore:DirectedRelationship",
+      "kind": "node_type",
+      "match_type": "DirectedRelationship",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'DirectedRelationship'."
+    },
+    {
+      "id": "uml-pyecore:Relationship",
+      "kind": "node_type",
+      "match_type": "Relationship",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Relationship'."
+    },
+    {
+      "id": "uml-pyecore:TemplateParameterSubstitution",
+      "kind": "node_type",
+      "match_type": "TemplateParameterSubstitution",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TemplateParameterSubstitution'."
+    },
+    {
+      "id": "uml-pyecore:Type",
+      "kind": "node_type",
+      "match_type": "Type",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Type'."
+    },
+    {
+      "id": "uml-pyecore:Association",
+      "kind": "node_type",
+      "match_type": "Association",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Association'."
+    },
+    {
+      "id": "uml-pyecore:Property",
+      "kind": "node_type",
+      "match_type": "Property",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Property'."
+    },
+    {
+      "id": "uml-pyecore:ConnectableElement",
+      "kind": "node_type",
+      "match_type": "ConnectableElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ConnectableElement'."
+    },
+    {
+      "id": "uml-pyecore:TypedElement",
+      "kind": "node_type",
+      "match_type": "TypedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'TypedElement'."
+    },
+    {
+      "id": "uml-pyecore:ConnectorEnd",
+      "kind": "node_type",
+      "match_type": "ConnectorEnd",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ConnectorEnd'."
+    },
+    {
+      "id": "uml-pyecore:MultiplicityElement",
+      "kind": "node_type",
+      "match_type": "MultiplicityElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'MultiplicityElement'."
+    },
+    {
+      "id": "uml-pyecore:ValueSpecification",
+      "kind": "node_type",
+      "match_type": "ValueSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ValueSpecification'."
+    },
+    {
+      "id": "uml-pyecore:ConnectableElementTemplateParameter",
+      "kind": "node_type",
+      "match_type": "ConnectableElementTemplateParameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ConnectableElementTemplateParameter'."
+    },
+    {
+      "id": "uml-pyecore:DeploymentTarget",
+      "kind": "node_type",
+      "match_type": "DeploymentTarget",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'DeploymentTarget'."
+    },
+    {
+      "id": "uml-pyecore:Deployment",
+      "kind": "node_type",
+      "match_type": "Deployment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Deployment'."
+    },
+    {
+      "id": "uml-pyecore:Dependency",
+      "kind": "node_type",
+      "match_type": "Dependency",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Dependency'."
+    },
+    {
+      "id": "uml-pyecore:DeploymentSpecification",
+      "kind": "node_type",
+      "match_type": "DeploymentSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'DeploymentSpecification'."
+    },
+    {
+      "id": "uml-pyecore:Artifact",
+      "kind": "node_type",
+      "match_type": "Artifact",
+      "match_data_equals": {},
+      "meta": {
+        "group": "deployment"
+      },
+      "description": "UML metamodel object 'Artifact'."
+    },
+    {
+      "id": "uml-pyecore:DeployedArtifact",
+      "kind": "node_type",
+      "match_type": "DeployedArtifact",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'DeployedArtifact'."
+    },
+    {
+      "id": "uml-pyecore:Manifestation",
+      "kind": "node_type",
+      "match_type": "Manifestation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Manifestation'."
+    },
+    {
+      "id": "uml-pyecore:Abstraction",
+      "kind": "node_type",
+      "match_type": "Abstraction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Abstraction'."
+    },
+    {
+      "id": "uml-pyecore:OpaqueExpression",
+      "kind": "node_type",
+      "match_type": "OpaqueExpression",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'OpaqueExpression'."
+    },
+    {
+      "id": "uml-pyecore:Parameter",
+      "kind": "node_type",
+      "match_type": "Parameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Parameter'."
+    },
+    {
+      "id": "uml-pyecore:Operation",
+      "kind": "node_type",
+      "match_type": "Operation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Operation'."
+    },
+    {
+      "id": "uml-pyecore:BehavioralFeature",
+      "kind": "node_type",
+      "match_type": "BehavioralFeature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'BehavioralFeature'."
+    },
+    {
+      "id": "uml-pyecore:Feature",
+      "kind": "node_type",
+      "match_type": "Feature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Feature'."
+    },
+    {
+      "id": "uml-pyecore:RedefinableElement",
+      "kind": "node_type",
+      "match_type": "RedefinableElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'RedefinableElement'."
+    },
+    {
+      "id": "uml-pyecore:ParameterSet",
+      "kind": "node_type",
+      "match_type": "ParameterSet",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ParameterSet'."
+    },
+    {
+      "id": "uml-pyecore:Constraint",
+      "kind": "node_type",
+      "match_type": "Constraint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Constraint'."
+    },
+    {
+      "id": "uml-pyecore:DataType",
+      "kind": "node_type",
+      "match_type": "DataType",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'DataType'."
+    },
+    {
+      "id": "uml-pyecore:Interface",
+      "kind": "node_type",
+      "match_type": "Interface",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Interface'."
+    },
+    {
+      "id": "uml-pyecore:Reception",
+      "kind": "node_type",
+      "match_type": "Reception",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Reception'."
+    },
+    {
+      "id": "uml-pyecore:Signal",
+      "kind": "node_type",
+      "match_type": "Signal",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Signal'."
+    },
+    {
+      "id": "uml-pyecore:ProtocolStateMachine",
+      "kind": "node_type",
+      "match_type": "ProtocolStateMachine",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ProtocolStateMachine'."
+    },
+    {
+      "id": "uml-pyecore:StateMachine",
+      "kind": "node_type",
+      "match_type": "StateMachine",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel object 'StateMachine'."
+    },
+    {
+      "id": "uml-pyecore:Pseudostate",
+      "kind": "node_type",
+      "match_type": "Pseudostate",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Pseudostate'."
+    },
+    {
+      "id": "uml-pyecore:Vertex",
+      "kind": "node_type",
+      "match_type": "Vertex",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Vertex'."
+    },
+    {
+      "id": "uml-pyecore:Region",
+      "kind": "node_type",
+      "match_type": "Region",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Region'."
+    },
+    {
+      "id": "uml-pyecore:State",
+      "kind": "node_type",
+      "match_type": "State",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel object 'State'."
+    },
+    {
+      "id": "uml-pyecore:ConnectionPointReference",
+      "kind": "node_type",
+      "match_type": "ConnectionPointReference",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ConnectionPointReference'."
+    },
+    {
+      "id": "uml-pyecore:Trigger",
+      "kind": "node_type",
+      "match_type": "Trigger",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Trigger'."
+    },
+    {
+      "id": "uml-pyecore:Event",
+      "kind": "node_type",
+      "match_type": "Event",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Event'."
+    },
+    {
+      "id": "uml-pyecore:Port",
+      "kind": "node_type",
+      "match_type": "Port",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Port'."
+    },
+    {
+      "id": "uml-pyecore:Transition",
+      "kind": "node_type",
+      "match_type": "Transition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel object 'Transition'."
+    },
+    {
+      "id": "uml-pyecore:ProtocolConformance",
+      "kind": "node_type",
+      "match_type": "ProtocolConformance",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ProtocolConformance'."
+    },
+    {
+      "id": "uml-pyecore:OperationTemplateParameter",
+      "kind": "node_type",
+      "match_type": "OperationTemplateParameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'OperationTemplateParameter'."
+    },
+    {
+      "id": "uml-pyecore:StructuralFeature",
+      "kind": "node_type",
+      "match_type": "StructuralFeature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'StructuralFeature'."
+    },
+    {
+      "id": "uml-pyecore:PackageMerge",
+      "kind": "node_type",
+      "match_type": "PackageMerge",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'PackageMerge'."
+    },
+    {
+      "id": "uml-pyecore:ProfileApplication",
+      "kind": "node_type",
+      "match_type": "ProfileApplication",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ProfileApplication'."
+    },
+    {
+      "id": "uml-pyecore:Enumeration",
+      "kind": "node_type",
+      "match_type": "Enumeration",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Enumeration'."
+    },
+    {
+      "id": "uml-pyecore:EnumerationLiteral",
+      "kind": "node_type",
+      "match_type": "EnumerationLiteral",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'EnumerationLiteral'."
+    },
+    {
+      "id": "uml-pyecore:InstanceSpecification",
+      "kind": "node_type",
+      "match_type": "InstanceSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InstanceSpecification'."
+    },
+    {
+      "id": "uml-pyecore:Slot",
+      "kind": "node_type",
+      "match_type": "Slot",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Slot'."
+    },
+    {
+      "id": "uml-pyecore:PrimitiveType",
+      "kind": "node_type",
+      "match_type": "PrimitiveType",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'PrimitiveType'."
+    },
+    {
+      "id": "uml-pyecore:ElementImport",
+      "kind": "node_type",
+      "match_type": "ElementImport",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ElementImport'."
+    },
+    {
+      "id": "uml-pyecore:PackageImport",
+      "kind": "node_type",
+      "match_type": "PackageImport",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'PackageImport'."
+    },
+    {
+      "id": "uml-pyecore:Extension",
+      "kind": "node_type",
+      "match_type": "Extension",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Extension'."
+    },
+    {
+      "id": "uml-pyecore:ExtensionEnd",
+      "kind": "node_type",
+      "match_type": "ExtensionEnd",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ExtensionEnd'."
+    },
+    {
+      "id": "uml-pyecore:Model",
+      "kind": "node_type",
+      "match_type": "Model",
+      "match_data_equals": {},
+      "meta": {
+        "group": "metadata"
+      },
+      "description": "UML metamodel object 'Model'."
+    },
+    {
+      "id": "uml-pyecore:StringExpression",
+      "kind": "node_type",
+      "match_type": "StringExpression",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'StringExpression'."
+    },
+    {
+      "id": "uml-pyecore:Expression",
+      "kind": "node_type",
+      "match_type": "Expression",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Expression'."
+    },
+    {
+      "id": "uml-pyecore:Usage",
+      "kind": "node_type",
+      "match_type": "Usage",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Usage'."
+    },
+    {
+      "id": "uml-pyecore:CollaborationUse",
+      "kind": "node_type",
+      "match_type": "CollaborationUse",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CollaborationUse'."
+    },
+    {
+      "id": "uml-pyecore:Collaboration",
+      "kind": "node_type",
+      "match_type": "Collaboration",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Collaboration'."
+    },
+    {
+      "id": "uml-pyecore:StructuredClassifier",
+      "kind": "node_type",
+      "match_type": "StructuredClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'StructuredClassifier'."
+    },
+    {
+      "id": "uml-pyecore:Connector",
+      "kind": "node_type",
+      "match_type": "Connector",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Connector'."
+    },
+    {
+      "id": "uml-pyecore:Generalization",
+      "kind": "node_type",
+      "match_type": "Generalization",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'Generalization'."
+    },
+    {
+      "id": "uml-pyecore:GeneralizationSet",
+      "kind": "node_type",
+      "match_type": "GeneralizationSet",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'GeneralizationSet'."
+    },
+    {
+      "id": "uml-pyecore:RedefinableTemplateSignature",
+      "kind": "node_type",
+      "match_type": "RedefinableTemplateSignature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'RedefinableTemplateSignature'."
+    },
+    {
+      "id": "uml-pyecore:UseCase",
+      "kind": "node_type",
+      "match_type": "UseCase",
+      "match_data_equals": {},
+      "meta": {
+        "group": "usecase"
+      },
+      "description": "UML metamodel object 'UseCase'."
+    },
+    {
+      "id": "uml-pyecore:Extend",
+      "kind": "node_type",
+      "match_type": "Extend",
+      "match_data_equals": {},
+      "meta": {
+        "group": "usecase"
+      },
+      "description": "UML metamodel object 'Extend'."
+    },
+    {
+      "id": "uml-pyecore:ExtensionPoint",
+      "kind": "node_type",
+      "match_type": "ExtensionPoint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ExtensionPoint'."
+    },
+    {
+      "id": "uml-pyecore:Include",
+      "kind": "node_type",
+      "match_type": "Include",
+      "match_data_equals": {},
+      "meta": {
+        "group": "usecase"
+      },
+      "description": "UML metamodel object 'Include'."
+    },
+    {
+      "id": "uml-pyecore:Substitution",
+      "kind": "node_type",
+      "match_type": "Substitution",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Substitution'."
+    },
+    {
+      "id": "uml-pyecore:Realization",
+      "kind": "node_type",
+      "match_type": "Realization",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Realization'."
+    },
+    {
+      "id": "uml-pyecore:ClassifierTemplateParameter",
+      "kind": "node_type",
+      "match_type": "ClassifierTemplateParameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ClassifierTemplateParameter'."
+    },
+    {
+      "id": "uml-pyecore:InterfaceRealization",
+      "kind": "node_type",
+      "match_type": "InterfaceRealization",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'InterfaceRealization'."
+    },
+    {
+      "id": "uml-pyecore:EncapsulatedClassifier",
+      "kind": "node_type",
+      "match_type": "EncapsulatedClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'EncapsulatedClassifier'."
+    },
+    {
+      "id": "uml-pyecore:ActivityGroup",
+      "kind": "node_type",
+      "match_type": "ActivityGroup",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ActivityGroup'."
+    },
+    {
+      "id": "uml-pyecore:ActivityEdge",
+      "kind": "node_type",
+      "match_type": "ActivityEdge",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ActivityEdge'."
+    },
+    {
+      "id": "uml-pyecore:ActivityPartition",
+      "kind": "node_type",
+      "match_type": "ActivityPartition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ActivityPartition'."
+    },
+    {
+      "id": "uml-pyecore:ActivityNode",
+      "kind": "node_type",
+      "match_type": "ActivityNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ActivityNode'."
+    },
+    {
+      "id": "uml-pyecore:InterruptibleActivityRegion",
+      "kind": "node_type",
+      "match_type": "InterruptibleActivityRegion",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InterruptibleActivityRegion'."
+    },
+    {
+      "id": "uml-pyecore:StructuredActivityNode",
+      "kind": "node_type",
+      "match_type": "StructuredActivityNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'StructuredActivityNode'."
+    },
+    {
+      "id": "uml-pyecore:Action",
+      "kind": "node_type",
+      "match_type": "Action",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Action'."
+    },
+    {
+      "id": "uml-pyecore:ExecutableNode",
+      "kind": "node_type",
+      "match_type": "ExecutableNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ExecutableNode'."
+    },
+    {
+      "id": "uml-pyecore:ExceptionHandler",
+      "kind": "node_type",
+      "match_type": "ExceptionHandler",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ExceptionHandler'."
+    },
+    {
+      "id": "uml-pyecore:ObjectNode",
+      "kind": "node_type",
+      "match_type": "ObjectNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ObjectNode'."
+    },
+    {
+      "id": "uml-pyecore:InputPin",
+      "kind": "node_type",
+      "match_type": "InputPin",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InputPin'."
+    },
+    {
+      "id": "uml-pyecore:Pin",
+      "kind": "node_type",
+      "match_type": "Pin",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Pin'."
+    },
+    {
+      "id": "uml-pyecore:OutputPin",
+      "kind": "node_type",
+      "match_type": "OutputPin",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'OutputPin'."
+    },
+    {
+      "id": "uml-pyecore:Variable",
+      "kind": "node_type",
+      "match_type": "Variable",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Variable'."
+    },
+    {
+      "id": "uml-pyecore:ValueSpecificationAction",
+      "kind": "node_type",
+      "match_type": "ValueSpecificationAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ValueSpecificationAction'."
+    },
+    {
+      "id": "uml-pyecore:VariableAction",
+      "kind": "node_type",
+      "match_type": "VariableAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'VariableAction'."
+    },
+    {
+      "id": "uml-pyecore:WriteLinkAction",
+      "kind": "node_type",
+      "match_type": "WriteLinkAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'WriteLinkAction'."
+    },
+    {
+      "id": "uml-pyecore:LinkAction",
+      "kind": "node_type",
+      "match_type": "LinkAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'LinkAction'."
+    },
+    {
+      "id": "uml-pyecore:LinkEndData",
+      "kind": "node_type",
+      "match_type": "LinkEndData",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LinkEndData'."
+    },
+    {
+      "id": "uml-pyecore:QualifierValue",
+      "kind": "node_type",
+      "match_type": "QualifierValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'QualifierValue'."
+    },
+    {
+      "id": "uml-pyecore:WriteStructuralFeatureAction",
+      "kind": "node_type",
+      "match_type": "WriteStructuralFeatureAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'WriteStructuralFeatureAction'."
+    },
+    {
+      "id": "uml-pyecore:StructuralFeatureAction",
+      "kind": "node_type",
+      "match_type": "StructuralFeatureAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'StructuralFeatureAction'."
+    },
+    {
+      "id": "uml-pyecore:WriteVariableAction",
+      "kind": "node_type",
+      "match_type": "WriteVariableAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'WriteVariableAction'."
+    },
+    {
+      "id": "uml-pyecore:AcceptCallAction",
+      "kind": "node_type",
+      "match_type": "AcceptCallAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'AcceptCallAction'."
+    },
+    {
+      "id": "uml-pyecore:AcceptEventAction",
+      "kind": "node_type",
+      "match_type": "AcceptEventAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'AcceptEventAction'."
+    },
+    {
+      "id": "uml-pyecore:ActionInputPin",
+      "kind": "node_type",
+      "match_type": "ActionInputPin",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ActionInputPin'."
+    },
+    {
+      "id": "uml-pyecore:AddStructuralFeatureValueAction",
+      "kind": "node_type",
+      "match_type": "AddStructuralFeatureValueAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'AddStructuralFeatureValueAction'."
+    },
+    {
+      "id": "uml-pyecore:AddVariableValueAction",
+      "kind": "node_type",
+      "match_type": "AddVariableValueAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'AddVariableValueAction'."
+    },
+    {
+      "id": "uml-pyecore:BroadcastSignalAction",
+      "kind": "node_type",
+      "match_type": "BroadcastSignalAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'BroadcastSignalAction'."
+    },
+    {
+      "id": "uml-pyecore:InvocationAction",
+      "kind": "node_type",
+      "match_type": "InvocationAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'InvocationAction'."
+    },
+    {
+      "id": "uml-pyecore:CallAction",
+      "kind": "node_type",
+      "match_type": "CallAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'CallAction'."
+    },
+    {
+      "id": "uml-pyecore:CallBehaviorAction",
+      "kind": "node_type",
+      "match_type": "CallBehaviorAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CallBehaviorAction'."
+    },
+    {
+      "id": "uml-pyecore:CallOperationAction",
+      "kind": "node_type",
+      "match_type": "CallOperationAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CallOperationAction'."
+    },
+    {
+      "id": "uml-pyecore:Clause",
+      "kind": "node_type",
+      "match_type": "Clause",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Clause'."
+    },
+    {
+      "id": "uml-pyecore:ClearAssociationAction",
+      "kind": "node_type",
+      "match_type": "ClearAssociationAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ClearAssociationAction'."
+    },
+    {
+      "id": "uml-pyecore:ClearStructuralFeatureAction",
+      "kind": "node_type",
+      "match_type": "ClearStructuralFeatureAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ClearStructuralFeatureAction'."
+    },
+    {
+      "id": "uml-pyecore:ClearVariableAction",
+      "kind": "node_type",
+      "match_type": "ClearVariableAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ClearVariableAction'."
+    },
+    {
+      "id": "uml-pyecore:ConditionalNode",
+      "kind": "node_type",
+      "match_type": "ConditionalNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ConditionalNode'."
+    },
+    {
+      "id": "uml-pyecore:CreateLinkAction",
+      "kind": "node_type",
+      "match_type": "CreateLinkAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CreateLinkAction'."
+    },
+    {
+      "id": "uml-pyecore:LinkEndCreationData",
+      "kind": "node_type",
+      "match_type": "LinkEndCreationData",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LinkEndCreationData'."
+    },
+    {
+      "id": "uml-pyecore:CreateLinkObjectAction",
+      "kind": "node_type",
+      "match_type": "CreateLinkObjectAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CreateLinkObjectAction'."
+    },
+    {
+      "id": "uml-pyecore:CreateObjectAction",
+      "kind": "node_type",
+      "match_type": "CreateObjectAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CreateObjectAction'."
+    },
+    {
+      "id": "uml-pyecore:DestroyLinkAction",
+      "kind": "node_type",
+      "match_type": "DestroyLinkAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'DestroyLinkAction'."
+    },
+    {
+      "id": "uml-pyecore:LinkEndDestructionData",
+      "kind": "node_type",
+      "match_type": "LinkEndDestructionData",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LinkEndDestructionData'."
+    },
+    {
+      "id": "uml-pyecore:DestroyObjectAction",
+      "kind": "node_type",
+      "match_type": "DestroyObjectAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'DestroyObjectAction'."
+    },
+    {
+      "id": "uml-pyecore:ExpansionNode",
+      "kind": "node_type",
+      "match_type": "ExpansionNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ExpansionNode'."
+    },
+    {
+      "id": "uml-pyecore:ExpansionRegion",
+      "kind": "node_type",
+      "match_type": "ExpansionRegion",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ExpansionRegion'."
+    },
+    {
+      "id": "uml-pyecore:LoopNode",
+      "kind": "node_type",
+      "match_type": "LoopNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LoopNode'."
+    },
+    {
+      "id": "uml-pyecore:OpaqueAction",
+      "kind": "node_type",
+      "match_type": "OpaqueAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'OpaqueAction'."
+    },
+    {
+      "id": "uml-pyecore:RaiseExceptionAction",
+      "kind": "node_type",
+      "match_type": "RaiseExceptionAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'RaiseExceptionAction'."
+    },
+    {
+      "id": "uml-pyecore:ReadExtentAction",
+      "kind": "node_type",
+      "match_type": "ReadExtentAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReadExtentAction'."
+    },
+    {
+      "id": "uml-pyecore:ReadIsClassifiedObjectAction",
+      "kind": "node_type",
+      "match_type": "ReadIsClassifiedObjectAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReadIsClassifiedObjectAction'."
+    },
+    {
+      "id": "uml-pyecore:ReadLinkAction",
+      "kind": "node_type",
+      "match_type": "ReadLinkAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReadLinkAction'."
+    },
+    {
+      "id": "uml-pyecore:ReadLinkObjectEndAction",
+      "kind": "node_type",
+      "match_type": "ReadLinkObjectEndAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReadLinkObjectEndAction'."
+    },
+    {
+      "id": "uml-pyecore:ReadLinkObjectEndQualifierAction",
+      "kind": "node_type",
+      "match_type": "ReadLinkObjectEndQualifierAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReadLinkObjectEndQualifierAction'."
+    },
+    {
+      "id": "uml-pyecore:ReadSelfAction",
+      "kind": "node_type",
+      "match_type": "ReadSelfAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReadSelfAction'."
+    },
+    {
+      "id": "uml-pyecore:ReadStructuralFeatureAction",
+      "kind": "node_type",
+      "match_type": "ReadStructuralFeatureAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReadStructuralFeatureAction'."
+    },
+    {
+      "id": "uml-pyecore:ReadVariableAction",
+      "kind": "node_type",
+      "match_type": "ReadVariableAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReadVariableAction'."
+    },
+    {
+      "id": "uml-pyecore:ReclassifyObjectAction",
+      "kind": "node_type",
+      "match_type": "ReclassifyObjectAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReclassifyObjectAction'."
+    },
+    {
+      "id": "uml-pyecore:ReduceAction",
+      "kind": "node_type",
+      "match_type": "ReduceAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReduceAction'."
+    },
+    {
+      "id": "uml-pyecore:RemoveStructuralFeatureValueAction",
+      "kind": "node_type",
+      "match_type": "RemoveStructuralFeatureValueAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'RemoveStructuralFeatureValueAction'."
+    },
+    {
+      "id": "uml-pyecore:RemoveVariableValueAction",
+      "kind": "node_type",
+      "match_type": "RemoveVariableValueAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'RemoveVariableValueAction'."
+    },
+    {
+      "id": "uml-pyecore:ReplyAction",
+      "kind": "node_type",
+      "match_type": "ReplyAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ReplyAction'."
+    },
+    {
+      "id": "uml-pyecore:SendObjectAction",
+      "kind": "node_type",
+      "match_type": "SendObjectAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'SendObjectAction'."
+    },
+    {
+      "id": "uml-pyecore:SendSignalAction",
+      "kind": "node_type",
+      "match_type": "SendSignalAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'SendSignalAction'."
+    },
+    {
+      "id": "uml-pyecore:SequenceNode",
+      "kind": "node_type",
+      "match_type": "SequenceNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'SequenceNode'."
+    },
+    {
+      "id": "uml-pyecore:StartClassifierBehaviorAction",
+      "kind": "node_type",
+      "match_type": "StartClassifierBehaviorAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'StartClassifierBehaviorAction'."
+    },
+    {
+      "id": "uml-pyecore:StartObjectBehaviorAction",
+      "kind": "node_type",
+      "match_type": "StartObjectBehaviorAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'StartObjectBehaviorAction'."
+    },
+    {
+      "id": "uml-pyecore:TestIdentityAction",
+      "kind": "node_type",
+      "match_type": "TestIdentityAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TestIdentityAction'."
+    },
+    {
+      "id": "uml-pyecore:UnmarshallAction",
+      "kind": "node_type",
+      "match_type": "UnmarshallAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'UnmarshallAction'."
+    },
+    {
+      "id": "uml-pyecore:ValuePin",
+      "kind": "node_type",
+      "match_type": "ValuePin",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ValuePin'."
+    },
+    {
+      "id": "uml-pyecore:ActivityFinalNode",
+      "kind": "node_type",
+      "match_type": "ActivityFinalNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ActivityFinalNode'."
+    },
+    {
+      "id": "uml-pyecore:FinalNode",
+      "kind": "node_type",
+      "match_type": "FinalNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'FinalNode'."
+    },
+    {
+      "id": "uml-pyecore:ControlNode",
+      "kind": "node_type",
+      "match_type": "ControlNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ControlNode'."
+    },
+    {
+      "id": "uml-pyecore:ActivityParameterNode",
+      "kind": "node_type",
+      "match_type": "ActivityParameterNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ActivityParameterNode'."
+    },
+    {
+      "id": "uml-pyecore:CentralBufferNode",
+      "kind": "node_type",
+      "match_type": "CentralBufferNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CentralBufferNode'."
+    },
+    {
+      "id": "uml-pyecore:ControlFlow",
+      "kind": "node_type",
+      "match_type": "ControlFlow",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel object 'ControlFlow'."
+    },
+    {
+      "id": "uml-pyecore:DataStoreNode",
+      "kind": "node_type",
+      "match_type": "DataStoreNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'DataStoreNode'."
+    },
+    {
+      "id": "uml-pyecore:DecisionNode",
+      "kind": "node_type",
+      "match_type": "DecisionNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'DecisionNode'."
+    },
+    {
+      "id": "uml-pyecore:ObjectFlow",
+      "kind": "node_type",
+      "match_type": "ObjectFlow",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior"
+      },
+      "description": "UML metamodel object 'ObjectFlow'."
+    },
+    {
+      "id": "uml-pyecore:FlowFinalNode",
+      "kind": "node_type",
+      "match_type": "FlowFinalNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'FlowFinalNode'."
+    },
+    {
+      "id": "uml-pyecore:ForkNode",
+      "kind": "node_type",
+      "match_type": "ForkNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ForkNode'."
+    },
+    {
+      "id": "uml-pyecore:InitialNode",
+      "kind": "node_type",
+      "match_type": "InitialNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InitialNode'."
+    },
+    {
+      "id": "uml-pyecore:JoinNode",
+      "kind": "node_type",
+      "match_type": "JoinNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'JoinNode'."
+    },
+    {
+      "id": "uml-pyecore:MergeNode",
+      "kind": "node_type",
+      "match_type": "MergeNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'MergeNode'."
+    },
+    {
+      "id": "uml-pyecore:InstanceValue",
+      "kind": "node_type",
+      "match_type": "InstanceValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InstanceValue'."
+    },
+    {
+      "id": "uml-pyecore:AnyReceiveEvent",
+      "kind": "node_type",
+      "match_type": "AnyReceiveEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'AnyReceiveEvent'."
+    },
+    {
+      "id": "uml-pyecore:MessageEvent",
+      "kind": "node_type",
+      "match_type": "MessageEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'MessageEvent'."
+    },
+    {
+      "id": "uml-pyecore:CallEvent",
+      "kind": "node_type",
+      "match_type": "CallEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CallEvent'."
+    },
+    {
+      "id": "uml-pyecore:ChangeEvent",
+      "kind": "node_type",
+      "match_type": "ChangeEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ChangeEvent'."
+    },
+    {
+      "id": "uml-pyecore:FunctionBehavior",
+      "kind": "node_type",
+      "match_type": "FunctionBehavior",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'FunctionBehavior'."
+    },
+    {
+      "id": "uml-pyecore:OpaqueBehavior",
+      "kind": "node_type",
+      "match_type": "OpaqueBehavior",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'OpaqueBehavior'."
+    },
+    {
+      "id": "uml-pyecore:SignalEvent",
+      "kind": "node_type",
+      "match_type": "SignalEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'SignalEvent'."
+    },
+    {
+      "id": "uml-pyecore:TimeEvent",
+      "kind": "node_type",
+      "match_type": "TimeEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TimeEvent'."
+    },
+    {
+      "id": "uml-pyecore:TimeExpression",
+      "kind": "node_type",
+      "match_type": "TimeExpression",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TimeExpression'."
+    },
+    {
+      "id": "uml-pyecore:Observation",
+      "kind": "node_type",
+      "match_type": "Observation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'Observation'."
+    },
+    {
+      "id": "uml-pyecore:CommunicationPath",
+      "kind": "node_type",
+      "match_type": "CommunicationPath",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CommunicationPath'."
+    },
+    {
+      "id": "uml-pyecore:Device",
+      "kind": "node_type",
+      "match_type": "Device",
+      "match_data_equals": {},
+      "meta": {
+        "group": "deployment"
+      },
+      "description": "UML metamodel object 'Device'."
+    },
+    {
+      "id": "uml-pyecore:Node",
+      "kind": "node_type",
+      "match_type": "Node",
+      "match_data_equals": {},
+      "meta": {
+        "group": "deployment"
+      },
+      "description": "UML metamodel object 'Node'."
+    },
+    {
+      "id": "uml-pyecore:ExecutionEnvironment",
+      "kind": "node_type",
+      "match_type": "ExecutionEnvironment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ExecutionEnvironment'."
+    },
+    {
+      "id": "uml-pyecore:InformationFlow",
+      "kind": "node_type",
+      "match_type": "InformationFlow",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InformationFlow'."
+    },
+    {
+      "id": "uml-pyecore:Message",
+      "kind": "node_type",
+      "match_type": "Message",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel object 'Message'."
+    },
+    {
+      "id": "uml-pyecore:Interaction",
+      "kind": "node_type",
+      "match_type": "Interaction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel object 'Interaction'."
+    },
+    {
+      "id": "uml-pyecore:InteractionFragment",
+      "kind": "node_type",
+      "match_type": "InteractionFragment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'InteractionFragment'."
+    },
+    {
+      "id": "uml-pyecore:Lifeline",
+      "kind": "node_type",
+      "match_type": "Lifeline",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction"
+      },
+      "description": "UML metamodel object 'Lifeline'."
+    },
+    {
+      "id": "uml-pyecore:PartDecomposition",
+      "kind": "node_type",
+      "match_type": "PartDecomposition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'PartDecomposition'."
+    },
+    {
+      "id": "uml-pyecore:InteractionUse",
+      "kind": "node_type",
+      "match_type": "InteractionUse",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InteractionUse'."
+    },
+    {
+      "id": "uml-pyecore:Gate",
+      "kind": "node_type",
+      "match_type": "Gate",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Gate'."
+    },
+    {
+      "id": "uml-pyecore:MessageEnd",
+      "kind": "node_type",
+      "match_type": "MessageEnd",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'MessageEnd'."
+    },
+    {
+      "id": "uml-pyecore:InteractionOperand",
+      "kind": "node_type",
+      "match_type": "InteractionOperand",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InteractionOperand'."
+    },
+    {
+      "id": "uml-pyecore:InteractionConstraint",
+      "kind": "node_type",
+      "match_type": "InteractionConstraint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InteractionConstraint'."
+    },
+    {
+      "id": "uml-pyecore:GeneralOrdering",
+      "kind": "node_type",
+      "match_type": "GeneralOrdering",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'GeneralOrdering'."
+    },
+    {
+      "id": "uml-pyecore:OccurrenceSpecification",
+      "kind": "node_type",
+      "match_type": "OccurrenceSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'OccurrenceSpecification'."
+    },
+    {
+      "id": "uml-pyecore:InformationItem",
+      "kind": "node_type",
+      "match_type": "InformationItem",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'InformationItem'."
+    },
+    {
+      "id": "uml-pyecore:ActionExecutionSpecification",
+      "kind": "node_type",
+      "match_type": "ActionExecutionSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ActionExecutionSpecification'."
+    },
+    {
+      "id": "uml-pyecore:ExecutionSpecification",
+      "kind": "node_type",
+      "match_type": "ExecutionSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'ExecutionSpecification'."
+    },
+    {
+      "id": "uml-pyecore:BehaviorExecutionSpecification",
+      "kind": "node_type",
+      "match_type": "BehaviorExecutionSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'BehaviorExecutionSpecification'."
+    },
+    {
+      "id": "uml-pyecore:CombinedFragment",
+      "kind": "node_type",
+      "match_type": "CombinedFragment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'CombinedFragment'."
+    },
+    {
+      "id": "uml-pyecore:ConsiderIgnoreFragment",
+      "kind": "node_type",
+      "match_type": "ConsiderIgnoreFragment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ConsiderIgnoreFragment'."
+    },
+    {
+      "id": "uml-pyecore:Continuation",
+      "kind": "node_type",
+      "match_type": "Continuation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Continuation'."
+    },
+    {
+      "id": "uml-pyecore:DestructionOccurrenceSpecification",
+      "kind": "node_type",
+      "match_type": "DestructionOccurrenceSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'DestructionOccurrenceSpecification'."
+    },
+    {
+      "id": "uml-pyecore:MessageOccurrenceSpecification",
+      "kind": "node_type",
+      "match_type": "MessageOccurrenceSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'MessageOccurrenceSpecification'."
+    },
+    {
+      "id": "uml-pyecore:ExecutionOccurrenceSpecification",
+      "kind": "node_type",
+      "match_type": "ExecutionOccurrenceSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ExecutionOccurrenceSpecification'."
+    },
+    {
+      "id": "uml-pyecore:StateInvariant",
+      "kind": "node_type",
+      "match_type": "StateInvariant",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'StateInvariant'."
+    },
+    {
+      "id": "uml-pyecore:FinalState",
+      "kind": "node_type",
+      "match_type": "FinalState",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'FinalState'."
+    },
+    {
+      "id": "uml-pyecore:ProtocolTransition",
+      "kind": "node_type",
+      "match_type": "ProtocolTransition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ProtocolTransition'."
+    },
+    {
+      "id": "uml-pyecore:AssociationClass",
+      "kind": "node_type",
+      "match_type": "AssociationClass",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure"
+      },
+      "description": "UML metamodel object 'AssociationClass'."
+    },
+    {
+      "id": "uml-pyecore:Component",
+      "kind": "node_type",
+      "match_type": "Component",
+      "match_data_equals": {},
+      "meta": {
+        "group": "deployment"
+      },
+      "description": "UML metamodel object 'Component'."
+    },
+    {
+      "id": "uml-pyecore:ComponentRealization",
+      "kind": "node_type",
+      "match_type": "ComponentRealization",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'ComponentRealization'."
+    },
+    {
+      "id": "uml-pyecore:Actor",
+      "kind": "node_type",
+      "match_type": "Actor",
+      "match_data_equals": {},
+      "meta": {
+        "group": "usecase"
+      },
+      "description": "UML metamodel object 'Actor'."
+    },
+    {
+      "id": "uml-pyecore:Duration",
+      "kind": "node_type",
+      "match_type": "Duration",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Duration'."
+    },
+    {
+      "id": "uml-pyecore:DurationConstraint",
+      "kind": "node_type",
+      "match_type": "DurationConstraint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'DurationConstraint'."
+    },
+    {
+      "id": "uml-pyecore:IntervalConstraint",
+      "kind": "node_type",
+      "match_type": "IntervalConstraint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'IntervalConstraint'."
+    },
+    {
+      "id": "uml-pyecore:Interval",
+      "kind": "node_type",
+      "match_type": "Interval",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'Interval'."
+    },
+    {
+      "id": "uml-pyecore:DurationInterval",
+      "kind": "node_type",
+      "match_type": "DurationInterval",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'DurationInterval'."
+    },
+    {
+      "id": "uml-pyecore:DurationObservation",
+      "kind": "node_type",
+      "match_type": "DurationObservation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'DurationObservation'."
+    },
+    {
+      "id": "uml-pyecore:LiteralBoolean",
+      "kind": "node_type",
+      "match_type": "LiteralBoolean",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LiteralBoolean'."
+    },
+    {
+      "id": "uml-pyecore:LiteralSpecification",
+      "kind": "node_type",
+      "match_type": "LiteralSpecification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass",
+        "abstract": true
+      },
+      "description": "UML metamodel object 'LiteralSpecification'."
+    },
+    {
+      "id": "uml-pyecore:LiteralInteger",
+      "kind": "node_type",
+      "match_type": "LiteralInteger",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LiteralInteger'."
+    },
+    {
+      "id": "uml-pyecore:LiteralNull",
+      "kind": "node_type",
+      "match_type": "LiteralNull",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LiteralNull'."
+    },
+    {
+      "id": "uml-pyecore:LiteralReal",
+      "kind": "node_type",
+      "match_type": "LiteralReal",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LiteralReal'."
+    },
+    {
+      "id": "uml-pyecore:LiteralString",
+      "kind": "node_type",
+      "match_type": "LiteralString",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LiteralString'."
+    },
+    {
+      "id": "uml-pyecore:LiteralUnlimitedNatural",
+      "kind": "node_type",
+      "match_type": "LiteralUnlimitedNatural",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'LiteralUnlimitedNatural'."
+    },
+    {
+      "id": "uml-pyecore:TimeConstraint",
+      "kind": "node_type",
+      "match_type": "TimeConstraint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TimeConstraint'."
+    },
+    {
+      "id": "uml-pyecore:TimeInterval",
+      "kind": "node_type",
+      "match_type": "TimeInterval",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TimeInterval'."
+    },
+    {
+      "id": "uml-pyecore:TimeObservation",
+      "kind": "node_type",
+      "match_type": "TimeObservation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-metaclass"
+      },
+      "description": "UML metamodel object 'TimeObservation'."
+    },
+    {
+      "id": "uml-pyecore:abstraction",
+      "kind": "edge_type",
+      "match_type": "abstraction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'abstraction'."
+    },
+    {
+      "id": "uml-pyecore:action",
+      "kind": "edge_type",
+      "match_type": "action",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'action'."
+    },
+    {
+      "id": "uml-pyecore:activity",
+      "kind": "edge_type",
+      "match_type": "activity",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'activity'."
+    },
+    {
+      "id": "uml-pyecore:activityScope",
+      "kind": "edge_type",
+      "match_type": "activityScope",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'activityScope'."
+    },
+    {
+      "id": "uml-pyecore:actual",
+      "kind": "edge_type",
+      "match_type": "actual",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'actual'."
+    },
+    {
+      "id": "uml-pyecore:actualGate",
+      "kind": "edge_type",
+      "match_type": "actualGate",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'actualGate'."
+    },
+    {
+      "id": "uml-pyecore:addition",
+      "kind": "edge_type",
+      "match_type": "addition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'addition'."
+    },
+    {
+      "id": "uml-pyecore:after",
+      "kind": "edge_type",
+      "match_type": "after",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'after'."
+    },
+    {
+      "id": "uml-pyecore:annotatedElement",
+      "kind": "edge_type",
+      "match_type": "annotatedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'annotatedElement'."
+    },
+    {
+      "id": "uml-pyecore:appliedProfile",
+      "kind": "edge_type",
+      "match_type": "appliedProfile",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'appliedProfile'."
+    },
+    {
+      "id": "uml-pyecore:applyingPackage",
+      "kind": "edge_type",
+      "match_type": "applyingPackage",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'applyingPackage'."
+    },
+    {
+      "id": "uml-pyecore:argument",
+      "kind": "edge_type",
+      "match_type": "argument",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'argument'."
+    },
+    {
+      "id": "uml-pyecore:association",
+      "kind": "edge_type",
+      "match_type": "association",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'association'."
+    },
+    {
+      "id": "uml-pyecore:associationEnd",
+      "kind": "edge_type",
+      "match_type": "associationEnd",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'associationEnd'."
+    },
+    {
+      "id": "uml-pyecore:attribute",
+      "kind": "edge_type",
+      "match_type": "attribute",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'attribute'."
+    },
+    {
+      "id": "uml-pyecore:before",
+      "kind": "edge_type",
+      "match_type": "before",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'before'."
+    },
+    {
+      "id": "uml-pyecore:behavior",
+      "kind": "edge_type",
+      "match_type": "behavior",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3
+      },
+      "description": "UML metamodel reference 'behavior'."
+    },
+    {
+      "id": "uml-pyecore:body",
+      "kind": "edge_type",
+      "match_type": "body",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'body'."
+    },
+    {
+      "id": "uml-pyecore:bodyCondition",
+      "kind": "edge_type",
+      "match_type": "bodyCondition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'bodyCondition'."
+    },
+    {
+      "id": "uml-pyecore:bodyOutput",
+      "kind": "edge_type",
+      "match_type": "bodyOutput",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'bodyOutput'."
+    },
+    {
+      "id": "uml-pyecore:bodyPart",
+      "kind": "edge_type",
+      "match_type": "bodyPart",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'bodyPart'."
+    },
+    {
+      "id": "uml-pyecore:boundElement",
+      "kind": "edge_type",
+      "match_type": "boundElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'boundElement'."
+    },
+    {
+      "id": "uml-pyecore:cfragmentGate",
+      "kind": "edge_type",
+      "match_type": "cfragmentGate",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'cfragmentGate'."
+    },
+    {
+      "id": "uml-pyecore:changeExpression",
+      "kind": "edge_type",
+      "match_type": "changeExpression",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'changeExpression'."
+    },
+    {
+      "id": "uml-pyecore:class",
+      "kind": "edge_type",
+      "match_type": "class",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'class'."
+    },
+    {
+      "id": "uml-pyecore:classifier",
+      "kind": "edge_type",
+      "match_type": "classifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 5,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'classifier'."
+    },
+    {
+      "id": "uml-pyecore:classifierBehavior",
+      "kind": "edge_type",
+      "match_type": "classifierBehavior",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'classifierBehavior'."
+    },
+    {
+      "id": "uml-pyecore:clause",
+      "kind": "edge_type",
+      "match_type": "clause",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'clause'."
+    },
+    {
+      "id": "uml-pyecore:client",
+      "kind": "edge_type",
+      "match_type": "client",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 1
+      },
+      "description": "UML reference edge 'client'."
+    },
+    {
+      "id": "uml-pyecore:clientDependency",
+      "kind": "edge_type",
+      "match_type": "clientDependency",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'clientDependency'."
+    },
+    {
+      "id": "uml-pyecore:collaborationRole",
+      "kind": "edge_type",
+      "match_type": "collaborationRole",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'collaborationRole'."
+    },
+    {
+      "id": "uml-pyecore:collaborationUse",
+      "kind": "edge_type",
+      "match_type": "collaborationUse",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'collaborationUse'."
+    },
+    {
+      "id": "uml-pyecore:collection",
+      "kind": "edge_type",
+      "match_type": "collection",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'collection'."
+    },
+    {
+      "id": "uml-pyecore:condition",
+      "kind": "edge_type",
+      "match_type": "condition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'condition'."
+    },
+    {
+      "id": "uml-pyecore:configuration",
+      "kind": "edge_type",
+      "match_type": "configuration",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'configuration'."
+    },
+    {
+      "id": "uml-pyecore:conformance",
+      "kind": "edge_type",
+      "match_type": "conformance",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'conformance'."
+    },
+    {
+      "id": "uml-pyecore:connection",
+      "kind": "edge_type",
+      "match_type": "connection",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'connection'."
+    },
+    {
+      "id": "uml-pyecore:connectionPoint",
+      "kind": "edge_type",
+      "match_type": "connectionPoint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'connectionPoint'."
+    },
+    {
+      "id": "uml-pyecore:connector",
+      "kind": "edge_type",
+      "match_type": "connector",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'connector'."
+    },
+    {
+      "id": "uml-pyecore:constrainedElement",
+      "kind": "edge_type",
+      "match_type": "constrainedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'constrainedElement'."
+    },
+    {
+      "id": "uml-pyecore:constrainingClassifier",
+      "kind": "edge_type",
+      "match_type": "constrainingClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'constrainingClassifier'."
+    },
+    {
+      "id": "uml-pyecore:containedEdge",
+      "kind": "edge_type",
+      "match_type": "containedEdge",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'containedEdge'."
+    },
+    {
+      "id": "uml-pyecore:containedNode",
+      "kind": "edge_type",
+      "match_type": "containedNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'containedNode'."
+    },
+    {
+      "id": "uml-pyecore:container",
+      "kind": "edge_type",
+      "match_type": "container",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'container'."
+    },
+    {
+      "id": "uml-pyecore:context",
+      "kind": "edge_type",
+      "match_type": "context",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'context'."
+    },
+    {
+      "id": "uml-pyecore:contract",
+      "kind": "edge_type",
+      "match_type": "contract",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3
+      },
+      "description": "UML metamodel reference 'contract'."
+    },
+    {
+      "id": "uml-pyecore:conveyed",
+      "kind": "edge_type",
+      "match_type": "conveyed",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'conveyed'."
+    },
+    {
+      "id": "uml-pyecore:covered",
+      "kind": "edge_type",
+      "match_type": "covered",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'covered'."
+    },
+    {
+      "id": "uml-pyecore:coveredBy",
+      "kind": "edge_type",
+      "match_type": "coveredBy",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'coveredBy'."
+    },
+    {
+      "id": "uml-pyecore:datatype",
+      "kind": "edge_type",
+      "match_type": "datatype",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'datatype'."
+    },
+    {
+      "id": "uml-pyecore:decider",
+      "kind": "edge_type",
+      "match_type": "decider",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'decider'."
+    },
+    {
+      "id": "uml-pyecore:decisionInput",
+      "kind": "edge_type",
+      "match_type": "decisionInput",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'decisionInput'."
+    },
+    {
+      "id": "uml-pyecore:decisionInputFlow",
+      "kind": "edge_type",
+      "match_type": "decisionInputFlow",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'decisionInputFlow'."
+    },
+    {
+      "id": "uml-pyecore:decomposedAs",
+      "kind": "edge_type",
+      "match_type": "decomposedAs",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'decomposedAs'."
+    },
+    {
+      "id": "uml-pyecore:default",
+      "kind": "edge_type",
+      "match_type": "default",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'default'."
+    },
+    {
+      "id": "uml-pyecore:defaultValue",
+      "kind": "edge_type",
+      "match_type": "defaultValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'defaultValue'."
+    },
+    {
+      "id": "uml-pyecore:deferrableTrigger",
+      "kind": "edge_type",
+      "match_type": "deferrableTrigger",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'deferrableTrigger'."
+    },
+    {
+      "id": "uml-pyecore:definingEnd",
+      "kind": "edge_type",
+      "match_type": "definingEnd",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'definingEnd'."
+    },
+    {
+      "id": "uml-pyecore:definingFeature",
+      "kind": "edge_type",
+      "match_type": "definingFeature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'definingFeature'."
+    },
+    {
+      "id": "uml-pyecore:deployedArtifact",
+      "kind": "edge_type",
+      "match_type": "deployedArtifact",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'deployedArtifact'."
+    },
+    {
+      "id": "uml-pyecore:deployedElement",
+      "kind": "edge_type",
+      "match_type": "deployedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'deployedElement'."
+    },
+    {
+      "id": "uml-pyecore:deployment",
+      "kind": "edge_type",
+      "match_type": "deployment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'deployment'."
+    },
+    {
+      "id": "uml-pyecore:destroyAt",
+      "kind": "edge_type",
+      "match_type": "destroyAt",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'destroyAt'."
+    },
+    {
+      "id": "uml-pyecore:doActivity",
+      "kind": "edge_type",
+      "match_type": "doActivity",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'doActivity'."
+    },
+    {
+      "id": "uml-pyecore:edge",
+      "kind": "edge_type",
+      "match_type": "edge",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior",
+        "owner_count": 3,
+        "containment": true
+      },
+      "description": "UML reference edge 'edge'."
+    },
+    {
+      "id": "uml-pyecore:effect",
+      "kind": "edge_type",
+      "match_type": "effect",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'effect'."
+    },
+    {
+      "id": "uml-pyecore:elementImport",
+      "kind": "edge_type",
+      "match_type": "elementImport",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'elementImport'."
+    },
+    {
+      "id": "uml-pyecore:enclosingInteraction",
+      "kind": "edge_type",
+      "match_type": "enclosingInteraction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'enclosingInteraction'."
+    },
+    {
+      "id": "uml-pyecore:enclosingOperand",
+      "kind": "edge_type",
+      "match_type": "enclosingOperand",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'enclosingOperand'."
+    },
+    {
+      "id": "uml-pyecore:end",
+      "kind": "edge_type",
+      "match_type": "end",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 4,
+        "containment": true,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'end'."
+    },
+    {
+      "id": "uml-pyecore:endData",
+      "kind": "edge_type",
+      "match_type": "endData",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'endData'."
+    },
+    {
+      "id": "uml-pyecore:endType",
+      "kind": "edge_type",
+      "match_type": "endType",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'endType'."
+    },
+    {
+      "id": "uml-pyecore:entry",
+      "kind": "edge_type",
+      "match_type": "entry",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'entry'."
+    },
+    {
+      "id": "uml-pyecore:enumeration",
+      "kind": "edge_type",
+      "match_type": "enumeration",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'enumeration'."
+    },
+    {
+      "id": "uml-pyecore:event",
+      "kind": "edge_type",
+      "match_type": "event",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3
+      },
+      "description": "UML metamodel reference 'event'."
+    },
+    {
+      "id": "uml-pyecore:exception",
+      "kind": "edge_type",
+      "match_type": "exception",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'exception'."
+    },
+    {
+      "id": "uml-pyecore:exceptionInput",
+      "kind": "edge_type",
+      "match_type": "exceptionInput",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'exceptionInput'."
+    },
+    {
+      "id": "uml-pyecore:exceptionType",
+      "kind": "edge_type",
+      "match_type": "exceptionType",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'exceptionType'."
+    },
+    {
+      "id": "uml-pyecore:executableNode",
+      "kind": "edge_type",
+      "match_type": "executableNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'executableNode'."
+    },
+    {
+      "id": "uml-pyecore:execution",
+      "kind": "edge_type",
+      "match_type": "execution",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'execution'."
+    },
+    {
+      "id": "uml-pyecore:exit",
+      "kind": "edge_type",
+      "match_type": "exit",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'exit'."
+    },
+    {
+      "id": "uml-pyecore:expr",
+      "kind": "edge_type",
+      "match_type": "expr",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'expr'."
+    },
+    {
+      "id": "uml-pyecore:extend",
+      "kind": "edge_type",
+      "match_type": "extend",
+      "match_data_equals": {},
+      "meta": {
+        "group": "usecase",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML reference edge 'extend'."
+    },
+    {
+      "id": "uml-pyecore:extendedCase",
+      "kind": "edge_type",
+      "match_type": "extendedCase",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'extendedCase'."
+    },
+    {
+      "id": "uml-pyecore:extendedRegion",
+      "kind": "edge_type",
+      "match_type": "extendedRegion",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'extendedRegion'."
+    },
+    {
+      "id": "uml-pyecore:extendedSignature",
+      "kind": "edge_type",
+      "match_type": "extendedSignature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'extendedSignature'."
+    },
+    {
+      "id": "uml-pyecore:extendedStateMachine",
+      "kind": "edge_type",
+      "match_type": "extendedStateMachine",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'extendedStateMachine'."
+    },
+    {
+      "id": "uml-pyecore:extension",
+      "kind": "edge_type",
+      "match_type": "extension",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'extension'."
+    },
+    {
+      "id": "uml-pyecore:extensionLocation",
+      "kind": "edge_type",
+      "match_type": "extensionLocation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'extensionLocation'."
+    },
+    {
+      "id": "uml-pyecore:extensionPoint",
+      "kind": "edge_type",
+      "match_type": "extensionPoint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'extensionPoint'."
+    },
+    {
+      "id": "uml-pyecore:feature",
+      "kind": "edge_type",
+      "match_type": "feature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'feature'."
+    },
+    {
+      "id": "uml-pyecore:featuringClassifier",
+      "kind": "edge_type",
+      "match_type": "featuringClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'featuringClassifier'."
+    },
+    {
+      "id": "uml-pyecore:finish",
+      "kind": "edge_type",
+      "match_type": "finish",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'finish'."
+    },
+    {
+      "id": "uml-pyecore:first",
+      "kind": "edge_type",
+      "match_type": "first",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'first'."
+    },
+    {
+      "id": "uml-pyecore:formal",
+      "kind": "edge_type",
+      "match_type": "formal",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'formal'."
+    },
+    {
+      "id": "uml-pyecore:formalGate",
+      "kind": "edge_type",
+      "match_type": "formalGate",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'formalGate'."
+    },
+    {
+      "id": "uml-pyecore:fragment",
+      "kind": "edge_type",
+      "match_type": "fragment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML reference edge 'fragment'."
+    },
+    {
+      "id": "uml-pyecore:fromAction",
+      "kind": "edge_type",
+      "match_type": "fromAction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'fromAction'."
+    },
+    {
+      "id": "uml-pyecore:general",
+      "kind": "edge_type",
+      "match_type": "general",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 2,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML reference edge 'general'."
+    },
+    {
+      "id": "uml-pyecore:generalMachine",
+      "kind": "edge_type",
+      "match_type": "generalMachine",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'generalMachine'."
+    },
+    {
+      "id": "uml-pyecore:generalOrdering",
+      "kind": "edge_type",
+      "match_type": "generalOrdering",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'generalOrdering'."
+    },
+    {
+      "id": "uml-pyecore:generalization",
+      "kind": "edge_type",
+      "match_type": "generalization",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML reference edge 'generalization'."
+    },
+    {
+      "id": "uml-pyecore:generalizationSet",
+      "kind": "edge_type",
+      "match_type": "generalizationSet",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'generalizationSet'."
+    },
+    {
+      "id": "uml-pyecore:group",
+      "kind": "edge_type",
+      "match_type": "group",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'group'."
+    },
+    {
+      "id": "uml-pyecore:guard",
+      "kind": "edge_type",
+      "match_type": "guard",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'guard'."
+    },
+    {
+      "id": "uml-pyecore:handler",
+      "kind": "edge_type",
+      "match_type": "handler",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'handler'."
+    },
+    {
+      "id": "uml-pyecore:handlerBody",
+      "kind": "edge_type",
+      "match_type": "handlerBody",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'handlerBody'."
+    },
+    {
+      "id": "uml-pyecore:icon",
+      "kind": "edge_type",
+      "match_type": "icon",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'icon'."
+    },
+    {
+      "id": "uml-pyecore:implementingClassifier",
+      "kind": "edge_type",
+      "match_type": "implementingClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'implementingClassifier'."
+    },
+    {
+      "id": "uml-pyecore:importedElement",
+      "kind": "edge_type",
+      "match_type": "importedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'importedElement'."
+    },
+    {
+      "id": "uml-pyecore:importedMember",
+      "kind": "edge_type",
+      "match_type": "importedMember",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'importedMember'."
+    },
+    {
+      "id": "uml-pyecore:importedPackage",
+      "kind": "edge_type",
+      "match_type": "importedPackage",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'importedPackage'."
+    },
+    {
+      "id": "uml-pyecore:importingNamespace",
+      "kind": "edge_type",
+      "match_type": "importingNamespace",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'importingNamespace'."
+    },
+    {
+      "id": "uml-pyecore:inActivity",
+      "kind": "edge_type",
+      "match_type": "inActivity",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'inActivity'."
+    },
+    {
+      "id": "uml-pyecore:inGroup",
+      "kind": "edge_type",
+      "match_type": "inGroup",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'inGroup'."
+    },
+    {
+      "id": "uml-pyecore:inInterruptibleRegion",
+      "kind": "edge_type",
+      "match_type": "inInterruptibleRegion",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'inInterruptibleRegion'."
+    },
+    {
+      "id": "uml-pyecore:inPartition",
+      "kind": "edge_type",
+      "match_type": "inPartition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'inPartition'."
+    },
+    {
+      "id": "uml-pyecore:inState",
+      "kind": "edge_type",
+      "match_type": "inState",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'inState'."
+    },
+    {
+      "id": "uml-pyecore:inStructuredNode",
+      "kind": "edge_type",
+      "match_type": "inStructuredNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'inStructuredNode'."
+    },
+    {
+      "id": "uml-pyecore:include",
+      "kind": "edge_type",
+      "match_type": "include",
+      "match_data_equals": {},
+      "meta": {
+        "group": "usecase",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML reference edge 'include'."
+    },
+    {
+      "id": "uml-pyecore:includingCase",
+      "kind": "edge_type",
+      "match_type": "includingCase",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'includingCase'."
+    },
+    {
+      "id": "uml-pyecore:incoming",
+      "kind": "edge_type",
+      "match_type": "incoming",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'incoming'."
+    },
+    {
+      "id": "uml-pyecore:informationSource",
+      "kind": "edge_type",
+      "match_type": "informationSource",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'informationSource'."
+    },
+    {
+      "id": "uml-pyecore:informationTarget",
+      "kind": "edge_type",
+      "match_type": "informationTarget",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'informationTarget'."
+    },
+    {
+      "id": "uml-pyecore:inheritedMember",
+      "kind": "edge_type",
+      "match_type": "inheritedMember",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'inheritedMember'."
+    },
+    {
+      "id": "uml-pyecore:inheritedParameter",
+      "kind": "edge_type",
+      "match_type": "inheritedParameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'inheritedParameter'."
+    },
+    {
+      "id": "uml-pyecore:input",
+      "kind": "edge_type",
+      "match_type": "input",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'input'."
+    },
+    {
+      "id": "uml-pyecore:inputElement",
+      "kind": "edge_type",
+      "match_type": "inputElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'inputElement'."
+    },
+    {
+      "id": "uml-pyecore:inputValue",
+      "kind": "edge_type",
+      "match_type": "inputValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'inputValue'."
+    },
+    {
+      "id": "uml-pyecore:insertAt",
+      "kind": "edge_type",
+      "match_type": "insertAt",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'insertAt'."
+    },
+    {
+      "id": "uml-pyecore:instance",
+      "kind": "edge_type",
+      "match_type": "instance",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'instance'."
+    },
+    {
+      "id": "uml-pyecore:interaction",
+      "kind": "edge_type",
+      "match_type": "interaction",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'interaction'."
+    },
+    {
+      "id": "uml-pyecore:interface",
+      "kind": "edge_type",
+      "match_type": "interface",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'interface'."
+    },
+    {
+      "id": "uml-pyecore:interfaceRealization",
+      "kind": "edge_type",
+      "match_type": "interfaceRealization",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML reference edge 'interfaceRealization'."
+    },
+    {
+      "id": "uml-pyecore:interruptingEdge",
+      "kind": "edge_type",
+      "match_type": "interruptingEdge",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'interruptingEdge'."
+    },
+    {
+      "id": "uml-pyecore:interrupts",
+      "kind": "edge_type",
+      "match_type": "interrupts",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'interrupts'."
+    },
+    {
+      "id": "uml-pyecore:invariant",
+      "kind": "edge_type",
+      "match_type": "invariant",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'invariant'."
+    },
+    {
+      "id": "uml-pyecore:joinSpec",
+      "kind": "edge_type",
+      "match_type": "joinSpec",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'joinSpec'."
+    },
+    {
+      "id": "uml-pyecore:lifeline",
+      "kind": "edge_type",
+      "match_type": "lifeline",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML reference edge 'lifeline'."
+    },
+    {
+      "id": "uml-pyecore:localPostcondition",
+      "kind": "edge_type",
+      "match_type": "localPostcondition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'localPostcondition'."
+    },
+    {
+      "id": "uml-pyecore:localPrecondition",
+      "kind": "edge_type",
+      "match_type": "localPrecondition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'localPrecondition'."
+    },
+    {
+      "id": "uml-pyecore:location",
+      "kind": "edge_type",
+      "match_type": "location",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'location'."
+    },
+    {
+      "id": "uml-pyecore:loopVariable",
+      "kind": "edge_type",
+      "match_type": "loopVariable",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'loopVariable'."
+    },
+    {
+      "id": "uml-pyecore:loopVariableInput",
+      "kind": "edge_type",
+      "match_type": "loopVariableInput",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'loopVariableInput'."
+    },
+    {
+      "id": "uml-pyecore:lowerValue",
+      "kind": "edge_type",
+      "match_type": "lowerValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'lowerValue'."
+    },
+    {
+      "id": "uml-pyecore:manifestation",
+      "kind": "edge_type",
+      "match_type": "manifestation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'manifestation'."
+    },
+    {
+      "id": "uml-pyecore:mapping",
+      "kind": "edge_type",
+      "match_type": "mapping",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'mapping'."
+    },
+    {
+      "id": "uml-pyecore:max",
+      "kind": "edge_type",
+      "match_type": "max",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'max'."
+    },
+    {
+      "id": "uml-pyecore:maxint",
+      "kind": "edge_type",
+      "match_type": "maxint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'maxint'."
+    },
+    {
+      "id": "uml-pyecore:member",
+      "kind": "edge_type",
+      "match_type": "member",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'member'."
+    },
+    {
+      "id": "uml-pyecore:memberEnd",
+      "kind": "edge_type",
+      "match_type": "memberEnd",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 1
+      },
+      "description": "UML reference edge 'memberEnd'."
+    },
+    {
+      "id": "uml-pyecore:mergedPackage",
+      "kind": "edge_type",
+      "match_type": "mergedPackage",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'mergedPackage'."
+    },
+    {
+      "id": "uml-pyecore:message",
+      "kind": "edge_type",
+      "match_type": "message",
+      "match_data_equals": {},
+      "meta": {
+        "group": "interaction",
+        "owner_count": 3,
+        "containment": true
+      },
+      "description": "UML reference edge 'message'."
+    },
+    {
+      "id": "uml-pyecore:metaclass",
+      "kind": "edge_type",
+      "match_type": "metaclass",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'metaclass'."
+    },
+    {
+      "id": "uml-pyecore:metaclassReference",
+      "kind": "edge_type",
+      "match_type": "metaclassReference",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'metaclassReference'."
+    },
+    {
+      "id": "uml-pyecore:metamodelReference",
+      "kind": "edge_type",
+      "match_type": "metamodelReference",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'metamodelReference'."
+    },
+    {
+      "id": "uml-pyecore:method",
+      "kind": "edge_type",
+      "match_type": "method",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'method'."
+    },
+    {
+      "id": "uml-pyecore:min",
+      "kind": "edge_type",
+      "match_type": "min",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'min'."
+    },
+    {
+      "id": "uml-pyecore:minint",
+      "kind": "edge_type",
+      "match_type": "minint",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'minint'."
+    },
+    {
+      "id": "uml-pyecore:nameExpression",
+      "kind": "edge_type",
+      "match_type": "nameExpression",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'nameExpression'."
+    },
+    {
+      "id": "uml-pyecore:namespace",
+      "kind": "edge_type",
+      "match_type": "namespace",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'namespace'."
+    },
+    {
+      "id": "uml-pyecore:navigableOwnedEnd",
+      "kind": "edge_type",
+      "match_type": "navigableOwnedEnd",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'navigableOwnedEnd'."
+    },
+    {
+      "id": "uml-pyecore:nestedArtifact",
+      "kind": "edge_type",
+      "match_type": "nestedArtifact",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'nestedArtifact'."
+    },
+    {
+      "id": "uml-pyecore:nestedClassifier",
+      "kind": "edge_type",
+      "match_type": "nestedClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'nestedClassifier'."
+    },
+    {
+      "id": "uml-pyecore:nestedNode",
+      "kind": "edge_type",
+      "match_type": "nestedNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'nestedNode'."
+    },
+    {
+      "id": "uml-pyecore:nestedPackage",
+      "kind": "edge_type",
+      "match_type": "nestedPackage",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'nestedPackage'."
+    },
+    {
+      "id": "uml-pyecore:nestingPackage",
+      "kind": "edge_type",
+      "match_type": "nestingPackage",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'nestingPackage'."
+    },
+    {
+      "id": "uml-pyecore:newClassifier",
+      "kind": "edge_type",
+      "match_type": "newClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'newClassifier'."
+    },
+    {
+      "id": "uml-pyecore:node",
+      "kind": "edge_type",
+      "match_type": "node",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 4,
+        "containment": true,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'node'."
+    },
+    {
+      "id": "uml-pyecore:object",
+      "kind": "edge_type",
+      "match_type": "object",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 9,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'object'."
+    },
+    {
+      "id": "uml-pyecore:observation",
+      "kind": "edge_type",
+      "match_type": "observation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'observation'."
+    },
+    {
+      "id": "uml-pyecore:oldClassifier",
+      "kind": "edge_type",
+      "match_type": "oldClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'oldClassifier'."
+    },
+    {
+      "id": "uml-pyecore:onPort",
+      "kind": "edge_type",
+      "match_type": "onPort",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'onPort'."
+    },
+    {
+      "id": "uml-pyecore:operand",
+      "kind": "edge_type",
+      "match_type": "operand",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'operand'."
+    },
+    {
+      "id": "uml-pyecore:operation",
+      "kind": "edge_type",
+      "match_type": "operation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'operation'."
+    },
+    {
+      "id": "uml-pyecore:opposite",
+      "kind": "edge_type",
+      "match_type": "opposite",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'opposite'."
+    },
+    {
+      "id": "uml-pyecore:outgoing",
+      "kind": "edge_type",
+      "match_type": "outgoing",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'outgoing'."
+    },
+    {
+      "id": "uml-pyecore:output",
+      "kind": "edge_type",
+      "match_type": "output",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'output'."
+    },
+    {
+      "id": "uml-pyecore:outputElement",
+      "kind": "edge_type",
+      "match_type": "outputElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'outputElement'."
+    },
+    {
+      "id": "uml-pyecore:outputValue",
+      "kind": "edge_type",
+      "match_type": "outputValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'outputValue'."
+    },
+    {
+      "id": "uml-pyecore:ownedActual",
+      "kind": "edge_type",
+      "match_type": "ownedActual",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedActual'."
+    },
+    {
+      "id": "uml-pyecore:ownedAttribute",
+      "kind": "edge_type",
+      "match_type": "ownedAttribute",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 5,
+        "containment": true
+      },
+      "description": "UML reference edge 'ownedAttribute'."
+    },
+    {
+      "id": "uml-pyecore:ownedBehavior",
+      "kind": "edge_type",
+      "match_type": "ownedBehavior",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedBehavior'."
+    },
+    {
+      "id": "uml-pyecore:ownedComment",
+      "kind": "edge_type",
+      "match_type": "ownedComment",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedComment'."
+    },
+    {
+      "id": "uml-pyecore:ownedConnector",
+      "kind": "edge_type",
+      "match_type": "ownedConnector",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedConnector'."
+    },
+    {
+      "id": "uml-pyecore:ownedDefault",
+      "kind": "edge_type",
+      "match_type": "ownedDefault",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedDefault'."
+    },
+    {
+      "id": "uml-pyecore:ownedElement",
+      "kind": "edge_type",
+      "match_type": "ownedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'ownedElement'."
+    },
+    {
+      "id": "uml-pyecore:ownedEnd",
+      "kind": "edge_type",
+      "match_type": "ownedEnd",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML reference edge 'ownedEnd'."
+    },
+    {
+      "id": "uml-pyecore:ownedGroup",
+      "kind": "edge_type",
+      "match_type": "ownedGroup",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedGroup'."
+    },
+    {
+      "id": "uml-pyecore:ownedLiteral",
+      "kind": "edge_type",
+      "match_type": "ownedLiteral",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedLiteral'."
+    },
+    {
+      "id": "uml-pyecore:ownedMember",
+      "kind": "edge_type",
+      "match_type": "ownedMember",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'ownedMember'."
+    },
+    {
+      "id": "uml-pyecore:ownedNode",
+      "kind": "edge_type",
+      "match_type": "ownedNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML reference edge 'ownedNode'."
+    },
+    {
+      "id": "uml-pyecore:ownedOperation",
+      "kind": "edge_type",
+      "match_type": "ownedOperation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 4,
+        "containment": true
+      },
+      "description": "UML reference edge 'ownedOperation'."
+    },
+    {
+      "id": "uml-pyecore:ownedParameter",
+      "kind": "edge_type",
+      "match_type": "ownedParameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedParameter'."
+    },
+    {
+      "id": "uml-pyecore:ownedParameterSet",
+      "kind": "edge_type",
+      "match_type": "ownedParameterSet",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedParameterSet'."
+    },
+    {
+      "id": "uml-pyecore:ownedParameteredElement",
+      "kind": "edge_type",
+      "match_type": "ownedParameteredElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedParameteredElement'."
+    },
+    {
+      "id": "uml-pyecore:ownedPort",
+      "kind": "edge_type",
+      "match_type": "ownedPort",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'ownedPort'."
+    },
+    {
+      "id": "uml-pyecore:ownedReception",
+      "kind": "edge_type",
+      "match_type": "ownedReception",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedReception'."
+    },
+    {
+      "id": "uml-pyecore:ownedRule",
+      "kind": "edge_type",
+      "match_type": "ownedRule",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedRule'."
+    },
+    {
+      "id": "uml-pyecore:ownedStereotype",
+      "kind": "edge_type",
+      "match_type": "ownedStereotype",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'ownedStereotype'."
+    },
+    {
+      "id": "uml-pyecore:ownedTemplateSignature",
+      "kind": "edge_type",
+      "match_type": "ownedTemplateSignature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'ownedTemplateSignature'."
+    },
+    {
+      "id": "uml-pyecore:ownedType",
+      "kind": "edge_type",
+      "match_type": "ownedType",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'ownedType'."
+    },
+    {
+      "id": "uml-pyecore:ownedUseCase",
+      "kind": "edge_type",
+      "match_type": "ownedUseCase",
+      "match_data_equals": {},
+      "meta": {
+        "group": "usecase",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML reference edge 'ownedUseCase'."
+    },
+    {
+      "id": "uml-pyecore:owner",
+      "kind": "edge_type",
+      "match_type": "owner",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'owner'."
+    },
+    {
+      "id": "uml-pyecore:owningAssociation",
+      "kind": "edge_type",
+      "match_type": "owningAssociation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'owningAssociation'."
+    },
+    {
+      "id": "uml-pyecore:owningExpression",
+      "kind": "edge_type",
+      "match_type": "owningExpression",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'owningExpression'."
+    },
+    {
+      "id": "uml-pyecore:owningInstance",
+      "kind": "edge_type",
+      "match_type": "owningInstance",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'owningInstance'."
+    },
+    {
+      "id": "uml-pyecore:owningTemplateParameter",
+      "kind": "edge_type",
+      "match_type": "owningTemplateParameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'owningTemplateParameter'."
+    },
+    {
+      "id": "uml-pyecore:package",
+      "kind": "edge_type",
+      "match_type": "package",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'package'."
+    },
+    {
+      "id": "uml-pyecore:packageImport",
+      "kind": "edge_type",
+      "match_type": "packageImport",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'packageImport'."
+    },
+    {
+      "id": "uml-pyecore:packageMerge",
+      "kind": "edge_type",
+      "match_type": "packageMerge",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'packageMerge'."
+    },
+    {
+      "id": "uml-pyecore:packagedElement",
+      "kind": "edge_type",
+      "match_type": "packagedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "containment",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML reference edge 'packagedElement'."
+    },
+    {
+      "id": "uml-pyecore:parameter",
+      "kind": "edge_type",
+      "match_type": "parameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3
+      },
+      "description": "UML metamodel reference 'parameter'."
+    },
+    {
+      "id": "uml-pyecore:parameterSet",
+      "kind": "edge_type",
+      "match_type": "parameterSet",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'parameterSet'."
+    },
+    {
+      "id": "uml-pyecore:parameterSubstitution",
+      "kind": "edge_type",
+      "match_type": "parameterSubstitution",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'parameterSubstitution'."
+    },
+    {
+      "id": "uml-pyecore:parameteredElement",
+      "kind": "edge_type",
+      "match_type": "parameteredElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'parameteredElement'."
+    },
+    {
+      "id": "uml-pyecore:part",
+      "kind": "edge_type",
+      "match_type": "part",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'part'."
+    },
+    {
+      "id": "uml-pyecore:partWithPort",
+      "kind": "edge_type",
+      "match_type": "partWithPort",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'partWithPort'."
+    },
+    {
+      "id": "uml-pyecore:partition",
+      "kind": "edge_type",
+      "match_type": "partition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'partition'."
+    },
+    {
+      "id": "uml-pyecore:port",
+      "kind": "edge_type",
+      "match_type": "port",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'port'."
+    },
+    {
+      "id": "uml-pyecore:postCondition",
+      "kind": "edge_type",
+      "match_type": "postCondition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'postCondition'."
+    },
+    {
+      "id": "uml-pyecore:postcondition",
+      "kind": "edge_type",
+      "match_type": "postcondition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'postcondition'."
+    },
+    {
+      "id": "uml-pyecore:powertype",
+      "kind": "edge_type",
+      "match_type": "powertype",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'powertype'."
+    },
+    {
+      "id": "uml-pyecore:powertypeExtent",
+      "kind": "edge_type",
+      "match_type": "powertypeExtent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'powertypeExtent'."
+    },
+    {
+      "id": "uml-pyecore:preCondition",
+      "kind": "edge_type",
+      "match_type": "preCondition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'preCondition'."
+    },
+    {
+      "id": "uml-pyecore:precondition",
+      "kind": "edge_type",
+      "match_type": "precondition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'precondition'."
+    },
+    {
+      "id": "uml-pyecore:predecessorClause",
+      "kind": "edge_type",
+      "match_type": "predecessorClause",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'predecessorClause'."
+    },
+    {
+      "id": "uml-pyecore:profile",
+      "kind": "edge_type",
+      "match_type": "profile",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'profile'."
+    },
+    {
+      "id": "uml-pyecore:profileApplication",
+      "kind": "edge_type",
+      "match_type": "profileApplication",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'profileApplication'."
+    },
+    {
+      "id": "uml-pyecore:protectedNode",
+      "kind": "edge_type",
+      "match_type": "protectedNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'protectedNode'."
+    },
+    {
+      "id": "uml-pyecore:protocol",
+      "kind": "edge_type",
+      "match_type": "protocol",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'protocol'."
+    },
+    {
+      "id": "uml-pyecore:provided",
+      "kind": "edge_type",
+      "match_type": "provided",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'provided'."
+    },
+    {
+      "id": "uml-pyecore:qualifier",
+      "kind": "edge_type",
+      "match_type": "qualifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 4,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'qualifier'."
+    },
+    {
+      "id": "uml-pyecore:raisedException",
+      "kind": "edge_type",
+      "match_type": "raisedException",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'raisedException'."
+    },
+    {
+      "id": "uml-pyecore:realization",
+      "kind": "edge_type",
+      "match_type": "realization",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'realization'."
+    },
+    {
+      "id": "uml-pyecore:realizingActivityEdge",
+      "kind": "edge_type",
+      "match_type": "realizingActivityEdge",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'realizingActivityEdge'."
+    },
+    {
+      "id": "uml-pyecore:realizingClassifier",
+      "kind": "edge_type",
+      "match_type": "realizingClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'realizingClassifier'."
+    },
+    {
+      "id": "uml-pyecore:realizingConnector",
+      "kind": "edge_type",
+      "match_type": "realizingConnector",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'realizingConnector'."
+    },
+    {
+      "id": "uml-pyecore:realizingMessage",
+      "kind": "edge_type",
+      "match_type": "realizingMessage",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'realizingMessage'."
+    },
+    {
+      "id": "uml-pyecore:receiveEvent",
+      "kind": "edge_type",
+      "match_type": "receiveEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'receiveEvent'."
+    },
+    {
+      "id": "uml-pyecore:receivingPackage",
+      "kind": "edge_type",
+      "match_type": "receivingPackage",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'receivingPackage'."
+    },
+    {
+      "id": "uml-pyecore:redefinedBehavior",
+      "kind": "edge_type",
+      "match_type": "redefinedBehavior",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedBehavior'."
+    },
+    {
+      "id": "uml-pyecore:redefinedClassifier",
+      "kind": "edge_type",
+      "match_type": "redefinedClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedClassifier'."
+    },
+    {
+      "id": "uml-pyecore:redefinedConnector",
+      "kind": "edge_type",
+      "match_type": "redefinedConnector",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedConnector'."
+    },
+    {
+      "id": "uml-pyecore:redefinedEdge",
+      "kind": "edge_type",
+      "match_type": "redefinedEdge",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedEdge'."
+    },
+    {
+      "id": "uml-pyecore:redefinedElement",
+      "kind": "edge_type",
+      "match_type": "redefinedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'redefinedElement'."
+    },
+    {
+      "id": "uml-pyecore:redefinedInterface",
+      "kind": "edge_type",
+      "match_type": "redefinedInterface",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedInterface'."
+    },
+    {
+      "id": "uml-pyecore:redefinedNode",
+      "kind": "edge_type",
+      "match_type": "redefinedNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedNode'."
+    },
+    {
+      "id": "uml-pyecore:redefinedOperation",
+      "kind": "edge_type",
+      "match_type": "redefinedOperation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedOperation'."
+    },
+    {
+      "id": "uml-pyecore:redefinedPort",
+      "kind": "edge_type",
+      "match_type": "redefinedPort",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedPort'."
+    },
+    {
+      "id": "uml-pyecore:redefinedProperty",
+      "kind": "edge_type",
+      "match_type": "redefinedProperty",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedProperty'."
+    },
+    {
+      "id": "uml-pyecore:redefinedState",
+      "kind": "edge_type",
+      "match_type": "redefinedState",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedState'."
+    },
+    {
+      "id": "uml-pyecore:redefinedTransition",
+      "kind": "edge_type",
+      "match_type": "redefinedTransition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'redefinedTransition'."
+    },
+    {
+      "id": "uml-pyecore:redefinitionContext",
+      "kind": "edge_type",
+      "match_type": "redefinitionContext",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'redefinitionContext'."
+    },
+    {
+      "id": "uml-pyecore:reducer",
+      "kind": "edge_type",
+      "match_type": "reducer",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'reducer'."
+    },
+    {
+      "id": "uml-pyecore:referred",
+      "kind": "edge_type",
+      "match_type": "referred",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'referred'."
+    },
+    {
+      "id": "uml-pyecore:refersTo",
+      "kind": "edge_type",
+      "match_type": "refersTo",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'refersTo'."
+    },
+    {
+      "id": "uml-pyecore:region",
+      "kind": "edge_type",
+      "match_type": "region",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML reference edge 'region'."
+    },
+    {
+      "id": "uml-pyecore:regionAsInput",
+      "kind": "edge_type",
+      "match_type": "regionAsInput",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'regionAsInput'."
+    },
+    {
+      "id": "uml-pyecore:regionAsOutput",
+      "kind": "edge_type",
+      "match_type": "regionAsOutput",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'regionAsOutput'."
+    },
+    {
+      "id": "uml-pyecore:relatedElement",
+      "kind": "edge_type",
+      "match_type": "relatedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'relatedElement'."
+    },
+    {
+      "id": "uml-pyecore:removeAt",
+      "kind": "edge_type",
+      "match_type": "removeAt",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'removeAt'."
+    },
+    {
+      "id": "uml-pyecore:replyToCall",
+      "kind": "edge_type",
+      "match_type": "replyToCall",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'replyToCall'."
+    },
+    {
+      "id": "uml-pyecore:replyValue",
+      "kind": "edge_type",
+      "match_type": "replyValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'replyValue'."
+    },
+    {
+      "id": "uml-pyecore:representation",
+      "kind": "edge_type",
+      "match_type": "representation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'representation'."
+    },
+    {
+      "id": "uml-pyecore:represented",
+      "kind": "edge_type",
+      "match_type": "represented",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'represented'."
+    },
+    {
+      "id": "uml-pyecore:represents",
+      "kind": "edge_type",
+      "match_type": "represents",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'represents'."
+    },
+    {
+      "id": "uml-pyecore:request",
+      "kind": "edge_type",
+      "match_type": "request",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'request'."
+    },
+    {
+      "id": "uml-pyecore:required",
+      "kind": "edge_type",
+      "match_type": "required",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'required'."
+    },
+    {
+      "id": "uml-pyecore:result",
+      "kind": "edge_type",
+      "match_type": "result",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 21,
+        "containment": true,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'result'."
+    },
+    {
+      "id": "uml-pyecore:returnInformation",
+      "kind": "edge_type",
+      "match_type": "returnInformation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'returnInformation'."
+    },
+    {
+      "id": "uml-pyecore:returnValue",
+      "kind": "edge_type",
+      "match_type": "returnValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'returnValue'."
+    },
+    {
+      "id": "uml-pyecore:returnValueRecipient",
+      "kind": "edge_type",
+      "match_type": "returnValueRecipient",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'returnValueRecipient'."
+    },
+    {
+      "id": "uml-pyecore:role",
+      "kind": "edge_type",
+      "match_type": "role",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'role'."
+    },
+    {
+      "id": "uml-pyecore:roleBinding",
+      "kind": "edge_type",
+      "match_type": "roleBinding",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'roleBinding'."
+    },
+    {
+      "id": "uml-pyecore:scope",
+      "kind": "edge_type",
+      "match_type": "scope",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'scope'."
+    },
+    {
+      "id": "uml-pyecore:second",
+      "kind": "edge_type",
+      "match_type": "second",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'second'."
+    },
+    {
+      "id": "uml-pyecore:selection",
+      "kind": "edge_type",
+      "match_type": "selection",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'selection'."
+    },
+    {
+      "id": "uml-pyecore:selector",
+      "kind": "edge_type",
+      "match_type": "selector",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'selector'."
+    },
+    {
+      "id": "uml-pyecore:sendEvent",
+      "kind": "edge_type",
+      "match_type": "sendEvent",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'sendEvent'."
+    },
+    {
+      "id": "uml-pyecore:setupPart",
+      "kind": "edge_type",
+      "match_type": "setupPart",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'setupPart'."
+    },
+    {
+      "id": "uml-pyecore:signal",
+      "kind": "edge_type",
+      "match_type": "signal",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 4
+      },
+      "description": "UML metamodel reference 'signal'."
+    },
+    {
+      "id": "uml-pyecore:signature",
+      "kind": "edge_type",
+      "match_type": "signature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3
+      },
+      "description": "UML metamodel reference 'signature'."
+    },
+    {
+      "id": "uml-pyecore:slot",
+      "kind": "edge_type",
+      "match_type": "slot",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'slot'."
+    },
+    {
+      "id": "uml-pyecore:source",
+      "kind": "edge_type",
+      "match_type": "source",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior",
+        "owner_count": 3,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML reference edge 'source'."
+    },
+    {
+      "id": "uml-pyecore:specific",
+      "kind": "edge_type",
+      "match_type": "specific",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 1
+      },
+      "description": "UML reference edge 'specific'."
+    },
+    {
+      "id": "uml-pyecore:specificMachine",
+      "kind": "edge_type",
+      "match_type": "specificMachine",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'specificMachine'."
+    },
+    {
+      "id": "uml-pyecore:specification",
+      "kind": "edge_type",
+      "match_type": "specification",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'specification'."
+    },
+    {
+      "id": "uml-pyecore:start",
+      "kind": "edge_type",
+      "match_type": "start",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'start'."
+    },
+    {
+      "id": "uml-pyecore:state",
+      "kind": "edge_type",
+      "match_type": "state",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3
+      },
+      "description": "UML metamodel reference 'state'."
+    },
+    {
+      "id": "uml-pyecore:stateInvariant",
+      "kind": "edge_type",
+      "match_type": "stateInvariant",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'stateInvariant'."
+    },
+    {
+      "id": "uml-pyecore:stateMachine",
+      "kind": "edge_type",
+      "match_type": "stateMachine",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'stateMachine'."
+    },
+    {
+      "id": "uml-pyecore:structuralFeature",
+      "kind": "edge_type",
+      "match_type": "structuralFeature",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'structuralFeature'."
+    },
+    {
+      "id": "uml-pyecore:structuredNode",
+      "kind": "edge_type",
+      "match_type": "structuredNode",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'structuredNode'."
+    },
+    {
+      "id": "uml-pyecore:structuredNodeInput",
+      "kind": "edge_type",
+      "match_type": "structuredNodeInput",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'structuredNodeInput'."
+    },
+    {
+      "id": "uml-pyecore:structuredNodeOutput",
+      "kind": "edge_type",
+      "match_type": "structuredNodeOutput",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'structuredNodeOutput'."
+    },
+    {
+      "id": "uml-pyecore:subExpression",
+      "kind": "edge_type",
+      "match_type": "subExpression",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'subExpression'."
+    },
+    {
+      "id": "uml-pyecore:subgroup",
+      "kind": "edge_type",
+      "match_type": "subgroup",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'subgroup'."
+    },
+    {
+      "id": "uml-pyecore:subject",
+      "kind": "edge_type",
+      "match_type": "subject",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'subject'."
+    },
+    {
+      "id": "uml-pyecore:submachine",
+      "kind": "edge_type",
+      "match_type": "submachine",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'submachine'."
+    },
+    {
+      "id": "uml-pyecore:submachineState",
+      "kind": "edge_type",
+      "match_type": "submachineState",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'submachineState'."
+    },
+    {
+      "id": "uml-pyecore:subpartition",
+      "kind": "edge_type",
+      "match_type": "subpartition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'subpartition'."
+    },
+    {
+      "id": "uml-pyecore:subsettedProperty",
+      "kind": "edge_type",
+      "match_type": "subsettedProperty",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'subsettedProperty'."
+    },
+    {
+      "id": "uml-pyecore:substitutingClassifier",
+      "kind": "edge_type",
+      "match_type": "substitutingClassifier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'substitutingClassifier'."
+    },
+    {
+      "id": "uml-pyecore:substitution",
+      "kind": "edge_type",
+      "match_type": "substitution",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'substitution'."
+    },
+    {
+      "id": "uml-pyecore:subvertex",
+      "kind": "edge_type",
+      "match_type": "subvertex",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML reference edge 'subvertex'."
+    },
+    {
+      "id": "uml-pyecore:successorClause",
+      "kind": "edge_type",
+      "match_type": "successorClause",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'successorClause'."
+    },
+    {
+      "id": "uml-pyecore:superClass",
+      "kind": "edge_type",
+      "match_type": "superClass",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'superClass'."
+    },
+    {
+      "id": "uml-pyecore:superGroup",
+      "kind": "edge_type",
+      "match_type": "superGroup",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML metamodel reference 'superGroup'."
+    },
+    {
+      "id": "uml-pyecore:superPartition",
+      "kind": "edge_type",
+      "match_type": "superPartition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'superPartition'."
+    },
+    {
+      "id": "uml-pyecore:supplier",
+      "kind": "edge_type",
+      "match_type": "supplier",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 1
+      },
+      "description": "UML reference edge 'supplier'."
+    },
+    {
+      "id": "uml-pyecore:target",
+      "kind": "edge_type",
+      "match_type": "target",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior",
+        "owner_count": 7,
+        "containment": true,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML reference edge 'target'."
+    },
+    {
+      "id": "uml-pyecore:template",
+      "kind": "edge_type",
+      "match_type": "template",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'template'."
+    },
+    {
+      "id": "uml-pyecore:templateBinding",
+      "kind": "edge_type",
+      "match_type": "templateBinding",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'templateBinding'."
+    },
+    {
+      "id": "uml-pyecore:templateParameter",
+      "kind": "edge_type",
+      "match_type": "templateParameter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'templateParameter'."
+    },
+    {
+      "id": "uml-pyecore:test",
+      "kind": "edge_type",
+      "match_type": "test",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'test'."
+    },
+    {
+      "id": "uml-pyecore:toAfter",
+      "kind": "edge_type",
+      "match_type": "toAfter",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'toAfter'."
+    },
+    {
+      "id": "uml-pyecore:toBefore",
+      "kind": "edge_type",
+      "match_type": "toBefore",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'toBefore'."
+    },
+    {
+      "id": "uml-pyecore:transformation",
+      "kind": "edge_type",
+      "match_type": "transformation",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'transformation'."
+    },
+    {
+      "id": "uml-pyecore:transition",
+      "kind": "edge_type",
+      "match_type": "transition",
+      "match_data_equals": {},
+      "meta": {
+        "group": "behavior",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML reference edge 'transition'."
+    },
+    {
+      "id": "uml-pyecore:trigger",
+      "kind": "edge_type",
+      "match_type": "trigger",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'trigger'."
+    },
+    {
+      "id": "uml-pyecore:type",
+      "kind": "edge_type",
+      "match_type": "type",
+      "match_data_equals": {},
+      "meta": {
+        "group": "structure",
+        "owner_count": 4,
+        "derived_in_some_contexts": true,
+        "transient_in_some_contexts": true
+      },
+      "description": "UML reference edge 'type'."
+    },
+    {
+      "id": "uml-pyecore:unmarshallType",
+      "kind": "edge_type",
+      "match_type": "unmarshallType",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'unmarshallType'."
+    },
+    {
+      "id": "uml-pyecore:upperBound",
+      "kind": "edge_type",
+      "match_type": "upperBound",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'upperBound'."
+    },
+    {
+      "id": "uml-pyecore:upperValue",
+      "kind": "edge_type",
+      "match_type": "upperValue",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'upperValue'."
+    },
+    {
+      "id": "uml-pyecore:useCase",
+      "kind": "edge_type",
+      "match_type": "useCase",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 2
+      },
+      "description": "UML metamodel reference 'useCase'."
+    },
+    {
+      "id": "uml-pyecore:utilizedElement",
+      "kind": "edge_type",
+      "match_type": "utilizedElement",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1
+      },
+      "description": "UML metamodel reference 'utilizedElement'."
+    },
+    {
+      "id": "uml-pyecore:value",
+      "kind": "edge_type",
+      "match_type": "value",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 7,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'value'."
+    },
+    {
+      "id": "uml-pyecore:variable",
+      "kind": "edge_type",
+      "match_type": "variable",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 3,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'variable'."
+    },
+    {
+      "id": "uml-pyecore:weight",
+      "kind": "edge_type",
+      "match_type": "weight",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'weight'."
+    },
+    {
+      "id": "uml-pyecore:when",
+      "kind": "edge_type",
+      "match_type": "when",
+      "match_data_equals": {},
+      "meta": {
+        "group": "uml-reference",
+        "owner_count": 1,
+        "containment": true
+      },
+      "description": "UML metamodel reference 'when'."
+    }
+  ]
+}

@@ -35,6 +35,7 @@ def test_parser_registry_contains_all_builtin_parsers() -> None:
 
     assert "UML" in parser_languages
     assert "UML-custom1" in parser_languages
+    assert "UML-XML-PyEcore" in parser_languages
     assert "Ecore" in parser_languages
     assert "ArchiMate-Archi" in parser_languages
     assert "ArchiMate-XML" in parser_languages
@@ -42,6 +43,7 @@ def test_parser_registry_contains_all_builtin_parsers() -> None:
 
     assert get_parser("UML") is not None
     assert get_parser("UML-custom1") is not None
+    assert get_parser("UML-XML-PyEcore") is not None
     assert get_parser("Ecore") is not None
     assert get_parser("BPMN-Signavio-JSON") is not None
 
@@ -100,6 +102,16 @@ def test_construct_catalog_contains_uml_custom1_profile() -> None:
     assert "uml:Association" in constructs
 
 
+def test_construct_catalog_contains_uml_xml_pyecore_profile() -> None:
+    path = get_construct_profile_path("UML-XML-PyEcore")
+    assert path is not None
+
+    constructs = load_construct_defs("UML-XML-PyEcore")
+    assert constructs is not None
+    assert "uml-pyecore:Class" in constructs
+    assert "uml-pyecore:ownedAttribute" in constructs
+
+
 def test_construct_catalog_contains_bpmn_signavio_json_profile() -> None:
     path = get_construct_profile_path("BPMN-Signavio-JSON")
     assert path is not None
@@ -141,4 +153,39 @@ def test_parse_service_pipeline_with_uml_custom1(tmp_path: Path) -> None:
 
     ir = IR.load(str(ir_file))
     assert ir.language == "UML-custom1"
+    assert any(node.type == "Class" for node in ir.nodes)
+
+
+def test_parse_service_pipeline_with_uml_xml_pyecore(tmp_path: Path) -> None:
+    dataset_root = tmp_path / "dataset"
+    output_dir = tmp_path / "out"
+    dataset_root.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    model_path = dataset_root / "model.xmi"
+    shutil.copyfile(FIXTURE_XMI, model_path)
+
+    dataset_info = scan_dataset(str(dataset_root), include=["*.xmi"])
+    dataset_info_path = output_dir / "dataset_info.json"
+    with open(dataset_info_path, "w", encoding="utf-8") as f:
+        json.dump(dataset_info.to_dict(), f, indent=2)
+
+    ir_info = parse_from_scan(
+        dataset_info_path=str(dataset_info_path),
+        output_dir=str(output_dir),
+        parser_language="UML-XML-PyEcore",
+    )
+
+    assert ir_info.totals["candidates_in"] == 1
+    assert ir_info.totals["parsed_success"] + ir_info.totals["parsed_warning"] == 1
+    assert ir_info.totals["parsed_failure"] == 0
+    assert len(ir_info.index) == 1
+
+    ir_id = next(iter(ir_info.index.keys()))
+    ir_file = output_dir / "ir" / f"{ir_id}.json"
+    assert ir_file.exists()
+
+    ir = IR.load(str(ir_file))
+    assert ir.language == "UML-XML-PyEcore"
+    assert ir.data["representation"] == "metamodel_graph"
     assert any(node.type == "Class" for node in ir.nodes)
