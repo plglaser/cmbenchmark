@@ -33,6 +33,7 @@ output/
 
 data/*
 !data/.gitkeep
+!data/archimate-examples/
 
 out-*
 
@@ -41,7 +42,8 @@ cmbenchmark/data/
 !fronted/src/data/
 
 figures/*
-scripts/
+scripts/*
+!scripts/download_datasets.py
 
 # Web UI build artifacts
 cmbenchmark/web/static/*
@@ -49,3 +51,5 @@ cmbenchmark/web/static/*
 frontend/node_modules/
 frontend/dist/
 
+
+archive/
