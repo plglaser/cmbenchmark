@@ -107,6 +107,13 @@ Request cancellation for measure job.
 ### POST /api/report-jobs
 Create an asynchronous report job.
 
+Derived report payload now includes D5 (Bias) fields when `measure.bias.enabled=true`:
+- `genderSurface*` (D5.M1.1 Facet Coding; lexical + name fallback across all included labels)
+- `localeSurface*` (D5.M3.1 Geography × Surface Coding)
+
+Each D5 block exposes an `insufficient` flag (`insufficient_evidence` at measure level)
+to indicate low-sample outputs (`min_n` from the bias profile).
+
 ### GET /api/report-jobs/{job_id}
 Get report job status and result.
 
