@@ -12,6 +12,27 @@ Pipeline stages: `scan → parse → measure → report`
 
 A benchmark requires a **dataset** and a **benchmark profile** (JSON). Place the dataset in the `data/` directory (e.g., `data/eamodelset/`) and configure (or reuse) a benchmark profile (see `profiles/`). Make sure the `dataset_path` in the profile matches the path of your dataset (e.g. `../data/eamodelset/`).
 
+For a quick start without downloading external data, use the bundled ArchiMate example dataset in `data/archimate-examples/`. It contains 3 models and can be run with `profiles/profile-archimate-examples.json`.
+
+### Download Datasets
+
+Download all supported datasets into `data/` with:
+
+```bash
+.venv/bin/python scripts/download_datasets.py
+```
+
+To download only one dataset, use `--only`:
+
+```bash
+.venv/bin/python scripts/download_datasets.py --only eamodelset
+.venv/bin/python scripts/download_datasets.py --only modelset-uml
+.venv/bin/python scripts/download_datasets.py --only modelset-ecore
+.venv/bin/python scripts/download_datasets.py --only atlanticzoo
+```
+
+See [Downloading and Preparing Datasets](docs/DOWNLOAD_DATASETS.md) for the full dataset list, output layout, and options.
+
 ### Docker
 
 ```bash
