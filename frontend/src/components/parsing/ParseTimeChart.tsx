@@ -10,7 +10,7 @@ export function ParseTimeChart({ histogramData }: ParseTimeChartProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Parse Time Distribution</CardTitle>
+          <CardTitle className="text-base">Parse Time Distribution (ms)</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">No parse time data available</p>
@@ -22,14 +22,14 @@ export function ParseTimeChart({ histogramData }: ParseTimeChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Parse Time Distribution</CardTitle>
+        <CardTitle className="text-base">Parse Time Distribution (ms)</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={histogramData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="bin" />
-            <YAxis />
+            <YAxis allowDecimals={false} />
             <Tooltip />
             <Bar dataKey="count" fill="#8884d8" />
           </BarChart>

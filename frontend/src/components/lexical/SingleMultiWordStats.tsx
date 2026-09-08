@@ -83,7 +83,7 @@ export function SingleMultiWordStats({ datasetData, shareStats, histogramData }:
               <BarChart data={histogramData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="bin" />
-                <YAxis />
+                <YAxis allowDecimals={false} />
                 <Tooltip formatter={(value: any) => `${value} models`} />
                 <Bar dataKey="count" fill="#3b82f6" />
               </BarChart>

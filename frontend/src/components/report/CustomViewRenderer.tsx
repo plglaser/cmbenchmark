@@ -109,7 +109,7 @@ export function CustomViewRenderer({ view, preview, loading = false, error = nul
           <BarChart data={bins}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="bin" interval={0} angle={-30} textAnchor="end" height={90} />
-            <YAxis />
+            <YAxis allowDecimals={false} />
             <Tooltip />
             <Bar dataKey="count" fill="#16a34a" radius={[4, 4, 0, 0]} />
           </BarChart>

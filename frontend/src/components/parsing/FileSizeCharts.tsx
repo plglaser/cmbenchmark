@@ -46,7 +46,7 @@ export function FileSizeCharts({ sourceHistogram, irHistogram }: FileSizeChartsP
               <BarChart data={sourceHistogram}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="bin" tickFormatter={formatBinLabel} />
-                <YAxis />
+                <YAxis allowDecimals={false} />
                 <Tooltip labelFormatter={(label) => formatBinLabel(String(label))} />
                 <Bar dataKey="count" fill="#ffc658" />
               </BarChart>
@@ -66,7 +66,7 @@ export function FileSizeCharts({ sourceHistogram, irHistogram }: FileSizeChartsP
               <BarChart data={irHistogram}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="bin" tickFormatter={formatBinLabel} />
-                <YAxis />
+                <YAxis allowDecimals={false} />
                 <Tooltip labelFormatter={(label) => formatBinLabel(String(label))} />
                 <Bar dataKey="count" fill="#82ca9d" />
               </BarChart>

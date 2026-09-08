@@ -18,21 +18,21 @@ def _is_finite_number(x: Any) -> bool:
     return isinstance(x, (int, float)) and math.isfinite(float(x))
 
 
-def create_histogram_data(values: Sequence[Any], bins: int = 20) -> List[Dict[str, Any]]:
-    """Create histogram bins like the TS `createHistogramData` helper."""
+def create_histogram_data(values: Sequence[Any], bins: Optional[int] = None) -> List[Dict[str, Any]]:
+    """Bin finite values adaptively, honoring an explicit positive bin count."""
     nums = [float(v) for v in values if _is_finite_number(v)]
     if not nums:
         return []
     mn = min(nums)
     mx = max(nums)
     if mn == mx:
-        return [{"bin": f"{mn:.0f}", "count": len(nums)}]
+        return [{"bin": str(int(mn)) if mn.is_integer() else str(mn), "count": len(nums)}]
 
-    if bins <= 0:
-        bins = 20
+    if bins is None or bins <= 0:
+        bins = min(20, math.ceil(math.sqrt(len(nums))))
     bin_width = (mx - mn) / bins
     if bin_width <= 0:
-        return [{"bin": f"{mn:.0f}", "count": len(nums)}]
+        return [{"bin": str(int(mn)) if mn.is_integer() else str(mn), "count": len(nums)}]
 
     counts = [0] * bins
     for v in nums:
@@ -43,15 +43,17 @@ def create_histogram_data(values: Sequence[Any], bins: int = 20) -> List[Dict[st
             idx = bins - 1
         counts[idx] += 1
 
+    # Keep one more decimal place than the bin width's order of magnitude.
+    decimals = max(0, 1 - math.floor(math.log10(bin_width)))
     out: List[Dict[str, Any]] = []
     for i, c in enumerate(counts):
         a = mn + i * bin_width
-        b = mn + (i + 1) * bin_width
-        out.append({"bin": f"{a:.0f}-{b:.0f}", "count": c})
+        b = mx if i == bins - 1 else mn + (i + 1) * bin_width
+        out.append({"bin": f"{a:.{decimals}f}-{b:.{decimals}f}", "count": c})
     return out
 
 
-def create_share_histogram_data(values: Sequence[Any], bins: int = 20) -> List[Dict[str, Any]]:
+def create_share_histogram_data(values: Sequence[Any], bins: Optional[int] = None) -> List[Dict[str, Any]]:
     """Histogram helper specialized for shares in [0, 1] with percent bins."""
     clamped: List[float] = []
     for v in values:
@@ -61,38 +63,6 @@ def create_share_histogram_data(values: Sequence[Any], bins: int = 20) -> List[D
         fv = max(0.0, min(1.0, fv))
         if math.isfinite(fv):
             clamped.append(fv)
-    if not clamped:
-        return []
-
-    mn = min(clamped)
-    mx = max(clamped)
-    if mn == mx:
-        p = f"{mn * 100:.1f}"
-        return [{"bin": f"{p}-{p}%", "count": len(clamped)}]
-
-    if bins <= 0:
-        bins = 20
-    bin_width = (mx - mn) / bins
-    if bin_width <= 0:
-        p = f"{mn * 100:.1f}"
-        return [{"bin": f"{p}-{p}%", "count": len(clamped)}]
-
-    counts = [0] * bins
-    for v in clamped:
-        idx = int((v - mn) / bin_width)
-        if idx < 0:
-            idx = 0
-        if idx >= bins:
-            idx = bins - 1
-        counts[idx] += 1
-
-    decimals = 1 if (mx - mn) < 0.2 else 0
-    out: List[Dict[str, Any]] = []
-    for i, c in enumerate(counts):
-        a = mn + i * bin_width
-        b = mn + (i + 1) * bin_width
-        fa = f"{a * 100:.{decimals}f}"
-        fb = f"{b * 100:.{decimals}f}"
-        out.append({"bin": f"{fa}-{fb}%", "count": c})
-    return out
-
+    # Format in percentage units so precision follows the displayed bin width.
+    histogram = create_histogram_data([v * 100 for v in clamped], bins=bins)
+    return [{"bin": f"{row['bin']}%", "count": row["count"]} for row in histogram]

@@ -116,7 +116,7 @@ export function createDimensions(reportData: any, parserLanguage?: string | null
           tiles: [
             {
               id: 'parse-time-chart',
-              title: 'Parse Time Distribution',
+              title: 'Parse Time Distribution (ms)',
               component: (
                 <ParseTimeChart histogramData={parsingData?.parseTimeHistogram || []} />
               ),
@@ -228,21 +228,21 @@ export function createDimensions(reportData: any, parserLanguage?: string | null
           tiles: [
             {
               id: 'length-chars-chart',
-              title: 'Character Length Distribution',
+              title: 'Per-model Median Label Length (characters)',
               component: (
                 <LabelLengthChart
                   histogramData={parsingData?.labelLengthCharsHistogram || []}
-                  label="Character Length Distribution"
+                  label="Per-model Median Label Length (characters)"
                 />
               ),
             },
             {
               id: 'length-tokens-chart',
-              title: 'Token Length Distribution',
+              title: 'Per-model Median Label Length (tokens)',
               component: (
                 <LabelLengthChart
                   histogramData={parsingData?.labelLengthTokensHistogram || []}
-                  label="Token Length Distribution"
+                  label="Per-model Median Label Length (tokens)"
                 />
               ),
             },

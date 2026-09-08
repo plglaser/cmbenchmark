@@ -19,6 +19,48 @@ def test_create_share_histogram_data_clamps_and_counts_sum():
     assert all(isinstance(b["bin"], str) and "%" in b["bin"] for b in hist)
 
 
+def test_histogram_small_sample_has_readable_ranges():
+    hist = create_histogram_data([14.0, 14.3, 15.0])
+    assert hist == [
+        {"bin": "14.00-14.50", "count": 2},
+        {"bin": "14.50-15.00", "count": 1},
+    ]
+
+
+def test_histogram_preserves_small_values_and_filters_nonfinite_data():
+    assert create_histogram_data([None, "invalid", float("nan"), float("inf")]) == []
+    assert create_histogram_data([0.00125, 0.00125, None]) == [
+        {"bin": "0.00125", "count": 2}
+    ]
+    hist = create_histogram_data([0.001, 0.0011, 0.0012])
+    assert len(hist) == 2
+    assert sum(row["count"] for row in hist) == 3
+    for row in hist:
+        lower, upper = map(float, row["bin"].split("-"))
+        assert lower < upper
+
+
+def test_histogram_caps_default_bins_and_keeps_empty_intervals():
+    hist = create_histogram_data(list(range(1000)))
+    assert len(hist) == 20
+    assert sum(row["count"] for row in hist) == 1000
+    hist = create_histogram_data([0, 0, 0, 10], bins=3)
+    assert [row["count"] for row in hist] == [3, 0, 1]
+    assert create_histogram_data([0, 1, 2], bins=0) == create_histogram_data([0, 1, 2])
+
+
+def test_share_histogram_adapts_precision_to_narrow_ranges():
+    hist = create_share_histogram_data([0.14001, 0.14002, 0.14003])
+    assert len(hist) == 2
+    assert sum(row["count"] for row in hist) == 3
+    for row in hist:
+        lower, upper = map(float, row["bin"].removesuffix("%").split("-"))
+        assert lower < upper
+    assert create_share_histogram_data([0.125, 0.125]) == [
+        {"bin": "12.5%", "count": 2}
+    ]
+
+
 def test_build_report_data_top10_and_relpath_mapping():
     measures = {
         "parsing": {

@@ -39,7 +39,7 @@ export function CoverageShareChart({ histogramData }: CoverageShareChartProps) {
               interval="preserveStartEnd"
               tick={{ fontSize: 10 }}
             />
-            <YAxis />
+            <YAxis allowDecimals={false} />
             <Tooltip />
             <Bar dataKey="count" fill="#3b82f6" />
           </BarChart>
